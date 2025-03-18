@@ -3,7 +3,6 @@ package kroryi.bus2.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import kroryi.bus2.repository.BusLocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,9 +50,6 @@ public class BusLocationService {
 //        }
 //        return "데이터 삽입 완료";
 //    }
-
-    @Autowired
-    private BusLocationRepository busLocationRepository;
 //
 //    @Autowired
 //    private RestTemplate restTemplate;
@@ -100,8 +96,6 @@ public class BusLocationService {
 //        return "데이터 삽입 완료";
 //    }
 
-    @Autowired
-    private RestTemplate restTemplate;
 
     String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getBs?";
     String serviceKey = "j/gLHENNg0EDmUOP1OcG5WafUwAUq0u6D1CAZp7xdSTLsSmRJ7r6Pfi34Ks2ZZ7lM0zVZHjjESDToVIX+soPGA==";
