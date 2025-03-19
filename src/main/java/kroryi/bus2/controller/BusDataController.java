@@ -20,7 +20,7 @@ public class BusDataController {
 //    public String fetchGetBusData() {
 //        String routeId = "1000001000";
 //        String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getBasic?";
-//        String serviceKey = "j/gLHENNg0EDmUOP1OcG5WafUwAUq0u6D1CAZp7xdSTLsSmRJ7r6Pfi34Ks2ZZ7lM0zVZHjjESDToVIX+soPGA==";
+//        String serviceKey = "";
 //        String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
 //
 //        busDataService.fetchAndSaveBusData(apiUrl);
@@ -30,9 +30,9 @@ public class BusDataController {
 
     @PostMapping("/fetch")
     public String fetchPostBusData() {
-        String routeId = "1000001000";
+//        String routeId = "1000001000";
         String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getBasic?";
-        String serviceKey = "j/gLHENNg0EDmUOP1OcG5WafUwAUq0u6D1CAZp7xdSTLsSmRJ7r6Pfi34Ks2ZZ7lM0zVZHjjESDToVIX+soPGA==";
+        String serviceKey = "";   // 본인의 인증키(디코딩)
         String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
 
         busDataService.fetchAndSaveBusData(apiUrl);
