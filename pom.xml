@@ -61,8 +61,9 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.36</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.projectlombok.test/test-maven-lombok -->
         <dependency>
             <groupId>org.projectlombok.test</groupId>
@@ -79,6 +80,12 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>2.15.3</version> <!-- 최신 버전 사용 -->
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.0</version>
         </dependency>
 
 

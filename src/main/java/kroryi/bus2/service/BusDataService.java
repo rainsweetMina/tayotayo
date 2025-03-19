@@ -27,6 +27,7 @@ public class BusDataService {
     private final RouteRepository routeRepository;
     private final LinkRepository linkRepository;
     private final RestTemplate restTemplate;
+
 //    private final ObjectMapper objectMapper;
 
     @Transactional
@@ -73,26 +74,12 @@ public class BusDataService {
                 System.out.println("linkData 데이터가 없음!");
             }
 
-//            System.out.println(" items 데이터 확인 : " + items);
-
-//            System.out.println(" response 데이터 확인 : " + response);
-//            System.out.println(" jsonResponse 데이터 확인 : " + jsonResponse);
-
-//            if (items.isArray()) {
-//                for (JsonNode item : items) {
-//                    saveNodes(item.path("node"));
-//                    saveBusStops(item.path("bs"));
-//                    saveRoutes(item.path("route"));
-//                    saveLinks(item.path("link"));
-//                }
-//            }
-//            return jsonResponse;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-//        return null;
     }
+
     private void saveNodes(JsonNode nodeArray) {
         for (JsonNode node : nodeArray) {
             Node newNode = new Node();
