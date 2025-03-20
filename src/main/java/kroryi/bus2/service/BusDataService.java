@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import jakarta.transaction.Transactional;
+import kroryi.bus2.dto.BusStopDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Link;
 import kroryi.bus2.entity.Node;
@@ -13,13 +14,16 @@ import kroryi.bus2.repository.LinkRepository;
 import kroryi.bus2.repository.NodeRepository;
 import kroryi.bus2.repository.RouteRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class BusDataService {
 
     private final NodeRepository nodeRepository;
@@ -27,9 +31,32 @@ public class BusDataService {
     private final RouteRepository routeRepository;
     private final LinkRepository linkRepository;
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-//    private final ObjectMapper objectMapper;
+    public JsonNode getBusStopNav(String apiUrl) {
 
+        try {
+            URI uri = new URI(apiUrl);
+            String response = restTemplate.getForObject(uri, String.class);
+
+            XmlMapper xmlMapper = new XmlMapper();
+            JsonNode node = xmlMapper.readTree(response.getBytes());
+            ObjectMapper jsonMapper = new ObjectMapper();
+            String jsonResponse = jsonMapper.writeValueAsString(node);
+            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
+
+            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
+//            System.out.println("데이터 확인 : " + jsonNode);
+
+            return jsonNode;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    // 기초 정보 데이터 db에 넣는거
     @Transactional
     public void fetchAndSaveBusData(String apiUrl) {
         try {
@@ -79,7 +106,6 @@ public class BusDataService {
         }
 
     }
-
     private void saveNodes(JsonNode nodeArray) {
         for (JsonNode node : nodeArray) {
             Node newNode = new Node();
@@ -93,7 +119,6 @@ public class BusDataService {
             nodeRepository.save(newNode);
         }
     }
-
     private void saveBusStops(JsonNode busArray) {
         for (JsonNode bus : busArray) {
             BusStop newBusStop = new BusStop();
@@ -106,7 +131,6 @@ public class BusDataService {
             busStopRepository.save(newBusStop);
         }
     }
-
     private void saveRoutes(JsonNode routeArray) {
         for (JsonNode route : routeArray) {
             Route newRoute = new Route();
@@ -122,7 +146,6 @@ public class BusDataService {
             routeRepository.save(newRoute);
         }
     }
-
     private void saveLinks(JsonNode linkArray) {
         for (JsonNode link : linkArray) {
             Link newLink = new Link();

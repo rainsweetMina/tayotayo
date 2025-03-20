@@ -2,9 +2,9 @@ package kroryi.bus2.controller;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.dto.BusStopDTO;
-import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.service.BusDataService;
 import kroryi.bus2.service.BusStopDataService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,8 @@ public class BusDataController {
     private String serviceKey;
 
 
-    @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)  // JSON 응답 강제
+    // 전체 버스정류장 불러오는거, 데이터가 너무 많아서 5개만 불러옴
+    @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
 
         List<BusStopDTO> list = busStopDataService.getAllBusStops();
@@ -39,6 +40,19 @@ public class BusDataController {
         return ResponseEntity.ok(list);
     }
 
+    // 이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
+    @GetMapping("/nav")
+    public ResponseEntity<JsonNode> getBusNav(@RequestParam String bsId) {
+        System.out.println("받은 bsId: " + bsId);
+
+        String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getRealtime?";
+        String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8) + "&bsId=" + bsId;
+
+        JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
+        return ResponseEntity.ok(jsonNode);
+    }
+
+    // 얘는 db에 기초종합정보 넣는거 이젠 쓰지마시길 렉 걸림 (나중에 하루에 한번 자동으로 실행되어 데이터 갱싱용으로 바꿀 예정)
     @PostMapping("/fetch")
     public String fetchPostBusData() {
 //        String routeId = "1000001000";
