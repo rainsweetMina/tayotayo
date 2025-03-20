@@ -1,0 +1,21 @@
+<th:block th:fragment="headerFragment">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+
+            <a class="navbar-brand" href="#">뻐어스</a>
+
+            <div style="color:white; flex-grow: 1; text-align: center;">
+
+                <input type="text" placeholder ="버스 번호/정류장 검색">
+
+            </div>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/login" th:href="@{/login}">회원가입(로그인)</a>
+                </li>
+            </ul>
+
+        </div>
+    </nav>
+</th:block>

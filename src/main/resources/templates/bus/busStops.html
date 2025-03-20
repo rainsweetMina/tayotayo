@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}"
+      lang="ko">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>버스 정류장 목록</title>
+
+
+<div layout:fragment="content" style="margin: 30px">
+
+    <style>
+        #busStopList {
+            margin-top: 20px;
+        }
+
+        #busStopList div {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <h1>버스 정류장 목록</h1>
+    <button onclick="fetchBusStops()">버스 정류장 불러오기</button>
+    <div id="busStopList"></div>
+
+
+    <script>
+
+        <!--위에 버스 정류장 불러오기 버튼 누르면 db에 저장된 전체 정류장의 json데이터 5개만 불러옴-->
+        function fetchBusStops() {
+            fetch('/api/bus/busStops')    //  여기서 restcontroller로 api를 호출해서 데이터를 받아옴
+                .then(response => response.json()) // 받아온 json을 자바스크립트에서 사용가능한 js로 또 변환 (거의 필수)
+                .then(data => {
+                    console.log(data);
+                    const list = document.getElementById('busStopList');
+                    list.innerHTML = '';     // 누를때마다 html를 삭제 함으로써 html가 쌓이는걸 방지
+
+                    // 레스트컨트롤러에서 받은 정류장데이터(ResponseEntity.ok(list))를 데이터의 수 만큼 순회하여 html를 생성해서 화면에 출력
+                    data.forEach((busStop, index) => {
+                        const div = document.createElement('div');
+                        div.classList.add(`bus-stop${index + 1}`);
+                        div.innerHTML = `
+                    <span class="busNav" data-bsId="${busStop.bsId}">
+                        <strong>${busStop.bsNm}</strong> (ID: ${busStop.bsId})<br>
+                        위치: (${busStop.xpos}, ${busStop.ypos})
+                    </span>
+                    <div class="busInfoContainer"></div>
+                `;
+                        list.appendChild(div);
+                    });
+
+                    // 정류장의 태그(class = "busNav")의 span태그 요소들을 순회하며 클릭시 getBusNav()가 호출되도록 설정
+                    document.querySelectorAll('.busNav').forEach(span => {
+                        span.addEventListener('click', function () {
+                            const bsId = this.getAttribute('data-bsId');
+                            const targetContainer = this.nextElementSibling;
+                            getBusNav(bsId, targetContainer);
+                        });
+                    });
+                })
+                .catch(error => console.error('오류 발생:', error));
+        }
+
+        // 레스트컨트롤러에서 json으로 받아온 실시간 버스 도착 정보 데이터를 화면에 뿌려주는 함수
+        function getBusNav(bsId, targetContainer) {
+            fetch(`/api/bus/nav?bsId=${bsId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('버스 경로:', data);
+
+                    targetContainer.innerHTML = '';  // html가 계속 쌓이는걸 방지
+
+                    const items = data.body.items;
+                    items.forEach(item => {
+                        const routeNo = item.routeNo;
+                        const arrList = item.arrList.arrList;
+
+                        if (Array.isArray(arrList)) {             // json의 item안에 arrList.arrList가 배열(여러개), 예를 들어 509가 하나는 5분전이고 하나는 15분 전 이런식으로 도착정보가 2개이상일때
+                            arrList.forEach(bus => {              // 순환문으로 배열된걸 나열 함
+                                const div = document.createElement('div');
+                                div.classList.add('bus-info');
+                                div.innerHTML = `
+                            <strong>노선번호:</strong> ${routeNo} <br>
+                            <strong>정류장명:</strong> ${bus.bsNm} <br>
+                            <strong>도착 예정:</strong> ${bus.arrState} <hr>
+                        `;
+                                targetContainer.appendChild(div);
+                            });
+                        } else {                                  // arrList.arrList가 하나면 그냥 바로 출력해버림
+                            const div = document.createElement('div');
+                            div.classList.add('bus-info');
+                            div.innerHTML = `
+                        <strong>노선번호:</strong> ${routeNo} <br>
+                        <strong>정류장명:</strong> ${arrList.bsNm} <br>
+                        <strong>도착 예정:</strong> ${arrList.arrState} <hr>
+                    `;
+                            targetContainer.appendChild(div);
+                        }
+                    });
+                })
+                .catch(error => console.error('오류 발생:', error));
+        }
+
+    </script>
+
+</div>
+</html>
+
