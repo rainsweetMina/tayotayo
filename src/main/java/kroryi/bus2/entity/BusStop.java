@@ -25,4 +25,5 @@ public class BusStop {
 
     @Column(name = "y_pos")
     private Double yPos;
+
 }

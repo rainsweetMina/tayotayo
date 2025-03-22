@@ -1,9 +1,6 @@
 package kroryi.bus2.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -13,6 +10,7 @@ import java.io.Serializable;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class RouteDTO implements Serializable {
     private Long id;
     private String routeId;

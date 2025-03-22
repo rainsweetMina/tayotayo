@@ -1,15 +1,22 @@
 <th:block th:fragment="sidebarFragment">
-    <div class="position-sticky pt-3 sidebar-sticky">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="#">대시보드</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">문서 관리</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">상품 관리</a>
-            </li>
-        </ul>
+    <style>
+        .sidebar-sticky {
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        #busStopList {
+            margin-top: 20px;
+        }
+
+        #busStopList div {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <div class="position-sticky pt-3 sidebar-sticky" style="width: 320px;">
+        <div id="busStopList"></div>
     </div>
 </th:block>

@@ -5,8 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.dto.BusStopDTO;
+import kroryi.bus2.dto.RouteDTO;
+import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.service.BusDataService;
 import kroryi.bus2.service.BusStopDataService;
+import kroryi.bus2.service.RouteDataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bus")
@@ -25,6 +30,7 @@ import java.util.List;
 public class BusDataController {
     private final BusDataService busDataService;
     private final BusStopDataService busStopDataService;
+    private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
 
     @Value("${api.service-key}")
@@ -51,6 +57,38 @@ public class BusDataController {
         JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
         return ResponseEntity.ok(jsonNode);
     }
+
+    // 검색창에 입력하면 정류소,버스노선 찾아주는 포스트 api, json으로 맵핑 후 html로 날아감
+    @PostMapping(value = "/searchBSorBN", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> searchBSOrBN(@RequestBody Map<String, String> request) throws JsonProcessingException {
+
+        String keyword = request.get("keyword");
+        System.out.println("검색어 : " + keyword);
+
+        List<BusStop> busStop = busStopDataService.getBusStopsByNm(keyword);
+        log.info("정류소 데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(busStop));
+
+        System.out.println("-----------------------------------");
+
+        List<String> busNumber = routeDataService.getBusByNm(keyword);
+        log.info("버스 노선 데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(busNumber));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("busStops", busStop);
+        response.put("busNumbers", busNumber);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
+
+
+
+
+
+
+
 
     // 얘는 db에 기초종합정보 넣는거 이젠 쓰지마시길 렉 걸림 (나중에 하루에 한번 자동으로 실행되어 데이터 갱싱용으로 바꿀 예정)
     @PostMapping("/fetch")
