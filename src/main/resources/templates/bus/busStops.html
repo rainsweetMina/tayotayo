@@ -96,6 +96,72 @@
 
         // 추가 찾아볼기능(떠오르는)
         //     지도위치 움직이면 가장 가까운 정류장 표시(가능할지? 찾아봤지만 우선 실패)
+
+
+        // 검색하면 검색된 정류장에 마커가 찎히고 첫번째로 나온 정류소로 화면 이동
+        document.addEventListener("busStopsUpdated", function () {
+            if (window.selectedBusStops && window.selectedBusStops.length > 0) {
+                console.log("🗺️ 지도페이지 - 검색된 정류소 마커 표시 시작!");
+
+                //  기존 마커 지우기
+                if (window.busStopMarkers) {
+                    window.busStopMarkers.forEach(marker => marker.setMap(null));
+                }
+                window.busStopMarkers = [];
+
+                // 첫 번째 정류소 위치 가져오기
+                var firstBusStop = window.selectedBusStops[0];
+                var firstPosition = new kakao.maps.LatLng(firstBusStop.ypos, firstBusStop.xpos);
+
+                //  검색된 모든 정류소 위치에 마커 추가
+                window.selectedBusStops.forEach(busStop => {
+                    var markerPosition = new kakao.maps.LatLng(busStop.ypos, busStop.xpos);
+                    var marker = new kakao.maps.Marker({
+                        position: markerPosition,
+                        map: kakaoMap
+                    });
+
+                    //  생성된 마커 배열에 저장 (필요하면 나중에 지울 수 있음)
+                    window.busStopMarkers.push(marker);
+                });
+
+                // 첫 번째 정류소로 지도 이동
+                smoothPanTo(firstPosition);
+
+                console.log("✅ 마커 추가 완료!");
+            }
+        });
+
+        function smoothPanTo(targetPosition) {
+            var moveSpeed = 0.05; // 이동 속도 조절 (0.01 ~ 0.1 사이로 조정 가능)
+
+            var currentCenter = kakaoMap.getCenter();
+            var targetLat = targetPosition.getLat();
+            var targetLng = targetPosition.getLng();
+            var currentLat = currentCenter.getLat();
+            var currentLng = currentCenter.getLng();
+
+            var deltaLat = (targetLat - currentLat) * moveSpeed;
+            var deltaLng = (targetLng - currentLng) * moveSpeed;
+
+            function animateMove() {
+                currentLat += deltaLat;
+                currentLng += deltaLng;
+
+                var newCenter = new kakao.maps.LatLng(currentLat, currentLng);
+                kakaoMap.setCenter(newCenter);
+
+                var distance = Math.sqrt(Math.pow(targetLat - currentLat, 2) + Math.pow(targetLng - currentLng, 2));
+
+                if (distance > 0.0001) { // 목표 지점과의 거리가 충분하면 계속 이동
+                    setTimeout(animateMove, 20); // 20ms마다 이동 (속도 조절 가능)
+                }
+            }
+
+            animateMove();
+        }
+
+
     </script>
 
 </div>

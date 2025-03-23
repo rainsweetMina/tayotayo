@@ -91,7 +91,7 @@
                             위치: (${busStop.xpos}, ${busStop.ypos})<br>
                         </span>
                         <span class="busInfoContainer"></span>
-                `;
+                    `;
                         list.appendChild(div);
                     });
 
@@ -133,6 +133,22 @@
                         list.appendChild(ul);
                     } else {
                         console.log("버스 노선 정보 없음.");
+                    }
+
+                    // 검색하면 검색결과로 나온 정류장의 위치 정보를 지도페이지에 전송
+                    if (data.busStops && data.busStops.length > 0) {
+                        console.log("🚏 검색된 정류소 목록:");
+
+                        //  모든 정류소 데이터를 전역 변수에 배열로 저장
+                        window.selectedBusStops = data.busStops;
+
+                        //  콘솔에 모든 정류소 좌표 출력
+                        window.selectedBusStops.forEach((busStop, index) => {
+                            console.log(`  ${index + 1}. (${busStop.xpos}, ${busStop.ypos})`);
+                        });
+
+                        //  커스텀 이벤트 발생 (지도 페이지에서 감지 가능)
+                        document.dispatchEvent(new Event("busStopsUpdated"));
                     }
 
 
