@@ -26,6 +26,7 @@ public class FakeRedis {
 
     public Object get(String key) {
         Object value = cache.get(key);
+        System.out.printf("get: %s\n", value);
         if (value != null) {
             System.out.println("✅ [FakeRedis] 캐시 HIT : " + key);
         } else {
@@ -37,6 +38,7 @@ public class FakeRedis {
     public void setWithTTL(String key, Object value, long seconds) {
         cache.put(key, value);
         scheduler.schedule(() -> cache.remove(key), seconds, TimeUnit.SECONDS);
+        System.out.printf("데이터 저장");
     }
 
     public void delete(String key) {
