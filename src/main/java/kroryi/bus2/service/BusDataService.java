@@ -21,7 +21,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.sql.DataSource;
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,82 +39,82 @@ public class BusDataService {
     private final LinkRepository linkRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final FakeRedis fakeRedis;
+//    private final FakeRedis fakeRedis;
 
 
-    //    Redis 설정
-    private final BusApiService busApiService;
-    private final long CACHE_EXPIRATION = 60;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
-
-    //   Redis 관련
-    public String getBusArrival(String busStopId) {
-        // Redis에서 캐싱된 데이터 가져오기
-        String key = "busArrival:" + busStopId;
-        String cachedData = (String) redisTemplate.opsForValue().get(key);
-
-        if (cachedData != null) {
-            System.out.println("Redis에서 데이터 가져옴");
-            return cachedData;
-        }
-
-        // Redis에 캐싱된 데이터가 없으면 API 에서 가져오기
-        System.out.println("API에서 데이터 가져옴");
-        String response = busApiService.getBusArrivalInfo(busStopId);
-
-        // Redis에 TTL 60초로 저장 (자동 갱신X)
-        redisTemplate.opsForValue().set(key, response, 60, TimeUnit.SECONDS);
-
-        return response;
-
-    }
-
-    public void loadBusStopsToRedis() {
-        List<BusStop> busStops = busStopRepository.findAll();
-        for (BusStop stop : busStops) {
-            // Redis에 값 저장
-            redisTemplate.opsForValue().set("bus_stop:" + stop.getId(), stop);
-        }
-    }
-
-//    Redis 설정 끝
 
     public JsonNode getBusStopNav(String apiUrl) {
 
         try {
-            // 1. 캐시 먼저 확인
-            String key = "nav:" + apiUrl;
-            Object cached = fakeRedis.get(key);
-            if (cached != null) {
-                return (JsonNode) cached;
-            }
-
-            // 2. API 호출
             URI uri = new URI(apiUrl);
             String response = restTemplate.getForObject(uri, String.class);
 
-            // 3. XML → JSON 변환
             XmlMapper xmlMapper = new XmlMapper();
             JsonNode node = xmlMapper.readTree(response.getBytes());
             ObjectMapper jsonMapper = new ObjectMapper();
             String jsonResponse = jsonMapper.writeValueAsString(node);
             JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
 
-            // 4. 로그 출력
             log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
-
-            // 5. 캐시에 저장 (30초)
-            fakeRedis.setWithTTL(key, jsonNode, 30);
+//            System.out.println("데이터 확인 : " + jsonNode);
 
             return jsonNode;
-
-        } catch (Exception e) {
+        }catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
+
+//    public JsonNode getBusStopNav(String apiUrl) {
+//
+//        try {
+//            // 1. 캐시 먼저 확인
+//            String key = "nav:" + apiUrl;
+//            Object cached = fakeRedis.get(key);
+//            if (cached != null) {
+//                return (JsonNode) cached;
+//            }
+//
+//            // 2. API 호출
+//            URI uri = new URI(apiUrl);
+//            String response = restTemplate.getForObject(uri, String.class);
+//
+//            // 3. XML → JSON 변환
+//            XmlMapper xmlMapper = new XmlMapper();
+//            JsonNode node = xmlMapper.readTree(response.getBytes());
+//            ObjectMapper jsonMapper = new ObjectMapper();
+//            String jsonResponse = jsonMapper.writeValueAsString(node);
+//            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
+//
+//            // 4. 로그 출력
+//            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
+//
+//            // 5. 캐시에 저장 (30초)
+//            fakeRedis.setWithTTL(key, jsonNode, 30);
+//
+//            return jsonNode;
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
+
+
+
+    @Autowired
+    DataSource dataSource;
+
+    public void checkConnection() {
+        try (Connection connection = dataSource.getConnection()) {
+            System.out.println("DB 연결 상태: " + !connection.isClosed());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
     // 기초 정보 데이터 db에 넣는거
@@ -127,25 +130,27 @@ public class BusDataService {
             ObjectMapper jsonMapper = new ObjectMapper();
             String jsonResponse = jsonMapper.writeValueAsString(node);
             JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
+            System.out.println("변환된 JSON 데이터: " + jsonNode.toPrettyString());
 
-//            JsonNode nodeData = jsonNode.path("body").path("items").path("node");
-//            JsonNode bsData = jsonNode.path("body").path("items").path("bs");
+            JsonNode nodeData = jsonNode.path("body").path("items").path("node");
+            System.out.println("nodeData 구조: " + nodeData);
+            JsonNode bsData = jsonNode.path("body").path("items").path("bs");
             JsonNode routeData = jsonNode.path("body").path("items").path("route");
-//            JsonNode linkData = jsonNode.path("body").path("items").path("link");
+            JsonNode linkData = jsonNode.path("body").path("items").path("link");
 
-//            System.out.println("추출된 node 데이터: " + nodeData);
-//
-//            if (nodeData.isArray() && !nodeData.isEmpty()) {
-//                saveNodes(nodeData);
-//            } else {
-//                System.out.println("nodeData 데이터가 없음!");
-//            }
-//
-//            if (bsData.isArray() && !bsData.isEmpty()) {
-//                saveBusStops(bsData);
-//            } else {
-//                System.out.println("bsData 데이터가 없음!");
-//            }
+            System.out.println("추출된 node 데이터: " + nodeData);
+
+            if (nodeData.isArray() && !nodeData.isEmpty()) {
+                saveNodes(nodeData);
+            } else {
+                System.out.println("nodeData 데이터가 없음!");
+            }
+
+            if (bsData.isArray() && !bsData.isEmpty()) {
+                saveBusStops(bsData);
+            } else {
+                System.out.println("bsData 데이터가 없음!");
+            }
 
             if (routeData.isArray() && !routeData.isEmpty()) {
                 saveRoutes(routeData);
@@ -153,11 +158,11 @@ public class BusDataService {
                 System.out.println("routeData 데이터가 없음!");
             }
 
-//            if (linkData.isArray() && !linkData.isEmpty()) {
-//                saveLinks(linkData);
-//            } else {
-//                System.out.println("linkData 데이터가 없음!");
-//            }
+            if (linkData.isArray() && !linkData.isEmpty()) {
+                saveLinks(linkData);
+            } else {
+                System.out.println("linkData 데이터가 없음!");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -175,6 +180,15 @@ public class BusDataService {
 
             System.out.println("저장될 Node 데이터: " + newNode);
             nodeRepository.save(newNode);
+
+            try {
+                nodeRepository.save(newNode);
+                System.out.println("Node 저장 성공: " + newNode.getNodeId());
+            } catch (Exception e) {
+                System.out.println("Node 저장 실패: " + e.getMessage());
+            }
+
+
         }
     }
     private void saveBusStops(JsonNode busArray) {
@@ -199,10 +213,6 @@ public class BusDataService {
             newRoute.setStNm(route.path("stNm").asText());
             newRoute.setEdNm(route.path("edNm").asText());
             newRoute.setRouteNote(route.path("routeNote").asText());
-            newRoute.setDataconnareacd(route.path("dataconnareacd").asText());
-            newRoute.setDirRouteNote(route.path("dirRouteNote").asText());
-            newRoute.setNdirRouteNote(route.path("ndirRouteNote").asText());
-            newRoute.setRouteTCd(route.path("routeTCd").asText());
 
             System.out.println("저장될 Node 데이터: " + newRoute);
             routeRepository.save(newRoute);
