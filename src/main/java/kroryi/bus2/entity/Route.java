@@ -34,4 +34,17 @@ public class Route {
 
     @Column(name = "route_note", columnDefinition = "TEXT")
     private String routeNote;
+
+    @Column(name = "dataconnareacd")
+    private String dataconnareacd;
+
+    @Column(name = "dir_route_note")
+    private String dirRouteNote;
+
+    @Column(name = "ndir_route_note")
+    private String ndirRouteNote;
+
+    @Column(name = "route_tCd")
+    private String routeTCd;
+
 }

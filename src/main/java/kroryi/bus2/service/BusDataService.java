@@ -86,24 +86,24 @@ public class BusDataService {
             String jsonResponse = jsonMapper.writeValueAsString(node);
             JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
 
-            JsonNode nodeData = jsonNode.path("body").path("items").path("node");
-            JsonNode bsData = jsonNode.path("body").path("items").path("bs");
+//            JsonNode nodeData = jsonNode.path("body").path("items").path("node");
+//            JsonNode bsData = jsonNode.path("body").path("items").path("bs");
             JsonNode routeData = jsonNode.path("body").path("items").path("route");
-            JsonNode linkData = jsonNode.path("body").path("items").path("link");
+//            JsonNode linkData = jsonNode.path("body").path("items").path("link");
 
-            System.out.println("추출된 node 데이터: " + nodeData);
-
-            if (nodeData.isArray() && !nodeData.isEmpty()) {
-                saveNodes(nodeData);
-            } else {
-                System.out.println("nodeData 데이터가 없음!");
-            }
-
-            if (bsData.isArray() && !bsData.isEmpty()) {
-                saveBusStops(bsData);
-            } else {
-                System.out.println("bsData 데이터가 없음!");
-            }
+//            System.out.println("추출된 node 데이터: " + nodeData);
+//
+//            if (nodeData.isArray() && !nodeData.isEmpty()) {
+//                saveNodes(nodeData);
+//            } else {
+//                System.out.println("nodeData 데이터가 없음!");
+//            }
+//
+//            if (bsData.isArray() && !bsData.isEmpty()) {
+//                saveBusStops(bsData);
+//            } else {
+//                System.out.println("bsData 데이터가 없음!");
+//            }
 
             if (routeData.isArray() && !routeData.isEmpty()) {
                 saveRoutes(routeData);
@@ -111,11 +111,11 @@ public class BusDataService {
                 System.out.println("routeData 데이터가 없음!");
             }
 
-            if (linkData.isArray() && !linkData.isEmpty()) {
-                saveLinks(linkData);
-            } else {
-                System.out.println("linkData 데이터가 없음!");
-            }
+//            if (linkData.isArray() && !linkData.isEmpty()) {
+//                saveLinks(linkData);
+//            } else {
+//                System.out.println("linkData 데이터가 없음!");
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,6 +157,10 @@ public class BusDataService {
             newRoute.setStNm(route.path("stNm").asText());
             newRoute.setEdNm(route.path("edNm").asText());
             newRoute.setRouteNote(route.path("routeNote").asText());
+            newRoute.setDataconnareacd(route.path("dataconnareacd").asText());
+            newRoute.setDirRouteNote(route.path("dirRouteNote").asText());
+            newRoute.setNdirRouteNote(route.path("ndirRouteNote").asText());
+            newRoute.setRouteTCd(route.path("routeTCd").asText());
 
             System.out.println("저장될 Node 데이터: " + newRoute);
             routeRepository.save(newRoute);

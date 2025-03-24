@@ -175,7 +175,7 @@
             fetch(`/api/bus/nav?bsId=${bsId}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('버스 경로:', data);
+                    console.log('버스 도착 정보 :', data);
 
                     targetContainer.innerHTML = '';  // html가 계속 쌓이는걸 방지
 
