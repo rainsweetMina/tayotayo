@@ -29,4 +29,10 @@ public class BusController {
         return busRedisService.getBusArrival(busStopId);
     }
 
+    @GetMapping
+    public String loadBusStopsToRedis(){
+        busRedisService.loadBusStopsToRedis();
+        return "Redis에 버스 정류장 데이터 저장 완료";
+    }
+
 }
