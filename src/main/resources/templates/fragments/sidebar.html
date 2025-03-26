@@ -16,7 +16,17 @@
         }
     </style>
 
+    <div class="mt-3">
+        <div style="color:white; flex-grow: 1; text-align: center;">
+            <form id="searchForm">
+                <input type="text" id="searchInput" placeholder="버스 번호/정류장 검색">
+                <button type="button" onclick="searchBus()">검색</button>
+            </form>
+        </div>
+    </div>
+
     <div class="position-sticky pt-3 sidebar-sticky" style="width: 320px;">
         <div id="busStopList"></div>
     </div>
+
 </th:block>

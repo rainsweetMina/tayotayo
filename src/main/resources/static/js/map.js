@@ -1,18 +1,19 @@
+
 kakao.maps.load(function () {
     // 지도 생성
-    var mapContainer = document.getElementById('map'),
+    let mapContainer = document.getElementById('map'),
         mapOption = {
             center: new kakao.maps.LatLng(35.8668, 128.5940), // 지도의 중심좌표
             level: 3 // 지도의 확대 레벨
         };
 
-    var map = new kakao.maps.Map(mapContainer, mapOption);
+    let map = new kakao.maps.Map(mapContainer, mapOption);
 
     // 지도 컨트롤 추가
-    var mapTypeControl = new kakao.maps.MapTypeControl();
+    let mapTypeControl = new kakao.maps.MapTypeControl();
     map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
 
-    var zoomControl = new kakao.maps.ZoomControl();
+    let zoomControl = new kakao.maps.ZoomControl();
     map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
     map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
@@ -24,9 +25,9 @@ kakao.maps.load(function () {
     document.getElementById('currentLocationBtn').addEventListener('click', function () {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function (position) {
-                var lat = position.coords.latitude;
-                var lon = position.coords.longitude;
-                var moveLatLon = new kakao.maps.LatLng(lat, lon);
+                let lat = position.coords.latitude;
+                let lon = position.coords.longitude;
+                let moveLatLon = new kakao.maps.LatLng(lat, lon);
                 kakaoMap.setCenter(moveLatLon);
 
                 // 현재 위치에 마커 추가
@@ -49,12 +50,12 @@ kakaoMap.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, true);
 
 // 전역 함수로 정의
 function panTo() {
-    var moveLatLon = new kakao.maps.LatLng(35.8668, 128.5940);
+    let moveLatLon = new kakao.maps.LatLng(35.8668, 128.5940);
     kakaoMap.panTo(moveLatLon);
 }
 
 function resizeMap() {
-    var mapContainer = document.getElementById('map');
+    let mapContainer = document.getElementById('map');
     mapContainer.style.width = '650px';
     mapContainer.style.height = '650px';
 }
@@ -87,13 +88,13 @@ document.addEventListener("busStopsUpdated", function () {
         window.busStopMarkers = [];
 
         // 첫 번째 정류소 위치 가져오기
-        var firstBusStop = window.selectedBusStops[0];
-        var firstPosition = new kakao.maps.LatLng(firstBusStop.ypos, firstBusStop.xpos);
+        let firstBusStop = window.selectedBusStops[0];
+        let firstPosition = new kakao.maps.LatLng(firstBusStop.ypos, firstBusStop.xpos);
 
         //  검색된 모든 정류소 위치에 마커 추가
         window.selectedBusStops.forEach(busStop => {
-            var markerPosition = new kakao.maps.LatLng(busStop.ypos, busStop.xpos);
-            var marker = new kakao.maps.Marker({
+            let markerPosition = new kakao.maps.LatLng(busStop.ypos, busStop.xpos);
+            let marker = new kakao.maps.Marker({
                 position: markerPosition,
                 map: kakaoMap
             });
@@ -110,25 +111,25 @@ document.addEventListener("busStopsUpdated", function () {
 });
 
 function smoothPanTo(targetPosition) {
-    var moveSpeed = 0.05; // 이동 속도 조절 (0.01 ~ 0.1 사이로 조정 가능)
+    let moveSpeed = 0.05; // 이동 속도 조절 (0.01 ~ 0.1 사이로 조정 가능)
 
-    var currentCenter = kakaoMap.getCenter();
-    var targetLat = targetPosition.getLat();
-    var targetLng = targetPosition.getLng();
-    var currentLat = currentCenter.getLat();
-    var currentLng = currentCenter.getLng();
+    let currentCenter = kakaoMap.getCenter();
+    let targetLat = targetPosition.getLat();
+    let targetLng = targetPosition.getLng();
+    let currentLat = currentCenter.getLat();
+    let currentLng = currentCenter.getLng();
 
-    var deltaLat = (targetLat - currentLat) * moveSpeed;
-    var deltaLng = (targetLng - currentLng) * moveSpeed;
+    let deltaLat = (targetLat - currentLat) * moveSpeed;
+    let deltaLng = (targetLng - currentLng) * moveSpeed;
 
     function animateMove() {
         currentLat += deltaLat;
         currentLng += deltaLng;
 
-        var newCenter = new kakao.maps.LatLng(currentLat, currentLng);
+        let newCenter = new kakao.maps.LatLng(currentLat, currentLng);
         kakaoMap.setCenter(newCenter);
 
-        var distance = Math.sqrt(Math.pow(targetLat - currentLat, 2) + Math.pow(targetLng - currentLng, 2));
+        let distance = Math.sqrt(Math.pow(targetLat - currentLat, 2) + Math.pow(targetLng - currentLng, 2));
 
         if (distance > 0.0001) { // 목표 지점과의 거리가 충분하면 계속 이동
             setTimeout(animateMove, 20); // 20ms마다 이동 (속도 조절 가능)
@@ -137,4 +138,3 @@ function smoothPanTo(targetPosition) {
 
     animateMove();
 }
-

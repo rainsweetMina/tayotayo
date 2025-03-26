@@ -23,6 +23,11 @@ public class BusController {
         return "bus/busStops";
     }
 
+    @GetMapping("/bus2")
+    public String getBusStops2() {
+        return "bus/busStops2";
+    }
+
 
     @GetMapping("/arrival")
     public String getBusArrival(@RequestParam String busStopId) {
