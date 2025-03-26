@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -44,9 +45,9 @@ public class BusRedisService {
         loadBusStopsToRedis(); // 애플리케이션 실행 시 자동 실행
     }
 
-    public String getBusArrival(String busStopId) {
+    public String getBusArrival(String bsId) {
         // Redis에서 캐싱된 데이터 가져오기
-        String key = "busArrival:" + busStopId;
+        String key = "busArrival:" + bsId;
         String cachedData = (String) redisTemplate.opsForValue().get(key);
 
         if (cachedData != null) {
@@ -57,7 +58,8 @@ public class BusRedisService {
         System.out.println("Redis에서 데이터 없음 -> API 에서 호출");
 
         // API 호출 성공 확인
-        String response = busApiService.getBusArrivalInfo(busStopId);
+        String response = busApiService.getBusArrivalInfo(bsId);
+        System.out.printf("response: %s\n", response);
         System.out.println("API에서 데이터 가져옴");
 
         redisTemplate.opsForValue().set(key, response, CACHE_EXPIRATION, TimeUnit.SECONDS);
@@ -69,6 +71,7 @@ public class BusRedisService {
     public void loadBusStopsToRedis() {
         List<BusStop> busStops = busStopRepository.findAll();
         System.out.println("버스 정류장 갯수: " + busStops.size());
+        System.out.println("버스 정류장1 : " + busStops.get(0));
 
         boolean alreadyCached = false;
 

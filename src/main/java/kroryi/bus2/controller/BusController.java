@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.net.URISyntaxException;
+
 @Controller
 @RequestMapping("/")
 @RequiredArgsConstructor
@@ -24,10 +26,7 @@ public class BusController {
     }
 
 
-    @GetMapping("/arrival")
-    public String getBusArrival(@RequestParam String busStopId) {
-        return busRedisService.getBusArrival(busStopId);
-    }
+
 
     @GetMapping
     public String loadBusStopsToRedis(){

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.dto.BusStopDTO;
-import kroryi.bus2.dto.RouteDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.service.BusDataService;
+import kroryi.bus2.service.BusRedisService;
 import kroryi.bus2.service.BusStopDataService;
 import kroryi.bus2.service.RouteDataService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +32,7 @@ public class BusDataController {
     private final BusStopDataService busStopDataService;
     private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
+    private final BusRedisService busRedisService;
 
     @Value("${api.service-key}")
     private String serviceKey;
@@ -46,7 +47,7 @@ public class BusDataController {
         return ResponseEntity.ok(list);
     }
 
-    // 이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
+//     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
     @GetMapping("/nav")
     public ResponseEntity<JsonNode> getBusNav(@RequestParam String bsId) {
         System.out.println("받은 bsId: " + bsId);
@@ -80,7 +81,12 @@ public class BusDataController {
         return ResponseEntity.ok(response);
     }
 
-
+    @GetMapping("/arrival")
+    public ResponseEntity<JsonNode> getBusArrival(@RequestParam String bsId) throws JsonProcessingException {
+        String jsonString = busRedisService.getBusArrival(bsId);
+        ObjectMapper mapper = new ObjectMapper();
+        return ResponseEntity.ok(mapper.readTree(jsonString));
+    }
 
 
 
