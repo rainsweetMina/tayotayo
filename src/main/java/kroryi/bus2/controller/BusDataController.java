@@ -85,6 +85,7 @@ public class BusDataController {
     public ResponseEntity<JsonNode> getBusArrival(@RequestParam String bsId) throws JsonProcessingException {
         String jsonString = busRedisService.getBusArrival(bsId);
         ObjectMapper mapper = new ObjectMapper();
+
         return ResponseEntity.ok(mapper.readTree(jsonString));
     }
 
