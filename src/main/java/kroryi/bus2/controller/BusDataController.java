@@ -38,7 +38,7 @@ public class BusDataController {
     private String serviceKey;
 
 
-    // 전체 버스정류장 불러오는거, 데이터가 너무 많아서 5개만 불러옴
+    // 전체 버스정류장 불러오는거, 데이터가 너무 많아서 5개만 불러옴 이젠 안씀
     @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
 
@@ -48,15 +48,24 @@ public class BusDataController {
     }
 
 //     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
+//    @GetMapping("/nav")
+//    public ResponseEntity<JsonNode> getBusNav(@RequestParam String bsId) {
+//        System.out.println("받은 bsId: " + bsId);
+//
+//        String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getRealtime?";
+//        String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8) + "&bsId=" + bsId;
+//
+//        JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
+//        return ResponseEntity.ok(jsonNode);
+//    }
+
+    //     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
     @GetMapping("/nav")
-    public ResponseEntity<JsonNode> getBusNav(@RequestParam String bsId) {
-        System.out.println("받은 bsId: " + bsId);
+    public ResponseEntity<JsonNode> getBusArrival(@RequestParam String bsId) throws JsonProcessingException {
+        String jsonString = busRedisService.getBusArrival(bsId);
+        ObjectMapper mapper = new ObjectMapper();
 
-        String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getRealtime?";
-        String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8) + "&bsId=" + bsId;
-
-        JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
-        return ResponseEntity.ok(jsonNode);
+        return ResponseEntity.ok(mapper.readTree(jsonString));
     }
 
     // 검색창에 입력하면 정류소,버스노선 찾아주는 포스트 api, json으로 맵핑 후 html로 날아감
@@ -81,13 +90,7 @@ public class BusDataController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/arrival")
-    public ResponseEntity<JsonNode> getBusArrival(@RequestParam String bsId) throws JsonProcessingException {
-        String jsonString = busRedisService.getBusArrival(bsId);
-        ObjectMapper mapper = new ObjectMapper();
 
-        return ResponseEntity.ok(mapper.readTree(jsonString));
-    }
 
 
 
