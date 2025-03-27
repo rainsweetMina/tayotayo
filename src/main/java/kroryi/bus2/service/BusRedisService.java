@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Log4j2
-@RequiredArgsConstructor
+@RequiredArgsConstructor // final 필드들에 대해 자동으로 생성자를 만들어줌
 public class BusRedisService {
 
     private final RestTemplate restTemplate;
