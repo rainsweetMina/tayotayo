@@ -34,7 +34,7 @@ public class BusRedisService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private final long CACHE_EXPIRATION = 60;
+    private final long CACHE_EXPIRATION = 15;
 
 //    private final FakeRedis fakeRedis;
 

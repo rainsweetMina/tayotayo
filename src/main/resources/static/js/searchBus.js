@@ -142,7 +142,7 @@ function searchBus() {
 
 // 레스트컨트롤러에서 json으로 받아온 실시간 버스 도착 정보 데이터를 화면에 뿌려주는 함수
 function getBusNav(bsId, targetContainer) {
-    fetch(`/api/bus/nav?bsId=${bsId}`)
+    fetch(`/api/bus/arrival?bsId=${bsId}`)
         .then(response => response.json())
         .then(data => {
             console.log('버스 도착 정보 :', data);
@@ -152,7 +152,7 @@ function getBusNav(bsId, targetContainer) {
             const body = data.body;
 
             // totalCount가 "0"이고 msg가 존재하면 메시지 출력
-            if (body.totalCount === "0" && body.msg) {
+            if (body.totalCount === 0 && body.msg) {
                 const msgDiv = document.createElement('div');
                 msgDiv.classList.add('bus-msg');
                 msgDiv.textContent = body.msg;
@@ -198,7 +198,7 @@ function getBusNav(bsId, targetContainer) {
                     return;
                 }
 
-                let arrListData = arrList.arrList;
+                let arrListData = arrList;
 
                 // 객체일 경우 배열로 변환
                 if (!Array.isArray(arrListData)) {
