@@ -13,6 +13,7 @@ import kroryi.bus2.repository.BusStopRepository;
 import kroryi.bus2.repository.LinkRepository;
 import kroryi.bus2.repository.NodeRepository;
 import kroryi.bus2.repository.RouteRepository;
+import kroryi.bus2.util.FakeRedis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class BusDataService {
     private final LinkRepository linkRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+//    private final FakeRedis fakeRedis;
+
 
 
     public JsonNode getBusStopNav(String apiUrl) {
@@ -61,6 +64,43 @@ public class BusDataService {
         }
         return null;
     }
+
+
+//    public JsonNode getBusStopNav(String apiUrl) {
+//
+//        try {
+//            // 1. 캐시 먼저 확인
+//            String key = "nav:" + apiUrl;
+//            Object cached = fakeRedis.get(key);
+//            if (cached != null) {
+//                return (JsonNode) cached;
+//            }
+//
+//            // 2. API 호출
+//            URI uri = new URI(apiUrl);
+//            String response = restTemplate.getForObject(uri, String.class);
+//
+//            // 3. XML → JSON 변환
+//            XmlMapper xmlMapper = new XmlMapper();
+//            JsonNode node = xmlMapper.readTree(response.getBytes());
+//            ObjectMapper jsonMapper = new ObjectMapper();
+//            String jsonResponse = jsonMapper.writeValueAsString(node);
+//            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
+//
+//            // 4. 로그 출력
+//            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
+//
+//            // 5. 캐시에 저장 (30초)
+//            fakeRedis.setWithTTL(key, jsonNode, 30);
+//
+//            return jsonNode;
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
 
 
 
