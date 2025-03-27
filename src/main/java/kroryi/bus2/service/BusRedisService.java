@@ -35,7 +35,6 @@ public class BusRedisService {
 
     private final long CACHE_EXPIRATION = 15;
 
-//    private final FakeRedis fakeRedis;
 
     // ✅ @PostConstruct 추가 → 실행 시 자동 실행
     @PostConstruct
