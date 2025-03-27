@@ -6,7 +6,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import jakarta.annotation.PostConstruct;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.repository.BusStopRepository;
-import kroryi.bus2.util.FakeRedis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +70,6 @@ public class BusRedisService {
     public void loadBusStopsToRedis() {
         List<BusStop> busStops = busStopRepository.findAll();
         System.out.println("버스 정류장 갯수: " + busStops.size());
-        System.out.println("버스 정류장1 : " + busStops.get(0));
 
         boolean alreadyCached = false;
 
