@@ -76,7 +76,7 @@ public class BusDataController {
         System.out.println("검색어 : " + keyword);
 
         List<BusStop> busStop = busStopDataService.getBusStopsByNm(keyword);
-        log.info("정류소 데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(busStop));
+//        log.info("정류소 데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(busStop));
 
         System.out.println("-----------------------------------");
 
