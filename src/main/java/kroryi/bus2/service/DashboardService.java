@@ -101,6 +101,22 @@ public class DashboardService {
         return result;
     }
 
+    public List<Map<String, Object>> getRedisMemoryStats() {
+        LocalDateTime start = LocalDate.now().atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+
+        List<RedisStat> stats = redisStatRepository.findByTimestampBetween(start, end);
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (RedisStat stat : stats) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("time", stat.getTimestamp().toLocalTime().withMinute(0).withSecond(0).toString());
+            entry.put("memoryUsageMb", stat.getMemoryUsageMb());
+            result.add(entry);
+        }
+
+        return result;
+    }
 
 
 

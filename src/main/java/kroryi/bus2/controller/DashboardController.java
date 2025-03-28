@@ -31,4 +31,9 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getRecentErrors());
     }
 
+    @GetMapping("/redis-memory")
+    public ResponseEntity<List<Map<String, Object>>> getRedisMemory() {
+        return ResponseEntity.ok(dashboardService.getRedisMemoryStats());
+    }
+
 }
