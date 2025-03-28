@@ -21,6 +21,7 @@ public class DashboardService {
     private final ApiLogRepository apiLogRepository;
     private final RedisStatRepository redisStatRepository;
 
+    // 검색량,
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> result = new HashMap<>();
 

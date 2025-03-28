@@ -36,8 +36,7 @@ public class BusRedisService {
     private RedisTemplate<String, Object> redisTemplate;
 
 
-
-        // 이건 민경씨가 만들어준 서버 실행시 db에서 모든 버스정류장 정보를 가져와서 Redis에 넣는건데 현재는 쓰는곳이 없어서 일단 주석 처리 해뒀습니다.
+    // 이건 민경씨가 만들어준 서버 실행시 db에서 모든 버스정류장 정보를 가져와서 Redis에 넣는건데 현재는 쓰는곳이 없어서 일단 주석 처리 해뒀습니다.
     // ✅ @PostConstruct 추가 → 실행 시 자동 실행
 //    @PostConstruct
 //    public void init() {
@@ -75,9 +74,9 @@ public class BusRedisService {
 //    }
 
 
-
 //    Redis 설정 끝
 
+}
 
 
 
