@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<div layout:fragment="content">
+
+    <h2>버스 시간표</h2>
+
+    <label for="runDate">운행일 : </label>
+    <input type="date" id="runDate">
+    <br>
+    <label for="routeNo">노선 선택 : </label>
+    <select name="routeNo" id="routeNo">
+        <option value="" disabled selected>노선 선택</option>
+        <option th:each="no : ${routeNos}" th:value="${no}" th:text="${no}"></option>
+    </select>
+    <label for="routeNote">방면 선택 : </label>
+    <select name="routeNote" id="routeNote">
+        <option value="" disabled selected>방면 선택</option>
+        <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>
+    </select>
+
+    <hr>
+
+        <table id="schedule-table">
+        <thead>
+        <tr>
+            <th>순서</th>
+            <th>파계사(종점)</th>
+            <th>불로삼거리</th>
+            <th>이안동대구아파트</th>
+            <th>중구보건소앞</th>
+            <th>대구시산격청사건너1</th>
+            <th>불로화훼단지앞</th>
+            <th>가좌교차로</th>
+            <th>파계사(종점)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${schedules}">
+            <td th:text="${s.schedule_no}"></td>
+            <td contenteditable="false" th:text="${s.schedule_A}"></td>
+            <td contenteditable="false" th:text="${s.schedule_B}"></td>
+            <td contenteditable="false" th:text="${s.schedule_C}"></td>
+            <td contenteditable="false" th:text="${s.schedule_D}"></td>
+            <td contenteditable="false" th:text="${s.schedule_E}"></td>
+            <td contenteditable="false" th:text="${s.schedule_F}"></td>
+            <td contenteditable="false" th:text="${s.schedule_G}"></td>
+            <td contenteditable="false" th:text="${s.schedule_H}"></td>
+
+        </tbody>
+    </table>
+    <div class="text-end" style="margin-top: 10px;">
+        <button class="btn btn-outline-primary" id="editBtn">수정</button>
+        <button class="btn btn-outline-primary" id="saveBtn" style="display: none;">저장</button>
+    </div>
+
+    <script src="/js/schedule.js"></script>
+
+</div>
+</html>
