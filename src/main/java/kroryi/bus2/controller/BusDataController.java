@@ -17,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -64,10 +66,9 @@ public class BusDataController {
     // 사용자가 검색창에 키워드를 입력했을 때, 해당 키워드에 해당하는 정류장명 또는 버스 노선명을 검색하여 반환
     // @param request { "keyword": "검색어" }
     // @return 정류장 목록과 버스 노선 번호 리스트를 포함한 JSON 응답
-    @PostMapping(value = "/searchBSorBN", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> searchBSOrBN(@RequestBody Map<String, String> request) throws JsonProcessingException {
+    @GetMapping(value = "/searchBSorBN", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> searchBSOrBN(@RequestParam String keyword) throws JsonProcessingException {
 
-        String keyword = request.get("keyword");
         System.out.println("검색어 : " + keyword);
 
         List<BusStop> busStop = busStopDataService.getBusStopsByNm(keyword);
@@ -76,7 +77,7 @@ public class BusDataController {
         System.out.println("-----------------------------------");
 
         List<String> busNumber = routeDataService.getBusByNm(keyword);
-        log.info("버스 노선 데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(busNumber));
+//        log.info("버스 노선 데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(busNumber));
 
         Map<String, Object> response = new HashMap<>();
         response.put("busStops", busStop);
@@ -84,6 +85,14 @@ public class BusDataController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping(value = "/bus-route", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<JsonNode>> getBusRoute(@RequestParam String routeNo) throws IOException {
+        List<JsonNode> result = routeDataService.getBusRoute(routeNo);
+
+        return ResponseEntity.ok(result);
+    }
+
 
 
 

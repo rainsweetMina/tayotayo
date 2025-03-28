@@ -42,6 +42,7 @@ public class BusStopDataService {
                         .build()).collect(Collectors.toList());
     }
 
+
     private final long CACHE_EXPIRATION = 15;
     public String getRedisBusStop(String bsId) {
         // Redis에서 캐싱된 데이터 가져오기
@@ -91,8 +92,8 @@ public class BusStopDataService {
 
         // 3. 결과를 이름 기반 키로 캐싱
         if (!result.isEmpty()) {
-            redisTemplate.opsForValue().set(cacheKey, result, 10, TimeUnit.MINUTES);
-            System.out.println("🧊 결과 Redis에 캐싱 완료 (TTL: 10분)");
+            redisTemplate.opsForValue().set(cacheKey, result, 60, TimeUnit.MINUTES);
+            System.out.println("🧊 결과 Redis에 캐싱 완료 (TTL: 1시간)");
         } else {
             System.out.println("⚠️ DB 검색 결과 없음. 캐싱 생략");
         }

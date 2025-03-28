@@ -23,11 +23,15 @@ public class BusArrivalService {
     @Value("${api.service-key-encoding}")
     private String encoding_serviceKey;
 
+    @Value("${api.bus.base-url}")
+    private String baseUrl;
+
+
     public String getBusArrivalInfo(String bsId) {
 
         // 무슨 문제인지 밑에 uri 빌드가 디코딩된 키는 인코딩을 안하고 인코딩된 키는 이중 인코딩을 안함 일단 인코딩된 키를 넣었음
         URI uri = UriComponentsBuilder
-                .fromUriString("https://apis.data.go.kr/6270000/dbmsapi01/getRealtime")
+                .fromUriString(baseUrl + "/getRealtime")
                 .queryParam("serviceKey", encoding_serviceKey)
                 .queryParam("bsId", bsId)
                 .build(true) // ✅ 자동 인코딩
