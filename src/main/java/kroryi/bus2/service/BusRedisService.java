@@ -70,7 +70,6 @@ public class BusRedisService {
     public void loadBusStopsToRedis() {
         List<BusStop> busStops = busStopRepository.findAll();
         System.out.println("버스 정류장 갯수: " + busStops.size());
-        System.out.println("버스 정류장1 : " + busStops.get(0));
 
         boolean alreadyCached = false;
 
