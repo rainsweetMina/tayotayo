@@ -17,21 +17,22 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 
 @Configuration
+// Spring 애플리케이션에서 Redis를 사용하기 위한 설정 클래스
 public class RedisConfig {
 
-
+    // Redis 연결을 위한 ConnectionFactory를 생성, 기본적으로 localhost:6379에 연결
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory();
     }
 
-
+    // RedisTemplate은 Redis와 데이터를 주고받을 때 사용하는 핵심 도구
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
-        // 직렬화용 ObjectMapper 설정
+        // 직렬화용 ObjectMapper 설정 (직렬화란? Java 객체 → JSON 문자열 또는 바이너리 데이터로 바꾸는 것)
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
 
@@ -51,56 +52,5 @@ public class RedisConfig {
 
 
     }
-
-
-//    @Value("${spring.redis.host}")
-//    private String host;
-//
-//    @Value("${spring.redis.port}")
-//    private int port;
-//
-//    @PostConstruct
-//    public void init() {
-//        System.out.println("✅ Redis 설정 강제 출력 - Host: " + host + ", Port: " + port);
-//    }
-
-//    @Bean
-//    public RedisConnectionFactory redisConnectionFactory() {
-//        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-//        config.setHostName(host);
-//        config.setPort(port);
-//
-//        LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
-//        factory.afterPropertiesSet();
-//
-//        try {
-//            // ✅ Redis 연결 상태 확인 (ping)
-//            RedisConnection connection = factory.getConnection();
-//            String ping = connection.ping();
-//            System.out.println("✅ Redis 연결 상태: " + ping); // 성공하면 'PONG' 출력
-//        } catch (Exception e) {
-//            System.out.println("🚨 Redis 연결 실패: " + e.getMessage());
-//        }
-//
-//        return factory;
-//    }
-//
-//
-//
-//
-//    // Redis에 데이터를 읽고 쓰는 객체
-//    @Bean
-//    public RedisTemplate<String, Object> redisTemplate() {
-//        RedisTemplate<String, Object> template = new RedisTemplate<>();
-//        template.setConnectionFactory(redisConnectionFactory());
-//        template.setKeySerializer(new StringRedisSerializer());
-//        template.setValueSerializer(new StringRedisSerializer());
-//        return template;
-//    }
-
-
-
-
-
 
 }

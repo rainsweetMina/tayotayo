@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+// 버스 노선에 관한 서비스 클래스.
 public class RouteDataService {
 
     private final RouteRepository routeRepository;

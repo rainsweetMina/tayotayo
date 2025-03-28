@@ -13,6 +13,7 @@ import kroryi.bus2.repository.BusStopRepository;
 import kroryi.bus2.repository.LinkRepository;
 import kroryi.bus2.repository.NodeRepository;
 import kroryi.bus2.repository.RouteRepository;
+import kroryi.bus2.util.FakeRedis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class BusDataService {
+// 노드, 정류장, 노선, 링크 등의 버스 기초 정보를 공공 API로부터 조회하여 DB에 저장하는 서비스 클래스
+public class BusInfoInitService {
 
     private final NodeRepository nodeRepository;
     private final BusStopRepository busStopRepository;
@@ -69,6 +71,9 @@ public class BusDataService {
     @Autowired
     DataSource dataSource;
 
+
+
+    // 연결확인용인듯 혹시 모르니 냅둬볼게요
     public void checkConnection() {
         try (Connection connection = dataSource.getConnection()) {
             System.out.println("DB 연결 상태: " + !connection.isClosed());

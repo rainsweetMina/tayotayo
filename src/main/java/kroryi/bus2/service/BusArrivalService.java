@@ -12,20 +12,23 @@ import java.net.URI;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class BusApiService {
+// 버스 도착 정보를 외부 공공데이터 API를 통해 조회하는 서비스 클래스
+public class BusArrivalService {
 
     private final WebClient webClient;
 
-    @Value("${api.service-key}")
-    private String serviceKey;
+    @Value("${api.service-key-decoding}")
+    private String Decoding_serviceKey;
+
+    @Value("${api.service-key-encoding}")
+    private String encoding_serviceKey;
 
     public String getBusArrivalInfo(String bsId) {
-        // 무슨 문제인지 밑에 uri 빌드가 디코딩된 키는 인코딩을 안하고 인코딩된 키는 이중 인코딩을 안함 일단 인코딩된 키를 넣었음
-        String API_KEY = "j%2FgLHENNg0EDmUOP1OcG5WafUwAUq0u6D1CAZp7xdSTLsSmRJ7r6Pfi34Ks2ZZ7lM0zVZHjjESDToVIX%2BsoPGA%3D%3D";
 
+        // 무슨 문제인지 밑에 uri 빌드가 디코딩된 키는 인코딩을 안하고 인코딩된 키는 이중 인코딩을 안함 일단 인코딩된 키를 넣었음
         URI uri = UriComponentsBuilder
                 .fromUriString("https://apis.data.go.kr/6270000/dbmsapi01/getRealtime")
-                .queryParam("serviceKey", API_KEY)
+                .queryParam("serviceKey", encoding_serviceKey)
                 .queryParam("bsId", bsId)
                 .build(true) // ✅ 자동 인코딩
                 .toUri();
