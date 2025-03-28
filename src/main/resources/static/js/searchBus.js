@@ -1,4 +1,4 @@
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function (event) {
     if (event.key === "Enter" && event.target.id === "searchInput") {
         event.preventDefault(); // 기본 동작 방지
         // 추가적인 작업 수행
@@ -12,12 +12,11 @@ function searchBus() {
         alert('검색어를 입력하세요.');
         return;
     }
-    fetch('/api/bus/searchBSorBN', {
-        method: 'POST',
+    fetch(`/api/bus/searchBSorBN?keyword=${encodeURIComponent(query)}`, {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ keyword: query })
+        }
     })
         .then(response => response.json()) // 받아온 json을 자바스크립트에서 사용가능한 js로 또 변환 (거의 필수)
         .then(data => {
@@ -83,7 +82,7 @@ function searchBus() {
 
                     // 화면 이동
                     smoothPanTo(Position);
-                    console.log("Position : " , Position)
+                    console.log("Position : ", Position)
                 });
             });
 
@@ -133,7 +132,6 @@ function searchBus() {
                 //  커스텀 이벤트 발생 (지도 페이지에서 감지 가능)
                 document.dispatchEvent(new Event("busStopsUpdated"));
             }
-
 
 
         })
