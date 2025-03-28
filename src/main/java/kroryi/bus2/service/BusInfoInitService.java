@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class BusDataService {
+// 노드, 정류장, 노선, 링크 등의 버스 기초 정보를 공공 API로부터 조회하여 DB에 저장하는 서비스 클래스
+public class BusInfoInitService {
 
     private final NodeRepository nodeRepository;
     private final BusStopRepository busStopRepository;
@@ -39,74 +40,12 @@ public class BusDataService {
     private final LinkRepository linkRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-//    private final FakeRedis fakeRedis;
-
-
-
-    public JsonNode getBusStopNav(String apiUrl) {
-
-        try {
-            URI uri = new URI(apiUrl);
-            String response = restTemplate.getForObject(uri, String.class);
-
-            XmlMapper xmlMapper = new XmlMapper();
-            JsonNode node = xmlMapper.readTree(response.getBytes());
-            ObjectMapper jsonMapper = new ObjectMapper();
-            String jsonResponse = jsonMapper.writeValueAsString(node);
-            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
-
-            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
-//            System.out.println("데이터 확인 : " + jsonNode);
-
-            return jsonNode;
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-//    public JsonNode getBusStopNav(String apiUrl) {
-//
-//        try {
-//            // 1. 캐시 먼저 확인
-//            String key = "nav:" + apiUrl;
-//            Object cached = fakeRedis.get(key);
-//            if (cached != null) {
-//                return (JsonNode) cached;
-//            }
-//
-//            // 2. API 호출
-//            URI uri = new URI(apiUrl);
-//            String response = restTemplate.getForObject(uri, String.class);
-//
-//            // 3. XML → JSON 변환
-//            XmlMapper xmlMapper = new XmlMapper();
-//            JsonNode node = xmlMapper.readTree(response.getBytes());
-//            ObjectMapper jsonMapper = new ObjectMapper();
-//            String jsonResponse = jsonMapper.writeValueAsString(node);
-//            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
-//
-//            // 4. 로그 출력
-//            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
-//
-//            // 5. 캐시에 저장 (30초)
-//            fakeRedis.setWithTTL(key, jsonNode, 30);
-//
-//            return jsonNode;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-
-
-
-
     @Autowired
     DataSource dataSource;
 
+
+
+    // 연결확인용인듯 혹시 모르니 냅둬볼게요
     public void checkConnection() {
         try (Connection connection = dataSource.getConnection()) {
             System.out.println("DB 연결 상태: " + !connection.isClosed());
@@ -114,8 +53,6 @@ public class BusDataService {
             e.printStackTrace();
         }
     }
-
-
 
     // 기초 정보 데이터 db에 넣는거
     @Transactional
@@ -231,4 +168,65 @@ public class BusDataService {
             linkRepository.save(newLink);
         }
     }
+
+    // 밑에 이것들 아마 안쓰는거인듯? 혹시 모르니 지우지않고 내버려둠
+//    public JsonNode getBusStopNav(String apiUrl) {
+//
+//        try {
+//            URI uri = new URI(apiUrl);
+//            String response = restTemplate.getForObject(uri, String.class);
+//
+//            XmlMapper xmlMapper = new XmlMapper();
+//            JsonNode node = xmlMapper.readTree(response.getBytes());
+//            ObjectMapper jsonMapper = new ObjectMapper();
+//            String jsonResponse = jsonMapper.writeValueAsString(node);
+//            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
+//
+//            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
+////            System.out.println("데이터 확인 : " + jsonNode);
+//
+//            return jsonNode;
+//        }catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
+
+//    public JsonNode getBusStopNav(String apiUrl) {
+//
+//        try {
+//            // 1. 캐시 먼저 확인
+//            String key = "nav:" + apiUrl;
+//            Object cached = fakeRedis.get(key);
+//            if (cached != null) {
+//                return (JsonNode) cached;
+//            }
+//
+//            // 2. API 호출
+//            URI uri = new URI(apiUrl);
+//            String response = restTemplate.getForObject(uri, String.class);
+//
+//            // 3. XML → JSON 변환
+//            XmlMapper xmlMapper = new XmlMapper();
+//            JsonNode node = xmlMapper.readTree(response.getBytes());
+//            ObjectMapper jsonMapper = new ObjectMapper();
+//            String jsonResponse = jsonMapper.writeValueAsString(node);
+//            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
+//
+//            // 4. 로그 출력
+//            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
+//
+//            // 5. 캐시에 저장 (30초)
+//            fakeRedis.setWithTTL(key, jsonNode, 30);
+//
+//            return jsonNode;
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
+
 }

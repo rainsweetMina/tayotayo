@@ -7,6 +7,7 @@ import kroryi.bus2.entity.Route;
 import kroryi.bus2.repository.BusStopRepository;
 import kroryi.bus2.repository.RouteRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
+// 버스 정류장 관련 기능의 서비스 클래스
 public class BusStopDataService {
 
     private final BusStopRepository busStopRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final BusArrivalService busArrivalService;
+
 
     public List<BusStopDTO> getAllBusStops() {
         System.out.print("서비스 응답");
@@ -35,6 +40,30 @@ public class BusStopDataService {
                         .xPos(busStop.getXPos())
                         .yPos(busStop.getYPos())
                         .build()).collect(Collectors.toList());
+    }
+
+    private final long CACHE_EXPIRATION = 15;
+    public String getRedisBusStop(String bsId) {
+        // Redis에서 캐싱된 데이터 가져오기
+        String key = "busArrival:" + bsId;
+        String cachedData = (String) redisTemplate.opsForValue().get(key);
+
+        if (cachedData != null) {
+            System.out.println("Redis에서 데이터 가져옴");
+            return cachedData;
+        }
+
+        System.out.println("Redis에서 데이터 없음 -> API 에서 호출");
+
+        // API 호출 성공 확인
+        String response = busArrivalService.getBusArrivalInfo(bsId);
+        System.out.printf("response: %s\n", response);
+        System.out.println("API에서 데이터 가져옴");
+
+        redisTemplate.opsForValue().set(key, response, CACHE_EXPIRATION, TimeUnit.SECONDS);
+        log.info("Redis에 데이터 저장 완료 - Key: {}", key);
+
+        return response;
     }
 
     public List<BusStop> getBusStopsByNm(String nm) {
@@ -69,15 +98,8 @@ public class BusStopDataService {
         }
 
         return result;
-
-//        // 1. 기본 검색 (부분 검색)
-//        List<BusStop> result = busStopRepository.findByBsNmContaining(nm);
-//        // 2. 띄어쓰기 무시 검색
-//        if (result.isEmpty()) {
-//            result = busStopRepository.searchByBsNmIgnoreSpace(nm);
-//        }
-
-//        return result;
     }
+
+
 
 }

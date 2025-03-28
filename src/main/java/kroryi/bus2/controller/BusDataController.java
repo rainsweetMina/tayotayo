@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.dto.BusStopDTO;
 import kroryi.bus2.entity.BusStop;
-import kroryi.bus2.service.BusDataService;
+import kroryi.bus2.service.BusInfoInitService;
 import kroryi.bus2.service.BusRedisService;
 import kroryi.bus2.service.BusStopDataService;
 import kroryi.bus2.service.RouteDataService;
@@ -27,18 +27,20 @@ import java.util.Map;
 @RequestMapping("/api/bus")
 @RequiredArgsConstructor
 @Log4j2
+// 버스 관련 데이터를 클라이언트에 제공하는 REST API 컨트롤러
+// 이 컨트롤러는 JSON 형식으로 데이터를 반환하며, 클라이언트(웹/앱)에서 실시간 정보 조회 및 검색에 활용
 public class BusDataController {
-    private final BusDataService busDataService;
+    private final BusInfoInitService busInfoInitService;
     private final BusStopDataService busStopDataService;
     private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
     private final BusRedisService busRedisService;
 
-    @Value("${api.service-key}")
+    @Value("${api.service-key-decoding}")
     private String serviceKey;
 
 
-    // 전체 버스정류장 불러오는거, 데이터가 너무 많아서 5개만 불러옴 이젠 안씀
+    // 전체 버스정류장 불러오는거, 데이터가 너무 많아서 5개만 불러옴 이젠 안씀 추후 삭제 예정
     @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
 
@@ -47,28 +49,21 @@ public class BusDataController {
         return ResponseEntity.ok(list);
     }
 
-//     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
-//    @GetMapping("/nav")
-//    public ResponseEntity<JsonNode> getBusNav(@RequestParam String bsId) {
-//        System.out.println("받은 bsId: " + bsId);
-//
-//        String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getRealtime?";
-//        String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8) + "&bsId=" + bsId;
-//
-//        JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
-//        return ResponseEntity.ok(jsonNode);
-//    }
 
-    //     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
-    @GetMapping("/nav")
+    // 이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
+    // @param bsId 정류장 ID
+    // @return 해당 정류장의 도착 예정 버스 정보 (JSON 형식)
+    @GetMapping("/bus-arrival")
     public ResponseEntity<JsonNode> getBusArrival(@RequestParam String bsId) throws JsonProcessingException {
-        String jsonString = busRedisService.getBusArrival(bsId);
+        String jsonString = busStopDataService.getRedisBusStop(bsId);
         ObjectMapper mapper = new ObjectMapper();
 
         return ResponseEntity.ok(mapper.readTree(jsonString));
     }
 
-    // 검색창에 입력하면 정류소,버스노선 찾아주는 포스트 api, json으로 맵핑 후 html로 날아감
+    // 사용자가 검색창에 키워드를 입력했을 때, 해당 키워드에 해당하는 정류장명 또는 버스 노선명을 검색하여 반환
+    // @param request { "keyword": "검색어" }
+    // @return 정류장 목록과 버스 노선 번호 리스트를 포함한 JSON 응답
     @PostMapping(value = "/searchBSorBN", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> searchBSOrBN(@RequestBody Map<String, String> request) throws JsonProcessingException {
 
@@ -92,6 +87,17 @@ public class BusDataController {
 
 
 
+//     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
+//    @GetMapping("/nav")
+//    public ResponseEntity<JsonNode> getBusNav(@RequestParam String bsId) {
+//        System.out.println("받은 bsId: " + bsId);
+//
+//        String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getRealtime?";
+//        String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8) + "&bsId=" + bsId;
+//
+//        JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
+//        return ResponseEntity.ok(jsonNode);
+//    }
 
 
 
@@ -107,7 +113,7 @@ public class BusDataController {
         String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getBasic?";
         String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
 
-        busDataService.fetchAndSaveBusData(apiUrl);
+        busInfoInitService.fetchAndSaveBusData(apiUrl);
         return "Bus data fetched and saved successfully!";
     }
 }

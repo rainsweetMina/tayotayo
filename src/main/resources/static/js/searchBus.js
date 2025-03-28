@@ -142,7 +142,7 @@ function searchBus() {
 
 // 레스트컨트롤러에서 json으로 받아온 실시간 버스 도착 정보 데이터를 화면에 뿌려주는 함수
 function getBusNav(bsId, targetContainer) {
-    fetch(`/api/bus/nav?bsId=${bsId}`)
+    fetch(`/api/bus/bus-arrival?bsId=${bsId}`)
         .then(response => response.json())
         .then(data => {
             console.log('버스 도착 정보 :', data);
