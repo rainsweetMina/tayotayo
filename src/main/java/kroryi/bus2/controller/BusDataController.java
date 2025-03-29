@@ -4,8 +4,12 @@ package kroryi.bus2.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.BusStopDTO;
+import kroryi.bus2.dto.LinkDTO;
+import kroryi.bus2.dto.LinkWithCoordDTO;
 import kroryi.bus2.entity.BusStop;
+import kroryi.bus2.entity.Route;
 import kroryi.bus2.service.BusInfoInitService;
 import kroryi.bus2.service.BusRedisService;
 import kroryi.bus2.service.BusStopDataService;
@@ -13,6 +17,7 @@ import kroryi.bus2.service.RouteDataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/bus")
@@ -36,6 +42,7 @@ public class BusDataController {
     private final BusStopDataService busStopDataService;
     private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final BusRedisService busRedisService;
 
     @Value("${api.service-key-decoding}")
@@ -76,7 +83,7 @@ public class BusDataController {
 
         System.out.println("-----------------------------------");
 
-        List<String> busNumber = routeDataService.getBusByNm(keyword);
+        List<Route> busNumber = routeDataService.getBusByNm(keyword);
 //        log.info("버스 노선 데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(busNumber));
 
         Map<String, Object> response = new HashMap<>();
@@ -87,11 +94,23 @@ public class BusDataController {
     }
 
     @GetMapping(value = "/bus-route", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<JsonNode>> getBusRoute(@RequestParam String routeNo) throws IOException {
-        List<JsonNode> result = routeDataService.getBusRoute(routeNo);
+    public ResponseEntity<JsonNode> getBusRoute(@RequestParam String routeId) throws IOException {
+        System.out.printf("routeId: " + routeId);
+        JsonNode result = routeDataService.getBusRoute(routeId);
 
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/bus-route-link")
+    public ResponseEntity<List<LinkWithCoordDTO>> getBusRouteLinkWithCoords(@RequestParam String routeId) throws IOException {
+        List<LinkDTO> linkList = routeDataService.getBusRouteLink(routeId); // 기존 XML 파싱
+        List<LinkWithCoordDTO> enrichedLinks = routeDataService.getLinkWithCoordinates(linkList); // 좌표 포함
+
+        return ResponseEntity.ok(enrichedLinks);
+    }
+
+
+
 
 
 
@@ -112,7 +131,21 @@ public class BusDataController {
 
 
 
-
+    // 레디스 수동으로 지우는컨트롤러     조심히 다루세요
+    @Operation(summary = "Redis 전체 캐시 삭제", description = "Redis에 저장된 모든 캐시 데이터를 삭제합니다. 운영 환경에서는 주의해서 사용하세요.")
+    @DeleteMapping("/evict/all")
+    public ResponseEntity<String> evictAllCache() {
+        Set<String> keys = redisTemplate.keys("*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+            log.info("[Redis] 전체 캐시 삭제됨. 삭제된 키 수: {}", keys.size());
+            log.info("[Redis] 삭제된 키 목록:\n{}", String.join("\n", keys));
+            return ResponseEntity.ok("모든 Redis 캐시가 삭제되었습니다. 삭제된 키 수: " + keys.size());
+        } else {
+            log.info("[Redis] 삭제할 캐시가 없습니다.");
+            return ResponseEntity.ok("삭제할 캐시가 없습니다.");
+        }
+    }
 
 
     // 얘는 db에 기초종합정보 넣는거 이젠 쓰지마시길 렉 걸림 (나중에 하루에 한번 자동으로 실행되어 데이터 갱싱용으로 바꿀 예정)

@@ -16,6 +16,10 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
     @Query("SELECT r.routeNo FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo%")
     List<String> searchByRouteNumber(@Param("routeNo") String routeNo);
 
+    @Query("SELECT r FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo% ORDER BY r.routeNo ASC")
+    List<Route> searchByRouteNumberFull(@Param("routeNo") String routeNo);
+
+
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
     List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
 
