@@ -8,6 +8,10 @@ kakao.maps.load(function () {
         };
 
     let map = new kakao.maps.Map(mapContainer, mapOption);
+    // 전역 접근을 위해 map 객체를 window.kakaoMap에 저장
+    window.kakaoMap = map;
+
+    kakaoMap.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, true);
 
     // 지도 컨트롤 추가
     let mapTypeControl = new kakao.maps.MapTypeControl();
@@ -18,8 +22,6 @@ kakao.maps.load(function () {
 
     map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
 
-    // 전역 접근을 위해 map 객체를 window.kakaoMap에 저장
-    window.kakaoMap = map;
 
     // 현재 위치로 이동
     document.getElementById('currentLocationBtn').addEventListener('click', function () {
