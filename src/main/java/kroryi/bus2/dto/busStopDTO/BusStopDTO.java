@@ -1,6 +1,5 @@
-package kroryi.bus2.dto;
+package kroryi.bus2.dto.busStopDTO;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.io.Serializable;

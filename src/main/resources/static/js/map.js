@@ -20,7 +20,7 @@ kakao.maps.load(function () {
     let zoomControl = new kakao.maps.ZoomControl();
     map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
-    map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC);
+    // map.addOverlayMapTypeId(kakao.maps.MapTypeId.TRAFFIC); // 혼잡도
 
 
     // 현재 위치로 이동

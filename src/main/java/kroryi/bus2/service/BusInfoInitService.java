@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import jakarta.transaction.Transactional;
-import kroryi.bus2.dto.BusStopDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Link;
 import kroryi.bus2.entity.Node;
@@ -13,11 +12,9 @@ import kroryi.bus2.repository.BusStopRepository;
 import kroryi.bus2.repository.LinkRepository;
 import kroryi.bus2.repository.NodeRepository;
 import kroryi.bus2.repository.RouteRepository;
-import kroryi.bus2.util.FakeRedis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,8 +22,6 @@ import javax.sql.DataSource;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor

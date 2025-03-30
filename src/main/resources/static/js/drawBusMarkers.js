@@ -1,13 +1,15 @@
 function drawBusStopMarkers(map, stopData) {
 
-    // // 1. 기존 마커 제거
-    // window.busStopMarkers?.forEach(marker => marker.setMap(null));
-    // window.busStopMarkers = [];
+    // 1. 기존 마커 제거
+    window.busStopMarkers?.forEach(marker => marker.setMap(null));
+    window.busStopMarkers = [];
 
     if (!Array.isArray(stopData) || stopData.length === 0) {
         console.warn("🚧 정류장 데이터가 없습니다.");
         return;
     }
+
+    window.busStopMarkers = window.busStopMarkers || [];
 
     stopData.forEach(stop => {
         const position = new kakao.maps.LatLng(parseFloat(stop.yPos), parseFloat(stop.xPos));
@@ -43,7 +45,7 @@ function drawBusStopMarkers(map, stopData) {
 
     function handleZoomMarkerVisibility() {
         const level = map.getLevel();
-        const showMarkers = level <= 4;
+        const showMarkers = level <= 5;
 
         window.busStopMarkers.forEach(marker => {
             marker.setMap(showMarkers ? map : null);
