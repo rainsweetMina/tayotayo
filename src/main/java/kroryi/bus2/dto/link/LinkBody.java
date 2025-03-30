@@ -1,4 +1,4 @@
-package kroryi.bus2.dto;
+package kroryi.bus2.dto.link;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

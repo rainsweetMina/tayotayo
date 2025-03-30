@@ -141,7 +141,9 @@ function searchBus() {
                         const linkPromise = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
                             .then(res => res.json())
                             .then(data => {
-                                drawBusRouteMap(data);
+                                console.log(data);
+                                drawBusRouteMapORS(data);    // ors
+                                // drawBusRouteMapCustom(data);   // 직접 만든거
                             });
 
                         // ✅ 두 API 모두 끝난 후 로딩 숨기기

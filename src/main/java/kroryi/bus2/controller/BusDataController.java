@@ -5,9 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
-import kroryi.bus2.dto.BusStopDTO;
-import kroryi.bus2.dto.LinkDTO;
-import kroryi.bus2.dto.LinkWithCoordDTO;
+import kroryi.bus2.dto.busStopDTO.BusStopDTO;
+import kroryi.bus2.dto.busStopDTO.XyPointDTO;
+import kroryi.bus2.dto.coordinate.CoordinateDTO;
+import kroryi.bus2.dto.link.LinkDTO;
+import kroryi.bus2.dto.link.LinkWithCoordDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.service.BusInfoInitService;
@@ -18,18 +20,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bus")
@@ -90,29 +91,48 @@ public class BusDataController {
         response.put("busStops", busStop);
         response.put("busNumbers", busNumber);
 
+
+
         return ResponseEntity.ok(response);
     }
 
+    // 버스 노선 뿌려주는거
     @GetMapping(value = "/bus-route", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JsonNode> getBusRoute(@RequestParam String routeId) throws IOException {
-        System.out.printf("routeId: " + routeId);
         JsonNode result = routeDataService.getBusRoute(routeId);
+//        log.info("result : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+//        System.out.printf("result :" + result);
 
         return ResponseEntity.ok(result);
     }
 
+    // ORS 활용한 api
     @GetMapping("/bus-route-link")
-    public ResponseEntity<List<LinkWithCoordDTO>> getBusRouteLinkWithCoords(@RequestParam String routeId) throws IOException {
-        List<LinkDTO> linkList = routeDataService.getBusRouteLink(routeId); // 기존 XML 파싱
-        List<LinkWithCoordDTO> enrichedLinks = routeDataService.getLinkWithCoordinates(linkList); // 좌표 포함
+    public ResponseEntity<Map<String, List<CoordinateDTO>>> getBusRouteLinkWithCoordsORS(@RequestParam String routeId) throws IOException, InterruptedException {
+        String redisKey = "bus:route:ors:" + routeId;
 
-        return ResponseEntity.ok(enrichedLinks);
+        Map<String, List<CoordinateDTO>> cached = (Map<String, List<CoordinateDTO>>) redisTemplate.opsForValue().get(redisKey);
+        if (cached != null) {
+            return ResponseEntity.ok(cached);
+        }
+
+        Map<String, List<CoordinateDTO>> resultMap = routeDataService.getOrsRouteByBusDirection(routeId);
+        redisTemplate.opsForValue().set(redisKey, resultMap, Duration.ofDays(1)); // 1일 TTL
+
+        return ResponseEntity.ok(resultMap);
     }
 
 
-
-
-
+//    // 공공데이터api 활용한 api
+//    @GetMapping("/bus-route-link")
+//    public ResponseEntity<List<LinkWithCoordDTO>> getBusRouteLinkWithCoordsCustom(@RequestParam String routeId) throws IOException {
+//        List<LinkDTO> linkList = routeDataService.getBusRouteLink(routeId); // 기존 XML 파싱
+//        log.info("linkList : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(linkList));
+//        List<LinkWithCoordDTO> enrichedLinks = routeDataService.getLinkWithCoordinates(linkList); // 좌표 포함
+//        log.info("enrichedLinks : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(enrichedLinks));
+//        return ResponseEntity.ok(enrichedLinks);
+//    }
+//
 
 
 //     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
@@ -126,9 +146,6 @@ public class BusDataController {
 //        JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
 //        return ResponseEntity.ok(jsonNode);
 //    }
-
-
-
 
 
     // 레디스 수동으로 지우는컨트롤러     조심히 다루세요
