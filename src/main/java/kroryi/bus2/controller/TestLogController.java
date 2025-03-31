@@ -1,7 +1,7 @@
 package kroryi.bus2.controller;
 
 import kroryi.bus2.entity.ApiLog;
-import kroryi.bus2.repository.ApiLogRepository;
+import kroryi.bus2.repository.redis.ApiLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
