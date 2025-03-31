@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/dash")
 @RequiredArgsConstructor
 @Log4j2
 public class DashboardController {
@@ -26,14 +26,10 @@ public class DashboardController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/errors")
-    public ResponseEntity<List<Map<String, Object>>> getRecentErrors() {
-        return ResponseEntity.ok(dashboardService.getRecentErrors());
-    }
-
     @GetMapping("/redis-memory")
-    public ResponseEntity<List<Map<String, Object>>> getRedisMemory() {
+    public ResponseEntity<List<Map<String, Object>>> getRedisMemoryStats() {
         return ResponseEntity.ok(dashboardService.getRedisMemoryStats());
     }
+
 
 }

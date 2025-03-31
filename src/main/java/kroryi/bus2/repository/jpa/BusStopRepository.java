@@ -1,4 +1,4 @@
-package kroryi.bus2.repository;
+package kroryi.bus2.repository.jpa;
 
 import kroryi.bus2.entity.BusStop;
 import org.springframework.data.domain.PageRequest;

@@ -1,4 +1,4 @@
-package kroryi.bus2.repository;
+package kroryi.bus2.repository.jpa;
 
 import kroryi.bus2.entity.Node;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,15 +1,13 @@
 package kroryi.bus2.BusDataInputTests;
 
-import jakarta.transaction.Transactional;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Link;
 import kroryi.bus2.entity.Node;
 import kroryi.bus2.entity.Route;
-import kroryi.bus2.repository.BusStopRepository;
-import kroryi.bus2.repository.LinkRepository;
-import kroryi.bus2.repository.NodeRepository;
-import kroryi.bus2.repository.RouteRepository;
-import lombok.RequiredArgsConstructor;
+import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.repository.jpa.LinkRepository;
+import kroryi.bus2.repository.jpa.NodeRepository;
+import kroryi.bus2.repository.jpa.RouteRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -8,13 +8,12 @@ import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Link;
 import kroryi.bus2.entity.Node;
 import kroryi.bus2.entity.Route;
-import kroryi.bus2.repository.BusStopRepository;
-import kroryi.bus2.repository.LinkRepository;
-import kroryi.bus2.repository.NodeRepository;
-import kroryi.bus2.repository.RouteRepository;
+import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.repository.jpa.LinkRepository;
+import kroryi.bus2.repository.jpa.NodeRepository;
+import kroryi.bus2.repository.jpa.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,12 +28,13 @@ import java.sql.SQLException;
 // 노드, 정류장, 노선, 링크 등의 버스 기초 정보를 공공 API로부터 조회하여 DB에 저장하는 서비스 클래스
 public class BusInfoInitService {
 
-    private final NodeRepository nodeRepository;
     private final BusStopRepository busStopRepository;
+    private final NodeRepository nodeRepository;
     private final RouteRepository routeRepository;
     private final LinkRepository linkRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final DataSource dataSource;
 
 
 
@@ -59,13 +59,6 @@ public class BusInfoInitService {
         }
         return null;
     }
-
-
-
-
-    @Autowired
-    DataSource dataSource;
-
 
 
     // 연결확인용인듯 혹시 모르니 냅둬볼게요
