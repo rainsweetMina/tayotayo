@@ -152,6 +152,7 @@ public class RouteDataService {
         resultMap.put("forward", getChunkedOrs(points1));
         return resultMap;
     }
+    private static final double MAX_DISTANCE_THRESHOLD = 500; // 미터 단위, 적절히 조정하세요.
 
     // 출력결과가 70개로 한정된 쪼잔한 api인 ORS를 뚫기 위해 탄생한 역작, 69개씩 잘라서 출력 시켜서 합쳐줌
     private List<CoordinateDTO> getChunkedOrs(List<XyPointDTO> points) throws IOException, InterruptedException {
@@ -167,16 +168,18 @@ public class RouteDataService {
             try {
                 result.addAll(getOrsPath(chunk));
             } catch (IOException e) {
-                log.warn("🚫 ORS 요청 실패 → chunk 스킵: {}", chunk);
+                log.warn("🚫 ORS 요청 실패 → fallback으로 직선 연결: {}", chunk);
+                result.addAll(chunk); // 🔁 그냥 직선 연결
             }
         }
+
 
         return result;
     }
 
     // 정방향과 역방향으로 구분된 노선들의 정류소 좌표를 ORS에 넣어서 노선도 좌표들을 반환
     public List<CoordinateDTO> getOrsPath(List<CoordinateDTO> coordinates) throws IOException, InterruptedException {
-        String url = "https://api.openrouteservice.org/v2/directions/driving-hgv";
+        String url = "https://api.openrouteservice.org/v2/directions/driving-car";
 
         // ORS 요청용 좌표 구성: [ [x, y], [x, y], ... ]
         List<List<Double>> orsCoordinates = coordinates.stream()
@@ -250,7 +253,6 @@ public class RouteDataService {
 //             └── decodePolyline()     // ORS의 polyline 인코딩 문자열을 좌표 리스트로 변환
 //
 // 진짜진짜 요약 : 노선ID로 노선불러와서 정방향, 역방향 구분 후 각각 ORS에 넣어 버스 노선도의 좌표를 받아서 인코딩 후 합쳐서 반환
-
 
 
 
