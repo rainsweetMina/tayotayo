@@ -10,17 +10,23 @@ import kroryi.bus2.dto.busStopDTO.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.dto.link.LinkDTO;
 import kroryi.bus2.dto.link.LinkWithCoordDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import kroryi.bus2.dto.busStopDTO.BusStopDTO;
+import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.service.BusInfoInitService;
 import kroryi.bus2.service.BusRedisService;
 import kroryi.bus2.service.BusStopDataService;
 import kroryi.bus2.service.RouteDataService;
+import kroryi.bus2.entity.Route;
+import kroryi.bus2.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +34,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -77,6 +85,7 @@ public class BusDataController {
     @GetMapping(value = "/searchBSorBN", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> searchBSOrBN(@RequestParam String keyword) throws JsonProcessingException {
 
+
         System.out.println("검색어 : " + keyword);
 
         List<BusStop> busStop = busStopDataService.getBusStopsByNm(keyword);
@@ -91,8 +100,6 @@ public class BusDataController {
         response.put("busStops", busStop);
         response.put("busNumbers", busNumber);
 
-
-
         return ResponseEntity.ok(response);
     }
 
@@ -106,7 +113,7 @@ public class BusDataController {
         return ResponseEntity.ok(result);
     }
 
-    // ORS 활용한 api
+    //     ORS 활용한 api 지도에 노선 그리는거
     @GetMapping("/bus-route-link")
     public ResponseEntity<Map<String, List<CoordinateDTO>>> getBusRouteLinkWithCoordsORS(@RequestParam String routeId) throws IOException, InterruptedException {
         String redisKey = "bus:route:ors:" + routeId;
@@ -121,31 +128,6 @@ public class BusDataController {
 
         return ResponseEntity.ok(resultMap);
     }
-
-
-//    // 공공데이터api 활용한 api
-//    @GetMapping("/bus-route-link")
-//    public ResponseEntity<List<LinkWithCoordDTO>> getBusRouteLinkWithCoordsCustom(@RequestParam String routeId) throws IOException {
-//        List<LinkDTO> linkList = routeDataService.getBusRouteLink(routeId); // 기존 XML 파싱
-//        log.info("linkList : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(linkList));
-//        List<LinkWithCoordDTO> enrichedLinks = routeDataService.getLinkWithCoordinates(linkList); // 좌표 포함
-//        log.info("enrichedLinks : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(enrichedLinks));
-//        return ResponseEntity.ok(enrichedLinks);
-//    }
-//
-
-
-//     이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
-//    @GetMapping("/nav")
-//    public ResponseEntity<JsonNode> getBusNav(@RequestParam String bsId) {
-//        System.out.println("받은 bsId: " + bsId);
-//
-//        String API_URL = "https://apis.data.go.kr/6270000/dbmsapi01/getRealtime?";
-//        String apiUrl = API_URL + "serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8) + "&bsId=" + bsId;
-//
-//        JsonNode jsonNode = busDataService.getBusStopNav(apiUrl);
-//        return ResponseEntity.ok(jsonNode);
-//    }
 
 
     // 레디스 수동으로 지우는컨트롤러     조심히 다루세요

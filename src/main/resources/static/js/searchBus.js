@@ -82,7 +82,7 @@ function searchBus() {
 
                     // 화면 이동
                     smoothPanTo(Position);
-                    console.log("Position : ", Position)
+                    console.log("Position : " , Position)
                 });
             });
 
@@ -137,13 +137,12 @@ function searchBus() {
                                 drawBusStopMarkers(window.kakaoMap, stopList);
                             });
 
-                        // 두 번째 API
+                        // ORS
                         const linkPromise = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
                             .then(res => res.json())
                             .then(data => {
                                 console.log(data);
                                 drawBusRouteMapORS(data);    // ors
-                                // drawBusRouteMapCustom(data);   // 직접 만든거
                             });
 
                         // ✅ 두 API 모두 끝난 후 로딩 숨기기
