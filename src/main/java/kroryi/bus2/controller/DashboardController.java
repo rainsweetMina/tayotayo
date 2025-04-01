@@ -26,10 +26,10 @@ public class DashboardController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/redis-memory")
-    public ResponseEntity<List<Map<String, Object>>> getRedisMemoryStats() {
-        return ResponseEntity.ok(dashboardService.getRedisMemoryStats());
-    }
+//    @GetMapping("/redis-memory")
+//    public ResponseEntity<List<Map<String, Object>>> getRedisMemoryStats() {
+//        return ResponseEntity.ok(dashboardService.getRedisMemoryStats());
+//    }
 
 
 }

@@ -1,12 +1,6 @@
 package kroryi.bus2.repository;
 
 
-import kroryi.bus2.entity.RedisStat;
-import kroryi.bus2.entity.RedisStatJpa;
-import kroryi.bus2.repository.jpa.JpaStatRepository;
-import kroryi.bus2.repository.jpa.RouteRepository;
-import kroryi.bus2.repository.redis.ApiLogRepository;
-import kroryi.bus2.repository.redis.RedisStatRepository;
 import kroryi.bus2.service.RedisSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -15,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 @SpringBootTest
@@ -24,6 +17,10 @@ import java.util.List;
 public class RedisRepositoryTests {
     @Autowired
     public RedisSyncService redisSyncService;
+
+    @Autowired
+    public MonitorRedisService monitorRedisService;
+
     @Autowired
     private RedisStatRepository redisStatRepository;
 
@@ -45,18 +42,29 @@ public class RedisRepositoryTests {
 
     }
 
-    @Test
-    public void testJpaRedisRepository() {
-        // 데이터 삽입
-        RedisStat stat = new RedisStat();
-        stat.setId(1L);
-        stat.setTimestamp(LocalDateTime.now());
-        stat.setMemoryUsageMb(123.45);
-        redisStatRepository.save(stat);
 
-        // 데이터 조회
-        List<RedisStat> stats = (List<RedisStat>) redisStatRepository.findAll();
-        log.info("RedisStat count: {}", stats.size());
-        stats.forEach(s -> log.info("RedisStat: {}", s));
+    @Test
+    public void testRedisRepository2() {
+
+        RedisStat redisStat = monitorRedisService.collectRedisStats(1L);
+        log.info("11111111111111111111121 {}", redisStat.getId());
     }
+
+    @Test
+    public void testRedisRepositorySave() {
+
+        RedisStatJpa redisStat = RedisStatJpa.builder()
+                .id(1L)
+                .timestamp(LocalDateTime.now())
+                .memoryUsageMb(123.45)
+                .usedMemory(112L)
+                .connectedClients(1L)
+                .requestToday(10L)
+                .build();
+
+        monitorRedisService.saveMonitor(redisStat);
+        log.info("11111111111111111111123 {}", redisStat.getId());
+    }
+
+
 }

@@ -1,17 +1,13 @@
 package kroryi.bus2.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import kroryi.bus2.entity.RedisStat;
-import kroryi.bus2.repository.jpa.BusStopRepository;
-import kroryi.bus2.repository.redis.RedisStatRepository;
+import kroryi.bus2.entity.RedisLog;
+import kroryi.bus2.repository.jpa.RedisLogJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 
 import java.time.LocalDateTime;
@@ -26,7 +22,7 @@ public class BusRedisService {
 
 
     // Redis 에 저장 관련 코드
-    private final RedisStatRepository redisStatRepository;
+    private final RedisLogJpaRepository redisLogJpaRepository;
     private final RedisConnectionFactory redisConnectionFactory;
 
 
@@ -55,14 +51,14 @@ public class BusRedisService {
 
             //  메모리 사용량을 MB로 변환하여 저장
             double usageMb = memoryUsage / 1024.0 / 1024.0;
-            RedisStat redisStat = new RedisStat();
-            redisStat.setTimestamp(LocalDateTime.now());
-            redisStat.setMemoryUsageMb(usageMb);
+            RedisLog redisLog = new RedisLog();
+            redisLog.setTimestamp(LocalDateTime.now());
+            redisLog.setMemoryUsageMb(usageMb);
 
             log.info("-----------------");
-            log.info(redisStat.toString());
+            log.info(redisLog.toString());
 
-            redisStatRepository.save(redisStat);
+            redisLogJpaRepository.save(redisLog);
             System.out.println("Redis 사용량 저장: " + memoryUsage + " MB");
 
         } catch (Exception e) {
