@@ -137,14 +137,6 @@ function searchBus() {
                                 drawBusStopMarkers(window.kakaoMap, stopList);
                             });
 
-                        // 공공데이터
-                        // const linkPromise = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
-                        //     .then(res => res.json())
-                        //     .then(data => {
-                        //         console.log(data);
-                        //         drawBusRouteMapCustom(data);   // 직접 만든거
-                        //     });
-
                         // ORS
                         const linkPromise = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
                             .then(res => res.json())
@@ -152,31 +144,6 @@ function searchBus() {
                                 console.log(data);
                                 drawBusRouteMapORS(data);    // ors
                             });
-
-                        // // odsay
-                        // const linkPromise = fetch(`/api/bus/bus-route-link?routeNo=${encodeURIComponent(bus.routeNo)}&routeNote=${encodeURIComponent(bus.routeNote)}`)
-                        //     .then(res => res.json())
-                        //     .then(data => {
-                        //         console.log("🛰 경로 좌표:", data);
-                        //         drawBusRouteMapOdsay(data);
-                        //     });
-
-                        // tmap
-                        // const linkPromise = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
-                        //     .then(res => res.json())
-                        //     .then(data => {
-                        //         if (data.forward?.length) drawBusRouteMapTmap(data.forward, '#007bff'); // 파란색
-                        //         if (data.reverse?.length) drawBusRouteMapTmap(data.reverse, '#ff0000'); // 빨간색
-                        //     });
-
-                        // 공공데이터 파일
-                        // const linkPromise = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
-                        //     .then(res => res.json())
-                        //     .then(data => {
-                        //         console.log(data);
-                        //         drawBusRouteMapCustomFile(data);    // ors
-                        //     });
-
 
                         // ✅ 두 API 모두 끝난 후 로딩 숨기기
                         Promise.all([stopPromise, linkPromise])
