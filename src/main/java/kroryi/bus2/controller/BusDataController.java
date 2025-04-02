@@ -5,27 +5,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
-import kroryi.bus2.dto.busStopDTO.BusStopDTO;
-import kroryi.bus2.dto.busStopDTO.XyPointDTO;
-import kroryi.bus2.dto.coordinate.CoordinateDTO;
-import kroryi.bus2.dto.link.LinkDTO;
-import kroryi.bus2.dto.link.LinkWithCoordDTO;
-import io.swagger.v3.oas.annotations.Operation;
+import kroryi.bus2.dto.BusRealtimeDTO;
 import kroryi.bus2.dto.busStopDTO.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.service.BusInfoInitService;
-import kroryi.bus2.service.BusRedisService;
 import kroryi.bus2.service.BusStopDataService;
 import kroryi.bus2.service.RouteDataService;
-import kroryi.bus2.entity.Route;
 import kroryi.bus2.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +27,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
-import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bus")

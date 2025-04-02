@@ -1,20 +1,18 @@
 package kroryi.bus2.service;
 
-import kroryi.bus2.dto.RedisStat;
+
+import kroryi.bus2.dto.lost.LostStatResponseDTO;
+import kroryi.bus2.repository.jpa.FoundItemRepository;
+import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
+import kroryi.bus2.repository.jpa.LostItemRepository;
 import kroryi.bus2.repository.redis.ApiLogRepository;
 import kroryi.bus2.repository.jpa.RouteRepository;
-import kroryi.bus2.repository.redis.RedisLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
