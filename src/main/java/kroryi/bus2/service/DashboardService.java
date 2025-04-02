@@ -1,13 +1,20 @@
 package kroryi.bus2.service;
 
+import kroryi.bus2.dto.RedisStat;
 import kroryi.bus2.repository.redis.ApiLogRepository;
 import kroryi.bus2.repository.jpa.RouteRepository;
+import kroryi.bus2.repository.redis.RedisLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -15,10 +22,32 @@ import java.util.Map;
 @Log4j2
 public class DashboardService {
 
+
+    //분실물 통계관련 시작
+    private final LostItemRepository lostItemRepository;
+    private final FoundItemRepository foundItemRepository;
+    private final LostFoundMatchRepository lostFoundMatchRepository;
+    //분실물 통계관련 종료
+
+
     private final RouteRepository routeRepository;
     private final ApiLogRepository apiLogRepository;
     private final RedisLogService redisLogService;
 
+
+    // 🔵 분실물 통계 메서드 시작
+    public LostStatResponseDTO getLostStats() {
+        long reported = lostItemRepository.count();
+        long found = foundItemRepository.count();
+        long matched = lostFoundMatchRepository.count();
+
+        return new LostStatResponseDTO(reported, found, matched);
+    }
+    // 🔵 분실물 통계 메서드 종료
+
+
+
+    // 검색량, 오늘 요구량, 레디스 사용량 받기
 
     // 대시보드 통계 데이터 수집
     public Map<String, Object> getDashboardStats() {
