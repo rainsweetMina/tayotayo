@@ -190,6 +190,8 @@ public class RouteDataService {
 
         // ORS 요청용 좌표 구성: [ [x, y], [x, y], ... ]
         List<List<Double>> orsCoordinates = coordinates.stream()
+
+
                 .map(c -> Arrays.asList(c.getXPos(), c.getYPos()))
                 .collect(Collectors.toList());
 

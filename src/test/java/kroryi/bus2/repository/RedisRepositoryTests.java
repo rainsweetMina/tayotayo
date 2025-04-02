@@ -1,20 +1,15 @@
-//package kroryi.bus2.repository;
-//
-//
-//import kroryi.bus2.service.RedisSyncService;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.log4j.Log4j2;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//
-//import java.time.LocalDateTime;
-//
-//
-//@SpringBootTest
-//@RequiredArgsConstructor
-//@Log4j2
-//public class RedisRepositoryTests {
+package kroryi.bus2.repository;
+
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.boot.test.context.SpringBootTest;
+
+
+@SpringBootTest
+@RequiredArgsConstructor
+@Log4j2
+public class RedisRepositoryTests {
 //    @Autowired
 //    public RedisSyncService redisSyncService;
 //
@@ -65,6 +60,6 @@
 //        monitorRedisService.saveMonitor(redisStat);
 //        log.info("11111111111111111111123 {}", redisStat.getId());
 //    }
-//
-//
-//}
+
+
+}
