@@ -176,10 +176,12 @@ public class RouteDataService {
 
     // 정방향과 역방향으로 구분된 노선들의 정류소 좌표를 ORS에 넣어서 노선도 좌표들을 반환
     public List<CoordinateDTO> getOrsPath(List<CoordinateDTO> coordinates) throws IOException, InterruptedException {
-        String url = "https://api.openrouteservice.org/v2/directions/driving-hgv";
+        String url = "https://api.openrouteservice.org/v2/directions/driving-car";
 
         // ORS 요청용 좌표 구성: [ [x, y], [x, y], ... ]
         List<List<Double>> orsCoordinates = coordinates.stream()
+
+
                 .map(c -> Arrays.asList(c.getXPos(), c.getYPos()))
                 .collect(Collectors.toList());
 
