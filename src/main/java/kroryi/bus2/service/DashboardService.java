@@ -1,6 +1,10 @@
 package kroryi.bus2.service;
 
 import kroryi.bus2.dto.RedisStat;
+import kroryi.bus2.dto.lost.LostStatResponseDTO;
+import kroryi.bus2.repository.jpa.FoundItemRepository;
+import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
+import kroryi.bus2.repository.jpa.LostItemRepository;
 import kroryi.bus2.repository.redis.ApiLogRepository;
 import kroryi.bus2.repository.jpa.RouteRepository;
 import kroryi.bus2.repository.redis.RedisLogRepository;
@@ -22,9 +26,30 @@ import java.util.Map;
 @Log4j2
 public class DashboardService {
 
+
+    //분실물 통계관련 시작
+    private final LostItemRepository lostItemRepository;
+    private final FoundItemRepository foundItemRepository;
+    private final LostFoundMatchRepository lostFoundMatchRepository;
+    //분실물 통계관련 종료
+
+
     private final RouteRepository routeRepository;
     private final ApiLogRepository apiLogRepository;
 //    private final RedisLogRepository redisLogRepository;
+
+
+    // 🔵 분실물 통계 메서드 시작
+    public LostStatResponseDTO getLostStats() {
+        long reported = lostItemRepository.count();
+        long found = foundItemRepository.count();
+        long matched = lostFoundMatchRepository.count();
+
+        return new LostStatResponseDTO(reported, found, matched);
+    }
+    // 🔵 분실물 통계 메서드 종료
+
+
 
     // 검색량, 오늘 요구량, 레디스 사용량 받기
     public Map<String, Object> getDashboardStats() {

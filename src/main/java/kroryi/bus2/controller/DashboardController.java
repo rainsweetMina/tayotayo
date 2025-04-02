@@ -1,6 +1,7 @@
 package kroryi.bus2.controller;
 
 
+import kroryi.bus2.dto.lost.LostStatResponseDTO;
 import kroryi.bus2.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,6 +31,13 @@ public class DashboardController {
 //    public ResponseEntity<List<Map<String, Object>>> getRedisMemoryStats() {
 //        return ResponseEntity.ok(dashboardService.getRedisMemoryStats());
 //    }
+
+    // 🔵 관리자용 분실물 통계 API
+    @GetMapping("/lost-stat")
+    public LostStatResponseDTO getLostStat() {
+        return dashboardService.getLostStats();
+    }
+
 
 
 }
