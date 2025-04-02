@@ -24,4 +24,10 @@ public class FoundItem {
     private User handler; // 등록한 버스회사 관리자
 
     private boolean matched = false; // 매칭 여부
+
+
+    @OneToOne(mappedBy = "foundItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Photo photo;
+
+
 }

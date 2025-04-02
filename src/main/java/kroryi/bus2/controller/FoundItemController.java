@@ -2,6 +2,7 @@ package kroryi.bus2.controller;
 
 import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO;
+import kroryi.bus2.dto.lost.FoundItemResponseDTO;
 import kroryi.bus2.entity.FoundItem;
 import kroryi.bus2.service.FoundItemService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,12 @@ public class FoundItemController {
         List<FoundItemListResponseDTO> result = foundItemService.getAllFoundItems();
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FoundItemResponseDTO> getFoundItem(@PathVariable Long id) {
+        return ResponseEntity.ok(foundItemService.getFoundItem(id));
+    }
+
 
 }
 

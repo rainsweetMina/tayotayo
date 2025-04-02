@@ -2,6 +2,7 @@ package kroryi.bus2.service;
 
 import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO; // lost 폴더 기준
+import kroryi.bus2.dto.lost.FoundItemResponseDTO;
 import kroryi.bus2.entity.FoundItem;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
@@ -35,6 +36,7 @@ public class FoundItemService {
         return foundItemRepository.save(item);
     }
 
+    //습득물 전체 조회
     public List<FoundItemListResponseDTO> getAllFoundItems() {
         return foundItemRepository.findAll().stream()
                 .map(item -> new FoundItemListResponseDTO(
@@ -46,4 +48,23 @@ public class FoundItemService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    //습득물 개별 조회
+    public FoundItemResponseDTO getFoundItem(Long id) {
+        FoundItem foundItem = foundItemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 습득물이 없습니다."));
+
+        String photoUrl = (foundItem.getPhoto() != null)
+                ? foundItem.getPhoto().getUrl()
+                : null;
+
+        return FoundItemResponseDTO.builder()
+                .id(foundItem.getId())
+                .itemName(foundItem.getItemName())
+                .busCompany(foundItem.getBusCompany())
+                .foundTime(foundItem.getFoundTime())
+                .photoUrl(photoUrl)
+                .build();
+    }
+
 }
