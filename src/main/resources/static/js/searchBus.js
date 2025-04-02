@@ -1,4 +1,4 @@
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function (event) {
     if (event.key === "Enter" && event.target.id === "searchInput") {
         event.preventDefault(); // 기본 동작 방지
         // 추가적인 작업 수행
@@ -12,12 +12,11 @@ function searchBus() {
         alert('검색어를 입력하세요.');
         return;
     }
-    fetch('/api/bus/searchBSorBN', {
-        method: 'POST',
+    fetch(`/api/bus/searchBSorBN?keyword=${encodeURIComponent(query)}`, {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ keyword: query })
+        }
     })
         .then(response => response.json()) // 받아온 json을 자바스크립트에서 사용가능한 js로 또 변환 (거의 필수)
         .then(data => {
@@ -51,7 +50,7 @@ function searchBus() {
                 div.innerHTML = `
                         <span class="busNav" data-bsId="${busStop.bsId}" style="color: dodgerblue">
                             <strong>${busStop.bsNm}</strong> (ID: ${busStop.bsId})<br>
-<!--                            위치: (${busStop.xpos}, ${busStop.ypos})<br>-->
+            <!--      위치: (${busStop.xpos}, ${busStop.ypos})<br>-->
                         </span>
                         <span class="busInfoContainer"></span>
                     `;
@@ -104,19 +103,69 @@ function searchBus() {
                 const ul = document.createElement('ul');
                 ul.classList.add('bus-list');
 
-                // 중복 제거 후 `li` 추가
-                const uniqueBusNumbers = [...new Set(data.busNumbers)];
-                uniqueBusNumbers.forEach(bus => {
+                data.busNumbers.forEach(bus => {
                     const li = document.createElement('li');
                     li.classList.add('bus-item');
-                    li.textContent = bus;
+
+                    // // 노선 정보를 li의 dataset에 저장
+                    // li.dataset.routeNo = bus.routeNo;
+                    // li.dataset.routeId = bus.routeId;
+                    // li.dataset.routeNote = bus.routeNote;
+
+                    // 버스 번호 (routeNo)
+                    const mainText = document.createElement('span');
+                    mainText.textContent = bus.routeNo;
+                    mainText.style.fontWeight = 'bold'; // 또는 클래스 지정
+
+                    // 방면 정보 (routeNote)
+                    const subText = document.createElement('span');
+                    subText.textContent = ` ${bus.routeNote}`;
+                    subText.style.fontSize = '0.9em';
+                    subText.style.color = 'gray';
+                    subText.style.marginLeft = '8px';
+
+                    li.appendChild(mainText);
+                    li.appendChild(subText);
+
+                    li.addEventListener('click', () => {
+                        showLoading(); // 로딩 시작!
+                        // 첫 번째 API
+                        const stopPromise = fetch(`/api/bus/bus-route?routeId=${encodeURIComponent(bus.routeId)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                const stopList = data.body.items;
+                                drawBusStopMarkers(window.kakaoMap, stopList);
+                            });
+
+                        // ORS
+                        const linkPromise = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                console.log(data);
+                                drawBusRouteMapORS(data);    // ors
+                            });
+
+                        // ✅ 두 API 모두 끝난 후 로딩 숨기기
+                        Promise.all([stopPromise, linkPromise])
+                            .then(() => hideLoading())
+                            .catch(err => {
+                                console.error("🛑 에러 발생:", err);
+                                hideLoading(); // 에러가 나도 로딩은 끄자!
+                            });
+                        console.log("노선번호:", bus.routeNo);
+                        console.log("노선ID:", bus.routeId);
+                        console.log("방면정보:", bus.routeNote);
+                    });
+
                     ul.appendChild(li);
                 });
+
 
                 list.appendChild(ul);
             } else {
                 console.log("버스 노선 정보 없음.");
             }
+
 
             // 검색하면 검색결과로 나온 정류장의 위치 정보를 지도페이지에 전송
             if (data.busStops && data.busStops.length > 0) {
@@ -135,14 +184,13 @@ function searchBus() {
             }
 
 
-
         })
         .catch(error => console.error('오류 발생:', error));
 }
 
 // 레스트컨트롤러에서 json으로 받아온 실시간 버스 도착 정보 데이터를 화면에 뿌려주는 함수
 function getBusNav(bsId, targetContainer) {
-    fetch(`/api/bus/nav?bsId=${bsId}`)
+    fetch(`/api/bus/bus-arrival?bsId=${bsId}`)
         .then(response => response.json())
         .then(data => {
             console.log('버스 도착 정보 :', data);
@@ -236,3 +284,13 @@ function getBusNav(bsId, targetContainer) {
         .catch(error => console.error('오류 발생:', error));
 }
 
+
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'flex';
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
+}

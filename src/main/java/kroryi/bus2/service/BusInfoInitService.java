@@ -4,20 +4,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import jakarta.transaction.Transactional;
-import kroryi.bus2.dto.BusStopDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Link;
 import kroryi.bus2.entity.Node;
 import kroryi.bus2.entity.Route;
-import kroryi.bus2.repository.BusStopRepository;
-import kroryi.bus2.repository.LinkRepository;
-import kroryi.bus2.repository.NodeRepository;
-import kroryi.bus2.repository.RouteRepository;
-import kroryi.bus2.util.FakeRedis;
+
+import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.repository.jpa.LinkRepository;
+import kroryi.bus2.repository.jpa.NodeRepository;
+import kroryi.bus2.repository.jpa.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,21 +22,20 @@ import javax.sql.DataSource;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class BusDataService {
+// 노드, 정류장, 노선, 링크 등의 버스 기초 정보를 공공 API로부터 조회하여 DB에 저장하는 서비스 클래스
+public class BusInfoInitService {
 
-    private final NodeRepository nodeRepository;
     private final BusStopRepository busStopRepository;
+    private final NodeRepository nodeRepository;
     private final RouteRepository routeRepository;
     private final LinkRepository linkRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-//    private final FakeRedis fakeRedis;
+    private final DataSource dataSource;
 
 
 
@@ -66,47 +62,7 @@ public class BusDataService {
     }
 
 
-//    public JsonNode getBusStopNav(String apiUrl) {
-//
-//        try {
-//            // 1. 캐시 먼저 확인
-//            String key = "nav:" + apiUrl;
-//            Object cached = fakeRedis.get(key);
-//            if (cached != null) {
-//                return (JsonNode) cached;
-//            }
-//
-//            // 2. API 호출
-//            URI uri = new URI(apiUrl);
-//            String response = restTemplate.getForObject(uri, String.class);
-//
-//            // 3. XML → JSON 변환
-//            XmlMapper xmlMapper = new XmlMapper();
-//            JsonNode node = xmlMapper.readTree(response.getBytes());
-//            ObjectMapper jsonMapper = new ObjectMapper();
-//            String jsonResponse = jsonMapper.writeValueAsString(node);
-//            JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
-//
-//            // 4. 로그 출력
-//            log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
-//
-//            // 5. 캐시에 저장 (30초)
-//            fakeRedis.setWithTTL(key, jsonNode, 30);
-//
-//            return jsonNode;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-
-
-
-
-    @Autowired
-    DataSource dataSource;
-
+    // 연결확인용인듯 혹시 모르니 냅둬볼게요
     public void checkConnection() {
         try (Connection connection = dataSource.getConnection()) {
             System.out.println("DB 연결 상태: " + !connection.isClosed());

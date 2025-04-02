@@ -1,105 +1,114 @@
 package kroryi.bus2.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import jakarta.annotation.PostConstruct;
-import kroryi.bus2.entity.BusStop;
-import kroryi.bus2.repository.BusStopRepository;
-import kroryi.bus2.util.FakeRedis;
+import kroryi.bus2.entity.RedisLog;
+import kroryi.bus2.repository.jpa.RedisLogJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.time.LocalDateTime;
+import java.util.Properties;
 
 @Service
 @Log4j2
-@RequiredArgsConstructor // final 필드들에 대해 자동으로 생성자를 만들어줌
+@Transactional
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+// DB에 저장된 버스 정류장 정보를 Redis에 초기화 및 캐싱하는 기능을 담당하는 서비스 클래스
 public class BusRedisService {
 
-    private final RestTemplate restTemplate;
-    private final BusApiService busApiService;
 
-    private final BusStopRepository busStopRepository;
-    private final ObjectMapper objectMapper;
+    // Redis 에 저장 관련 코드
+    private final RedisLogJpaRepository redisLogJpaRepository;
+    private final RedisConnectionFactory redisConnectionFactory;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
 
-    private final long CACHE_EXPIRATION = 15;
+    // Redis 사용량을 저장하는 메서드
+    public void saveRedisUsage() {
+        try (var connection = redisConnectionFactory.getConnection()) {
 
-//    private final FakeRedis fakeRedis;
+            // 메모리 사용량을 가져옴
+            Properties memoryInfo = connection.info("memory");
+            String memoryUsageStr = memoryInfo.getProperty("used_memory");
 
-    // ✅ @PostConstruct 추가 → 실행 시 자동 실행
-    @PostConstruct
-    public void init() {
-        log.info("🚀 Redis 초기화 시작");
-        loadBusStopsToRedis(); // 애플리케이션 실행 시 자동 실행
-    }
-
-    public String getBusArrival(String bsId) {
-        // Redis에서 캐싱된 데이터 가져오기
-        String key = "busArrival:" + bsId;
-        String cachedData = (String) redisTemplate.opsForValue().get(key);
-
-        if (cachedData != null) {
-            System.out.println("Redis에서 데이터 가져옴");
-            return cachedData;
-        }
-
-        System.out.println("Redis에서 데이터 없음 -> API 에서 호출");
-
-        // API 호출 성공 확인
-        String response = busApiService.getBusArrivalInfo(bsId);
-        System.out.printf("response: %s\n", response);
-        System.out.println("API에서 데이터 가져옴");
-
-        redisTemplate.opsForValue().set(key, response, CACHE_EXPIRATION, TimeUnit.SECONDS);
-        log.info("Redis에 데이터 저장 완료 - Key: {}", key);
-
-        return response;
-    }
-
-    public void loadBusStopsToRedis() {
-        List<BusStop> busStops = busStopRepository.findAll();
-        System.out.println("버스 정류장 갯수: " + busStops.size());
-        System.out.println("버스 정류장1 : " + busStops.get(0));
-
-        boolean alreadyCached = false;
-
-        for (BusStop stop : busStops) {
-            String key = "bus_stop" + stop.getId();
-
-            // Redis 에 이미 값이 있는 경우 스킵
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
-                if (!alreadyCached) {
-                    System.out.println("Redis에 이미 값이 존재합니다. 덮어쓰지 않습니다.");
-                    alreadyCached = true;
-                }
-                continue;
+            if (memoryUsageStr == null) {
+                System.out.println("Redis 메모리 사용량을 가져오지 못했습니다.");
+                return;
             }
+
+
+            // 메모리 사용량을 Long 으로 변환
+            long memoryUsage;
             try {
-                redisTemplate.opsForValue().set(key, stop, 600, TimeUnit.SECONDS);
-                System.out.println("Redis 저장 성공 - Key:" + stop.getId());
-            } catch (Exception e) {
-                System.out.println("🚨 Redis 저장 실패 - 이유: " + e.getMessage());
+                memoryUsage = Long.parseLong(memoryUsageStr);
+            } catch (NumberFormatException e) {
+                System.out.println("Redis 메모리 사용량 변환 오류: " + memoryUsageStr);
+                return;
             }
 
+            //  메모리 사용량을 MB로 변환하여 저장
+            double usageMb = memoryUsage / 1024.0 / 1024.0;
+            RedisLog redisLog = new RedisLog();
+            redisLog.setTimestamp(LocalDateTime.now());
+            redisLog.setMemoryUsageMb(usageMb);
 
+            log.info("-----------------");
+            log.info(redisLog.toString());
+
+            redisLogJpaRepository.save(redisLog);
+            System.out.println("Redis 사용량 저장: " + memoryUsage + " MB");
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
-}
+
+
+    // 이건 민경씨가 만들어준 서버 실행시 db에서 모든 버스정류장 정보를 가져와서 Redis에 넣는건데 현재는 쓰는곳이 없어서 일단 주석 처리 해뒀습니다.
+    // ✅ @PostConstruct 추가 → 실행 시 자동 실행
+//    @PostConstruct
+//    public void init() {
+//        log.info("🚀 Redis 초기화 시작");
+//        loadBusStopsToRedis(); // 애플리케이션 실행 시 자동 실행
+//    }
+
+//    public void loadBusStopsToRedis() {
+//        List<BusStop> busStops = busStopRepository.findAll();
+//        System.out.println("버스 정류장 갯수: " + busStops.size());
+//        System.out.println("버스 정류장1 : " + busStops.get(0));
+//
+//        boolean alreadyCached = false;
+//
+//        for (BusStop stop : busStops) {
+//            String key = "bus_stop" + stop.getId();
+//
+//            // Redis 에 이미 값이 있는 경우 스킵
+//            if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
+//                if (!alreadyCached) {
+//                    System.out.println("Redis에 이미 값이 존재합니다. 덮어쓰지 않습니다.");
+//                    alreadyCached = true;
+//                }
+//                continue;
+//            }
+//            try {
+//                redisTemplate.opsForValue().set(key, stop, 600, TimeUnit.SECONDS);
+//                System.out.println("Redis 저장 성공 - Key:" + stop.getId());
+//            } catch (Exception e) {
+//                System.out.println("🚨 Redis 저장 실패 - 이유: " + e.getMessage());
+//            }
+//
+//
+//        }
+//    }
+
 
 //    Redis 설정 끝
 
+}
 
 
 

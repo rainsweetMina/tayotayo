@@ -8,12 +8,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface RouteRepository extends JpaRepository<Route, Long> {
+public interface RouteRepository extends JpaRepository<Route,Long> {
 
     @Query("SELECT r.routeNo FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo%")
     List<String> searchByRouteNumber(@Param("routeNo") String routeNo);
+
+    @Query("SELECT r FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo% ORDER BY r.routeNo ASC")
+    List<Route> searchByRouteNumberFull(@Param("routeNo") String routeNo);
+
+
+    @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
+    List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
 
     @Query("SELECT DISTINCT r.routeNo FROM Route r ORDER BY r.routeNo")
     List<String> findDistinctRouteNos();
