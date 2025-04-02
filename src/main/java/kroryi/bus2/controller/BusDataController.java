@@ -16,6 +16,7 @@ import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.service.BusInfoInitService;
+import kroryi.bus2.service.BusRedisService;
 import kroryi.bus2.service.BusStopDataService;
 import kroryi.bus2.service.RouteDataService;
 import kroryi.bus2.entity.Route;
@@ -51,6 +52,7 @@ public class BusDataController {
     private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final BusRouteRealTimeDataService busRouteRealTimeDataService;
 
     @Value("${api.service-key-decoding}")
     private String serviceKey;
@@ -126,6 +128,21 @@ public class BusDataController {
 
         return ResponseEntity.ok(resultMap);
     }
+
+    @GetMapping("/bus-route-Bus")
+    public ResponseEntity<List<BusRealtimeDTO>> getBusRouteRealTimeBus(@RequestParam String routeId) throws Exception {
+
+        List<BusRealtimeDTO> list = busRouteRealTimeDataService.getRealTimeBusList(routeId);
+        System.out.println("버스 실시간 위치 결과 : " + list);
+
+        return ResponseEntity.ok(list);
+    }
+
+
+
+
+
+
 
 
     // 레디스 수동으로 지우는컨트롤러     조심히 다루세요
