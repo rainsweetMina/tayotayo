@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import kroryi.bus2.dto.BusRealtimeDTO;
 import kroryi.bus2.dto.busStopDTO.BusStopDTO;
 import kroryi.bus2.dto.busStopDTO.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
@@ -52,7 +53,7 @@ public class BusDataController {
     private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final BusRedisService busRedisService;
+    private final BusRouteRealTimeDataService busRouteRealTimeDataService;
 
     @Value("${api.service-key-decoding}")
     private String serviceKey;
@@ -128,6 +129,21 @@ public class BusDataController {
 
         return ResponseEntity.ok(resultMap);
     }
+
+    @GetMapping("/bus-route-Bus")
+    public ResponseEntity<List<BusRealtimeDTO>> getBusRouteRealTimeBus(@RequestParam String routeId) throws Exception {
+
+        List<BusRealtimeDTO> list = busRouteRealTimeDataService.getRealTimeBusList(routeId);
+        System.out.println("버스 실시간 위치 결과 : " + list);
+
+        return ResponseEntity.ok(list);
+    }
+
+
+
+
+
+
 
 
     // 레디스 수동으로 지우는컨트롤러     조심히 다루세요
