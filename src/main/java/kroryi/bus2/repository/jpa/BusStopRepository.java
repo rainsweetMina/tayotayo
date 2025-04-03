@@ -22,5 +22,4 @@ public interface BusStopRepository extends JpaRepository<BusStop,Long> {
     @Query("SELECT b FROM BusStop b WHERE b.bsNm LIKE %:bsNm% OR REPLACE(b.bsNm, ' ', '') LIKE %:bsNm%")
     List<BusStop> searchByBsNmIgnoreSpace(@Param("bsNm") String bsNm);
 
-    boolean existsByBsId(String bsId);
 }

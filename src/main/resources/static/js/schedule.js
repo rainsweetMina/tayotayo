@@ -1,16 +1,15 @@
-// 오늘 날짜를 불러오기
+// 기본 날짜 설정
 const today = new Date().toISOString().split('T')[0];
 const runDate = document.getElementById("runDate");
-runDate.min = today;    // 최소값을 오늘로 지정 (과거 날짜 선택 방지)
-runDate.value = today;  // 기본값을 오늘로 지정
+runDate.min = today;
+runDate.value = today;
 
-// 버튼 및 테이블 document 요소 가져오기
 const editBtn = document.getElementById("editBtn");
 const saveBtn = document.getElementById("saveBtn");
 const table = document.getElementById("schedule-table");
 const tbody = document.getElementById("schedule-tbody");
 
-// DB 노선 (route_no) 가져오기
+// 노선 선택 시 방면 목록 가져오기
 document.getElementById("routeNo").addEventListener("change", () => {
     const routeNo = document.getElementById("routeNo").value;
 
@@ -18,8 +17,7 @@ document.getElementById("routeNo").addEventListener("change", () => {
         .then(res => res.json())
         .then(data => {
             const routeNoteSelect = document.getElementById("routeNote");
-            routeNoteSelect.innerHTML = "";
-
+            routeNoteSelect.innerHTML = "<option disabled selected>방면 선택</option>";
             data.forEach(note => {
                 const option = document.createElement("option");
                 option.value = note;
@@ -29,28 +27,107 @@ document.getElementById("routeNo").addEventListener("change", () => {
         });
 });
 
-// 노선, 방면에 맞는 데이터 구하기
+// 방면 선택 시 시간표 & 노선도 호출
 document.getElementById("routeNote").addEventListener("change", () => {
     const routeNo = document.getElementById("routeNo").value;
-    const routeNote = document.getElementById("routeNote").value;
-    if (!routeNo || !routeNote) return;
+    let routeNote = document.getElementById("routeNote").value;
 
+    if (!routeNo) return;
+    if (!routeNote || routeNote === "방면 없음") routeNote = "";
+
+    fetch(`/api/route-id?routeNo=${routeNo}&routeNote=${routeNote}`)
+        .then(res => res.text())
+        .then(routeId => {
+            if (routeId) {
+                loadSchedule(routeNo, routeNote);
+                loadRouteMap(routeId);
+            } else {
+                console.warn("해당 routeId를 찾을 수 없습니다.");
+            }
+        });
+});
+
+// 시간표 로딩
+function loadSchedule(routeNo, routeNote) {
     fetch(`/api/schedules?routeNo=${routeNo}&routeNote=${routeNote}`)
         .then(res => res.json())
         .then(renderScheduleTable);
-});
-// 수정 버튼 클릭 이벤트
+}
+
+function renderScheduleTable(schedules) {
+    table.style.display = "table";
+    tbody.innerHTML = "";
+
+    schedules.forEach(s => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                <td>${s.scheduleNo}</td>
+                <td contenteditable="false">${s.schedule_A}</td>
+                <td contenteditable="false">${s.schedule_B}</td>
+                <td contenteditable="false">${s.schedule_C}</td>
+                <td contenteditable="false">${s.schedule_D}</td>
+                <td contenteditable="false">${s.schedule_E}</td>
+                <td contenteditable="false">${s.schedule_F}</td>
+                <td contenteditable="false">${s.schedule_G}</td>
+                <td contenteditable="false">${s.schedule_H}</td>`;
+        tbody.appendChild(row);
+    });
+}
+
+// 노선도 로딩
+function loadRouteMap(routeId) {
+    fetch(`/api/route-map?routeId=${routeId}`)
+        .then(res => res.json())
+        .then(data => {
+            const mapContainer = document.getElementById("route-map");
+            mapContainer.innerHTML = "";
+
+            const stopsPerLine = 6;
+
+            for (let i = 0; i < data.length; i += stopsPerLine) {
+                const line = document.createElement("div");
+                line.className = "route-line";
+
+                const chunk = data.slice(i, i + stopsPerLine);
+                chunk.forEach((stop, index) => {
+                    const stopContainer = document.createElement("div");
+                    stopContainer.className = "stop-container";
+
+                    const circle = document.createElement("div");
+                    circle.className = "circle";
+
+                    const name = document.createElement("div");
+                    name.className = "stop-name";
+                    name.textContent = stop.bsNm;
+
+                    stopContainer.appendChild(circle);
+                    stopContainer.appendChild(name);
+                    line.appendChild(stopContainer);
+
+                    if (index < chunk.length - 1) {
+                        const connector = document.createElement("div");
+                        connector.className = "connector";
+                        line.appendChild(connector);
+                    }
+                });
+
+                mapContainer.appendChild(line);
+            }
+        })
+        .catch(err => console.error("노선도 불러오기 실패:", err));
+}
+
+
+// 수정 → 저장 버튼 로직
 editBtn.addEventListener("click", () => {
     table.querySelectorAll("td[contenteditable]").forEach(td => {
         td.setAttribute("contenteditable", "true");
-        td.style.backgroundColor = "#fff8dc"; // 편집 시 표시
+        td.style.backgroundColor = "#fff8dc";
     });
-    // 수정 버튼 클릭시 저장버튼으로 체인지
     editBtn.style.display = "none";
     saveBtn.style.display = "inline-block";
 });
 
-// 저장 버튼 클릭 이벤트
 saveBtn.addEventListener("click", () => {
     const rows = table.querySelectorAll("tbody tr");
     const data = [];
@@ -71,7 +148,6 @@ saveBtn.addEventListener("click", () => {
         data.push(rowData);
     });
 
-    // 수정한 데이터 JSON POST 방식으로 전송
     fetch("/api/modify-schedule", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -79,41 +155,15 @@ saveBtn.addEventListener("click", () => {
     }).then(res => res.text())
         .then(result => {
             alert("저장 완료!");
-            // 수정 종료 상태로 전환
             table.querySelectorAll("td[contenteditable]").forEach(td => {
                 td.setAttribute("contenteditable", "false");
-                td.style.backgroundColor = ""; // 배경 제거
+                td.style.backgroundColor = "";
             });
             saveBtn.style.display = "none";
             editBtn.style.display = "inline-block";
-
-        }).catch(err => {
-        console.error(err);
-        alert("저장 실패");
-    });
+        })
+        .catch(err => {
+            console.error(err);
+            alert("저장 실패");
+        });
 });
-
-// 시간표 테이블 렌더링
-function renderScheduleTable(schedules) {
-    table.style.display = "table";
-    tbody.innerHTML = "";
-
-    schedules.forEach(s => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${s.scheduleNo}</td>
-            <td contenteditable="false">${s.schedule_A}</td>
-            <td contenteditable="false">${s.schedule_B}</td>
-            <td contenteditable="false">${s.schedule_C}</td>
-            <td contenteditable="false">${s.schedule_D}</td>
-            <td contenteditable="false">${s.schedule_E}</td>
-            <td contenteditable="false">${s.schedule_F}</td>
-            <td contenteditable="false">${s.schedule_G}</td>
-            <td contenteditable="false">${s.schedule_H}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-
-

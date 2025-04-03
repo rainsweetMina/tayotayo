@@ -4,6 +4,38 @@
       layout:decorate="~{layout/layout.html}" lang="ko">
 <head>
     <style>
+        .route-map {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 30px;
+            padding: 10px;
+        }
+        .route-line {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .circle {
+            width: 20px;
+            height: 20px;
+            background-color: #0077cc;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+        .connector {
+            height: 4px;
+            width: 40px;
+            background-color: #0077cc;
+            margin: 0 5px;
+            flex-shrink: 0;
+        }
+
+
         table {
             border-collapse: collapse;
             width: 100%;
@@ -23,8 +55,10 @@
 
 <div layout:fragment="content">
 
+    <!-- 헤드부분 날짜, 노선, 방면 선택 -->
+    <!-- 방면이 하나밖에 없는 경우 방면선택 라벨이 숨김으로 설정 -->
+    <!-- 스케줄 데이터가 없는 노선은 노출이 되지않도로고 설정 -->
     <h2>버스 시간표</h2>
-
     <label for="runDate">운행일 : </label>
     <input type="date" id="runDate">
     <br>
@@ -38,9 +72,16 @@
         <option value="" disabled selected>방면 선택</option>
         <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>
     </select>
-
     <hr>
 
+    <!-- 해당 버스의 전체 노선 -->
+    <div id="route-map" class="route-map">    </div>
+
+
+    <hr>
+    <!-- 스케줄 테이블 -->
+    <!-- 수정버튼이 권한이 있는 관리자만 보이도록 -->
+    <!-- 테이블에 행을 추가할 수 있는 버튼을 추가하거나 modify 페이지가 필요 -->
     <table id="schedule-table" style="display: none">
         <thead id="schedule-thead">
         <tr>
@@ -75,6 +116,5 @@
     </div>
 
     <script src="/js/schedule.js"></script>
-
 </div>
 </html>
