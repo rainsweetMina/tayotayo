@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "kroryi.bus2.controller"
 })
 @SpringBootApplication
+@EnableScheduling
 public class Bus2Application implements CommandLineRunner {
 
     public static void main(String[] args) {
@@ -41,6 +42,8 @@ public class Bus2Application implements CommandLineRunner {
 //        busRedisService.saveRedisUsage(testMemoryUsage);
 //        System.out.println("Redis 사용량 저장 완료");
     }
+
+
 
 
 

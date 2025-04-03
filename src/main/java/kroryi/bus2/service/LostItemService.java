@@ -31,9 +31,20 @@ public class LostItemService {
                 .lostTime(dto.getLostTime() != null ? dto.getLostTime() : LocalDateTime.now())
                 .reporter(reporter)
                 .matched(false)
+                .visible(true) // ✅ 명시적 설정
                 .build();
 
         return lostItemRepository.save(item);
+    }
+
+    // ✅ 관리자용: 전체 조회 (숨김 포함)
+    public List<LostItem> getAllLostItemsIncludingHidden() {
+        return lostItemRepository.findAllIncludingHidden();
+    }
+
+    // 🔹 기존: 일반 회원용
+    public List<LostItem> getAllLostItemsVisibleOnly() {
+        return lostItemRepository.findAllByVisibleTrue();
     }
 
     public List<LostItemListResponseDTO> getAllLostItems() {
@@ -47,4 +58,9 @@ public class LostItemService {
                         .build())
                 .toList();
     }
+    public LostItem findById(Long id) {
+        return lostItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 분실물이 존재하지 않습니다."));
+    }
+
 }

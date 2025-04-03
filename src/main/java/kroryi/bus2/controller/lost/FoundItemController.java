@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.lost;
 
 import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO;
@@ -34,6 +34,7 @@ public class FoundItemController {
     public ResponseEntity<FoundItemResponseDTO> getFoundItem(@PathVariable Long id) {
         return ResponseEntity.ok(foundItemService.getFoundItem(id));
     }
+
 
 
 }
