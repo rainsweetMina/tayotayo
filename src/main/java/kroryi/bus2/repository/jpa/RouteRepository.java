@@ -1,4 +1,4 @@
-package kroryi.bus2.repository;
+package kroryi.bus2.repository.jpa;
 
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Route;
@@ -35,5 +35,6 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo AND r.routeNote = :routeNote")
     String findRouteIdByRouteNoAndNote(@Param("routeNo") String routeNo, @Param("routeNote") String routeNote);
 
-
+    @Query("SELECT r.routeId FROM Route r")
+    List<String> findAllRouteIds();
 }

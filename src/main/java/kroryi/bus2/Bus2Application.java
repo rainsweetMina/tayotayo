@@ -10,7 +10,9 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableCaching
-@EnableJpaRepositories(basePackages = "kroryi.bus2.repository.jpa")
+@EnableJpaRepositories(basePackages = {
+        "kroryi.bus2.repository.jpa",
+        "kroryi.bus2.repository.board"})
 @EnableRedisRepositories(basePackages = "kroryi.bus2.repository.redis")
 @ComponentScan(basePackages = {
         "kroryi.bus2.config",
@@ -20,8 +22,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "kroryi.bus2.service",
         "kroryi.bus2.repository.redis",
         "kroryi.bus2.repository.jpa",
-        "kroryi.bus2.repository",
-        "kroryi.bus2.controller"
+        "kroryi.bus2.repository.board",
+        "kroryi.bus2.repository"
 })
 @SpringBootApplication
 public class Bus2Application implements CommandLineRunner {

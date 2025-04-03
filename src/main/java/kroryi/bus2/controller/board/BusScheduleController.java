@@ -1,7 +1,7 @@
 package kroryi.bus2.controller.board;
 
 import kroryi.bus2.entity.board.BusSchedule;
-import kroryi.bus2.repository.RouteRepository;
+import kroryi.bus2.repository.jpa.RouteRepository;
 import kroryi.bus2.repository.board.BusScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,15 +26,13 @@ public class BusScheduleController {
         List<String> routeNotes = routeRepository.findDistinctRouteNotes() ;
         model.addAttribute("routeNotes",  routeNotes);
 
-        List<BusSchedule> list = scheduleRepository.findAll();
-        model.addAttribute("schedules", list);
         return "/board/busSchedule";
     }
 
-    @PostMapping("/api/save-schedule-bulk")
+    @PostMapping("/api/modify-schedule")
     public ResponseEntity<String> updateSchedules(@RequestBody List<BusSchedule> updatedSchedules) {
         for (BusSchedule schedule : updatedSchedules) {
-            BusSchedule original = scheduleRepository.findById(schedule.getSchedule_no())
+            BusSchedule original = scheduleRepository.findById((long) schedule.getScheduleNo())
                     .orElseThrow(() -> new RuntimeException("스케줄 없음"));
 
             original.setSchedule_A(schedule.getSchedule_A());
@@ -57,23 +55,19 @@ public class BusScheduleController {
         return routeRepository.findDistinctRouteNoteByRouteNo(routeNo);
     }
 
-//    @GetMapping("/schedule/filter")
-//    public String filterSchedule(
-//            @RequestParam String routeNo,
-//            @RequestParam String routeNote,
-//            Model model) {
-//
-//        // 1. routeId 찾기
-//        String routeId = routeRepository.findRouteIdByRouteNoAndNote(routeNo, routeNote);
-//
-//        // 2. 해당 routeId에 맞는 스케줄 조회
-//        List<BusSchedule> schedules = scheduleRepository.findByRouteId(routeId);
-//
-//        // 3. 다시 모델에 넣기
-//        model.addAttribute("routeNos", routeRepository.findDistinctRouteNos());
-//        model.addAttribute("routeNotes", routeRepository.findDistinctRouteNotes());
-//        model.addAttribute("schedules", schedules);
-//
-//        return "board/busSchedule";
-//    }
+    // 해당 데이터 테이블 가져오기
+    @GetMapping("/api/schedules")
+    @ResponseBody
+    public List<BusSchedule> getSchedulesByRouteInfo(@RequestParam String routeNo,
+                                                     @RequestParam String routeNote) {
+
+        String routeId = routeRepository.findRouteIdByRouteNoAndNote(routeNo, routeNote);
+        if (routeId == null) {
+            return List.of(); // 데이터 없으면 빈 리스트 반환
+        }
+
+        return scheduleRepository.findByRouteId(routeId);
+    }
+
+
 }
