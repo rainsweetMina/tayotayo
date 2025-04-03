@@ -138,11 +138,11 @@
 
                 // 첫 번째 정류소 위치 가져오기
                 let firstBusStop = window.selectedBusStops[0];
-                let firstPosition = new kakao.maps.LatLng(firstBusStop.ypos, firstBusStop.xpos);
+                let firstPosition = new kakao.maps.LatLng(firstBusStop.yPos, firstBusStop.xPos);
 
                 //  검색된 모든 정류소 위치에 마커 추가
                 window.selectedBusStops.forEach(busStop => {
-                    let markerPosition = new kakao.maps.LatLng(busStop.ypos, busStop.xpos);
+                    let markerPosition = new kakao.maps.LatLng(busStop.yPos, busStop.xPos);
                     let marker = new kakao.maps.Marker({
                         position: markerPosition,
                         map: kakaoMap

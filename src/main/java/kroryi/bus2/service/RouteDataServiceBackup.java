@@ -5,18 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import kroryi.bus2.dto.busStopDTO.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import kroryi.bus2.dto.busStopDTO.XyPointDTO;
-import kroryi.bus2.dto.coordinate.CoordinateDTO;
-import kroryi.bus2.dto.link.LinkDTO;
-import kroryi.bus2.dto.link.LinkResponse;
-import kroryi.bus2.dto.link.LinkWithCoordDTO;
-import kroryi.bus2.entity.Node;
 import kroryi.bus2.entity.Route;
-
 import kroryi.bus2.repository.jpa.NodeRepository;
 import kroryi.bus2.repository.jpa.RouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +30,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @RequiredArgsConstructor
 // 버스 노선에 관한 서비스 클래스.
-public class RouteDataService {
+public class RouteDataServiceBackup {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final RouteRepository routeRepository;
@@ -190,8 +179,6 @@ public class RouteDataService {
 
         // ORS 요청용 좌표 구성: [ [x, y], [x, y], ... ]
         List<List<Double>> orsCoordinates = coordinates.stream()
-
-
                 .map(c -> Arrays.asList(c.getXPos(), c.getYPos()))
                 .collect(Collectors.toList());
 

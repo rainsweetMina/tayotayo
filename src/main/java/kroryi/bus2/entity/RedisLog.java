@@ -3,10 +3,12 @@ package kroryi.bus2.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.*;
+import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
 
-@Entity
+
+@RedisHash(value = "redisLog", timeToLive = 300)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
