@@ -6,7 +6,7 @@ import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
 import kroryi.bus2.repository.jpa.LostItemRepository;
 import kroryi.bus2.repository.redis.ApiLogRepository;
-import kroryi.bus2.repository.jpa.RouteRepository;
+import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;

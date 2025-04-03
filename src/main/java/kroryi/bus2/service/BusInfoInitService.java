@@ -12,7 +12,7 @@ import kroryi.bus2.entity.Route;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.LinkRepository;
 import kroryi.bus2.repository.jpa.NodeRepository;
-import kroryi.bus2.repository.jpa.RouteRepository;
+import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
