@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.lost;
 
 import kroryi.bus2.dto.lost.LostFoundMatchRequestDTO;
 import kroryi.bus2.entity.LostFoundMatch;

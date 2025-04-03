@@ -29,5 +29,8 @@ public class FoundItem {
     @OneToOne(mappedBy = "foundItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private Photo photo;
 
-
+    // 🔹 추가: 숨김 여부 (soft delete)
+    @Setter
+    @Builder.Default
+    private boolean visible = true;
 }
