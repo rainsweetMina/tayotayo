@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>버스 노선 추가</title>
+</head>
+<body>
+<h1>버스 경유 정류장 추가</h1>
+
+<!-- 🔍 검색 기능 영역 -->
+<div>
+    <label for="searchInput">정류장 또는 노선 검색:</label>
+    <input type="text" id="searchInput" placeholder="예: 623, 동성로">
+    <button type="button" onclick="searchBus()">검색</button>
+</div>
+
+<hr>
+
+<form id="busForm">
+    <div id="stopContainer">
+         정류장 입력 블럭
+        <div class="stop-block">
+            <h3>정류장 1</h3>
+            Route ID: <input type="text" name="routeId"><br>
+            BS ID: <input type="text" name="bsId"><br>
+            Seq: <input type="number" name="seq"><br>
+            Move Dir: <input type="text" name="moveDir"><br>
+            X Pos: <input type="number" step="0.000001" name="xpos"><br>
+            Y Pos: <input type="number" step="0.000001" name="ypos"><br>
+            <hr>
+        </div>
+    </div>
+
+    <button type="submit">추가</button>
+</form>
+<script>
+    document.getElementById('busForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = Array.from(document.querySelectorAll('.stop-block')).map(block =>
+            Array.from(block.querySelectorAll('input')).reduce((obj, input) => {
+                obj[input.name] = input.type === 'number' ? parseFloat(input.value) : input.value;
+                return obj;
+            }, {})
+        );
+
+        try {
+            const res = await fetch('/api/add/AddRouteStopLink', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert('버스 노선이 성공적으로 추가되었습니다!');
+                console.log(JSON.stringify(data, null, 2));
+
+                e.target.reset();
+            } else {
+                alert('등록 실패! 서버 상태를 확인해주세요.');
+            }
+        } catch (err) {
+            console.error('에러 발생:', err);
+            alert('에러 발생! 콘솔을 확인하세요.');
+        }
+    });
+</script>
+
+<script>
+
+    function searchBus() {
+        const query = document.getElementById('searchInput').value;
+        if (!query.trim()) {
+            alert('검색어를 입력하세요.');
+            return;
+        }
+        fetch(`/api/bus/searchBSorBN?keyword=${encodeURIComponent(query)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json()) // 받아온 json을 자바스크립트에서 사용가능한 js로 또 변환 (거의 필수)
+            .then(data => {
+                console.log("data2 : ", data);
+            })
+            .catch(error => console.error('오류 발생:', error));
+    }
+
+</script>
+
+</body>
+</html>

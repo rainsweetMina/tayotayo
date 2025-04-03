@@ -1,4 +1,4 @@
-package kroryi.bus2.repository.jpa;
+package kroryi.bus2.repository.jpa.route;
 
 import kroryi.bus2.entity.Route;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface RouteRepository extends JpaRepository<Route,Long> {
@@ -21,6 +20,9 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
 
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
     List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
+
+    boolean existsByRouteId(String routeId);
+
 
 
 }

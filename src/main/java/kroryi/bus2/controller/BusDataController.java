@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.BusRealtimeDTO;
-import kroryi.bus2.dto.busStopDTO.BusStopDTO;
+import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Route;
@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
 import java.util.*;
 
 @RestController
