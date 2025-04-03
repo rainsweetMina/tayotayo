@@ -3,54 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{layout/layout.html}" lang="ko">
 <head>
-    <style>
-        .route-map {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-            margin-top: 30px;
-            padding: 10px;
-        }
-        .route-line {
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: flex-start;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .circle {
-            width: 20px;
-            height: 20px;
-            background-color: #0077cc;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 4px rgba(0,0,0,0.3);
-            z-index: 2;
-        }
-        .connector {
-            height: 4px;
-            width: 40px;
-            background-color: #0077cc;
-            margin: 0 5px;
-            flex-shrink: 0;
-        }
-
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
 </head>
 
 <div layout:fragment="content">
@@ -59,23 +12,30 @@
     <!-- 방면이 하나밖에 없는 경우 방면선택 라벨이 숨김으로 설정 -->
     <!-- 스케줄 데이터가 없는 노선은 노출이 되지않도로고 설정 -->
     <h2>버스 시간표</h2>
-    <label for="runDate">운행일 : </label>
-    <input type="date" id="runDate">
-    <br>
-    <label for="routeNo">노선 선택 : </label>
-    <select name="routeNo" id="routeNo">
-        <option value="" disabled selected>노선 선택</option>
-        <option th:each="no : ${routeNos}" th:value="${no}" th:text="${no}"></option>
-    </select>
-    <label for="routeNote">방면 선택 : </label>
-    <select name="routeNote" id="routeNote">
-        <option value="" disabled selected>방면 선택</option>
-        <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>
-    </select>
+    <div>
+        <label for="runDate">운행일 : </label>
+        <input type="date" id="runDate">
+    </div>
+    <div style="display: flex; gap: 10px">
+        <div>
+            <label for="routeNo">노선 선택 : </label>
+            <select name="routeNo" id="routeNo">
+                <option value="" disabled selected>노선 선택</option>
+                <option th:each="no : ${routeNos}" th:value="${no}" th:text="${no}"></option>
+            </select>
+        </div>
+        <div>
+            <label for="routeNote" id="routeNoteLabel">방면 선택 : </label>
+            <select name="routeNote" id="routeNote">
+                <option value="" disabled selected>방면 선택</option>
+                <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>
+            </select>
+        </div>
+    </div>
     <hr>
 
     <!-- 해당 버스의 전체 노선 -->
-    <div id="route-map" class="route-map">    </div>
+    <div id="route-map" class="route-map"></div>
 
 
     <hr>
