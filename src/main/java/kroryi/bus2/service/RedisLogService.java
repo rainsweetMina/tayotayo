@@ -1,5 +1,7 @@
 package kroryi.bus2.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.cache.annotation.CachePut;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -38,6 +41,7 @@ public class RedisLogService {
         return collectRedisStats();
     }
 
+    // Redis 상태 정보 수집 메서드
     private Map<String, String> collectRedisStats() {
         try {
             // Redis 연결 팩토리 확인
@@ -101,33 +105,58 @@ public class RedisLogService {
 
             log.info("🔍 Redis 상태 정보 조회 성공: {}", info);
 
-            return Map.of(
-                    "usedMemory", info.getProperty("used_memory"),
-                    "maxMemory", info.getProperty("maxmemory"),
-                    "connectedClients", info.getProperty("connected_clients")
-            );
+            Map<String, String> stats = new HashMap<>();
+            stats.put("usedMemory", info.getProperty("used_memory", "0"));
+            stats.put("maxMemory", info.getProperty("maxmemory", "0"));
+            stats.put("connectedClients", info.getProperty("connected_clients", "0"));
+
+            return stats;
         } catch (Exception e) {
             log.error("❌ Redis 상태 조회 실패", e);
             return Map.of("error", "Failed to fetch Redis stats");
         }
     }
 
-    public void broadcastRedisStats() {
-        Map<String, String> redisStats = fetchRedisStats();
-        String jsonResponse = String.format("{\"type\":\"redisStats\", \"data\":%s}", redisStats.toString());
-
-
-        log.info("📡 Redis 상태 정보를 WebSocket으로 전송: {}", jsonResponse);
-
-        sessions.forEach(session -> {
-            try {
-                session.sendMessage(new TextMessage(jsonResponse));
-                log.info("✅ WebSocket 전송 성공: {}", session.getId());
-            } catch (Exception e) {
-                log.error("❌ WebSocket 전송 실패: {}", session.getId(), e);
+    private String formatMemory(String memoryInBytes) {
+        try {
+            long bytes = Long.parseLong(memoryInBytes);
+            if (bytes >= 1024 * 1024) {
+                return String.format("%.2f MB", bytes / (1024.0 * 1024.0));
+            } else if (bytes >= 1024) {
+                return String.format("%.2f KB", bytes / 1024.0);
+            } else {
+                return bytes + " B";
             }
-        });
+        } catch (NumberFormatException e) {
+            return "0 B";
+        }
 
 
     }
+
+    // WebSocket 세션 관리
+    public void broadcastRedisStats() {
+        Map<String, String> redisStats = fetchRedisStats();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            // Map을 JSON 문자열로 변환
+            String jsonResponse = objectMapper.writeValueAsString(Map.of("type", "redisStats", "data", redisStats));
+
+            log.info("📡 Redis 상태 정보를 WebSocket으로 전송: {}", jsonResponse);
+
+            sessions.forEach(session -> {
+                try {
+                    session.sendMessage(new TextMessage(jsonResponse));
+                    log.info("✅ WebSocket 전송 성공: {}", session.getId());
+                } catch (Exception e) {
+                    log.error("❌ WebSocket 전송 실패: {}", session.getId(), e);
+                }
+            });
+        } catch (JsonProcessingException e) {
+            log.error("❌ JSON 변환 실패", e);
+        }
+    }
+
+
+
 }
