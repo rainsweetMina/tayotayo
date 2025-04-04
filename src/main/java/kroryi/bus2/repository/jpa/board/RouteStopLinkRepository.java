@@ -1,7 +1,6 @@
-package kroryi.bus2.repository.board;
+package kroryi.bus2.repository.jpa.board;
 
-import kroryi.bus2.dto.busStopDTO.BusStopDTO;
-import kroryi.bus2.entity.board.RouteStopLink;
+import kroryi.bus2.entity.RouteStopLink;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

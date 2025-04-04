@@ -1,4 +1,4 @@
-package kroryi.bus2.repository.jpa;
+package kroryi.bus2.repository.jpa.route;
 
 import kroryi.bus2.entity.Route;
 import org.springframework.data.jpa.repository.JpaRepository;

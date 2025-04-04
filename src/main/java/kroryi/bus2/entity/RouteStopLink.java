@@ -20,6 +20,8 @@ public class RouteStopLink {
 
     @Column(name = "bs_id")
     private String bsId;
+
+    @Column(name = "seq")
     private int seq;
 
     @Column(name = "move_dir")
@@ -30,4 +32,5 @@ public class RouteStopLink {
 
     @Column(name = "y_pos")
     private Double yPos;
+
 }

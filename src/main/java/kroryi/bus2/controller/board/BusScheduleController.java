@@ -1,9 +1,9 @@
 package kroryi.bus2.controller.board;
 
-import kroryi.bus2.dto.busStopDTO.BusStopDTO;
-import kroryi.bus2.entity.board.BusSchedule;
-import kroryi.bus2.repository.jpa.RouteRepository;
-import kroryi.bus2.repository.board.BusScheduleRepository;
+import kroryi.bus2.dto.busStop.BusStopDTO;
+import kroryi.bus2.entity.BusSchedule;
+import kroryi.bus2.repository.jpa.route.RouteRepository;
+import kroryi.bus2.repository.jpa.board.BusScheduleRepository;
 import kroryi.bus2.service.board.RouteStopLinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
