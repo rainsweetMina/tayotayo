@@ -24,8 +24,9 @@
                 <option th:each="no : ${routeNos}" th:value="${no}" th:text="${no}"></option>
             </select>
         </div>
-        <div>
-            <label for="routeNote" id="routeNoteLabel">방면 선택 : </label>
+        <!-- 방면 선택 (기본값은 숨김 처리 -> 해당 노선이 방면이 있는 경우 True) -->
+        <div id="routeNoteWrapper" style="display: none;">
+            <label for="routeNote">방면 선택 : </label>
             <select name="routeNote" id="routeNote">
                 <option value="" disabled selected>방면 선택</option>
                 <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>
@@ -46,14 +47,14 @@
         <thead id="schedule-thead">
         <tr>
             <th>순서</th>
-            <th>파계사(종점)</th>
-            <th>불로삼거리</th>
-            <th>이안동대구아파트</th>
-            <th>중구보건소앞</th>
-            <th>대구시산격청사건너1</th>
-            <th>불로화훼단지앞</th>
-            <th>가좌교차로</th>
-            <th>파계사(종점)</th>
+<!--            <th>A</th>-->
+<!--            <th>B</th>-->
+<!--            <th>C</th>-->
+<!--            <th>D</th>-->
+<!--            <th>E</th>-->
+<!--            <th>F</th>-->
+<!--            <th>G</th>-->
+<!--            <th>H</th>-->
         </tr>
         </thead>
         <tbody id="schedule-tbody">

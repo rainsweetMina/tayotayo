@@ -26,9 +26,9 @@ public class BusScheduleController {
     public String showSchedule(Model model) {
         List<String> routeNos = routeRepository.findDistinctRouteNos();
         model.addAttribute("routeNos", routeNos);
-
-        List<String> routeNotes = routeRepository.findDistinctRouteNotes() ;
-        model.addAttribute("routeNotes",  routeNotes);
+//
+//        List<String> routeNotes = routeRepository.findDistinctRouteNotes() ;
+//        model.addAttribute("routeNotes",  routeNotes);
         return "/board/busSchedule";
     }
 
@@ -56,11 +56,7 @@ public class BusScheduleController {
     @GetMapping("/api/route-notes")
     @ResponseBody
     public List<String> getRouteNotesByRouteNo(@RequestParam String routeNo) {
-        List<String> notes = routeRepository.findDistinctRouteNoteByRouteNo(routeNo);
-        if (notes.isEmpty()) {
-            return List.of("방면 없음"); // 최소 하나는 리턴
-        }
-        return notes;
+        return routeRepository.findDistinctRouteNoteByRouteNo(routeNo);
     }
 
     // 해당 데이터 테이블 가져오기

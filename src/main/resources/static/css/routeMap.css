@@ -23,7 +23,7 @@
 
 .route-line::before {
     content: '';
-    width: 15px;
+    width: 5%;
     height: 2px;
     background-color: #eee;
     position: relative;
@@ -33,11 +33,13 @@
 
 .route-line {
     display: flex;
+    width: 100%;
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
     margin-bottom: 20px;
 }
+
 .circle {
     width: 20px;
     height: 20px;
@@ -47,9 +49,24 @@
     box-shadow: 0 0 4px rgba(0,0,0,0.3);
     z-index: 2;
 }
+.circle.selectable {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.circle.start-stop {
+    background-color: yellow !important;
+}
+
+.circle.end-stop {
+    background-color: yellow !important;
+}
+.circle.selected {
+    background-color: orange !important;
+}
+
 .connector {
     height: 4px;
-    width: 40px;
+    width: 5%;
     background-color: #0077cc;
     margin: 0 5px;
     flex-shrink: 0;
@@ -63,8 +80,14 @@ table {
 
 th, td {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 5px;
+    min-width: 100px;
+    max-width: 100px;
     text-align: center;
+}
+
+th:first-child {
+    width: 30px;
 }
 
 th {
