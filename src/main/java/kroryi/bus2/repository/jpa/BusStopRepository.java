@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BusStopRepository extends JpaRepository<BusStop,Long> {
@@ -21,5 +22,8 @@ public interface BusStopRepository extends JpaRepository<BusStop,Long> {
 
     @Query("SELECT b FROM BusStop b WHERE b.bsNm LIKE %:bsNm% OR REPLACE(b.bsNm, ' ', '') LIKE %:bsNm%")
     List<BusStop> searchByBsNmIgnoreSpace(@Param("bsNm") String bsNm);
+
+    Optional<BusStop> findByBsId(String bsId);
+    boolean existsByBsId(String bsId);
 
 }

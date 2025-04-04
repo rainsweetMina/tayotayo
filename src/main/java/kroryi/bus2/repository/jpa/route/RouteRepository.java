@@ -1,6 +1,5 @@
 package kroryi.bus2.repository.jpa;
 
-import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.Route;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -37,5 +36,7 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
 
     @Query("SELECT r.routeId FROM Route r")
     List<String> findAllRouteIds();
+
+    boolean existsByRouteId(String routeId);
 
 }

@@ -1,6 +1,6 @@
 package kroryi.bus2.service;
 
-import kroryi.bus2.dto.busStopDTO.BusStopDTO;
+import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import lombok.RequiredArgsConstructor;

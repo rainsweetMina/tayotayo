@@ -26,11 +26,22 @@ public class BusController {
 
 
 
+    // 버스의 노선 추가 하는거
+    @GetMapping("/AddRouteStopLink")
+    public String AddBusRoute() {
+        return "bus/addRouteStopLink";
+    }
+
+
+
 
 //    @GetMapping
 //    public String loadBusStopsToRedis(){
 //        busRedisService.loadBusStopsToRedis();
 //        return "Redis에 버스 정류장 데이터 저장 완료";
 //    }
+
+
+
 
 }
