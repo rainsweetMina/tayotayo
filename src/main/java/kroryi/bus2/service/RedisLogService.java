@@ -1,4 +1,7 @@
 package kroryi.bus2.service;
+import kroryi.bus2.repository.jpa.route.RouteRepository;
+import kroryi.bus2.repository.redis.ApiLogRepository;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +17,6 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -24,6 +26,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class RedisLogService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+    private final ApiLogRepository apiLogRepository;
+    private final RouteRepository routeRepository;
 
 
     // 메모리에 있는 Redis 읽기 (DB저장X)
@@ -58,15 +62,11 @@ public class RedisLogService {
             }
 
             // Redis 상태 정보 수집
-            Properties info = connection.info();
-            if (info == null) {
-                log.error("❌ Redis 상태 정보가 NULL입니다.");
-                return Map.of("error", "Redis 상태 정보 없음");
-            }
+            Properties info = redisTemplate.getConnectionFactory().getConnection().info();
 
-            String usedMemory = info.getProperty("used_memory");
-            String maxMemory = info.getProperty("maxmemory");
-            String connectedClients = info.getProperty("connected_clients");
+            String usedMemory = info.getProperty("used_memory","0");
+            String maxMemory = info.getProperty("maxmemory","0");
+            String connectedClients = info.getProperty("connected_clients","0");
 
             // Null 체크 후 기본 값으로 대체
             usedMemory = (usedMemory != null) ? usedMemory : "0";
@@ -99,22 +99,36 @@ public class RedisLogService {
 
     // RedisLogService에서 주기적으로 데이터 수집 후 WebSocket으로 전송
 
-    public Map<String, String> fetchRedisStats() {
+    public Map<String, Object> fetchRedisStats() {
+        Map<String, Object> stats = new HashMap<>();
         try {
             Properties info = redisTemplate.getConnectionFactory().getConnection().info();
 
             log.info("🔍 Redis 상태 정보 조회 성공: {}", info);
 
-            Map<String, String> stats = new HashMap<>();
-            stats.put("usedMemory", info.getProperty("used_memory", "0"));
-            stats.put("maxMemory", info.getProperty("maxmemory", "0"));
-            stats.put("connectedClients", info.getProperty("connected_clients", "0"));
 
-            return stats;
+            stats.put("usedMemory", Integer.parseInt(info.getProperty("used_memory", "0")));
+            stats.put("connectedClients", Integer.parseInt(info.getProperty("connected_clients", "0")));
+//            stats.put("maxMemory", info.getProperty("maxmemory", "0")); // 아직 안넣었음.
+
+
+//            // Routes Count, Requests Today 받아오는 쿼리인데, Redis 메모리값 읽어오는거라 복잡한 쿼리가 실행 안됨.
+//            long routeCount = routeRepository.count();  // Route 개수
+//            long requestCountToday = apiLogRepository.countByTimestampBetween(
+//                    LocalDate.now().atStartOfDay(),
+//                    LocalDate.now().plusDays(1).atStartOfDay()
+//            );
+//            stats.put("routesCount", String.valueOf(routeCount));
+//            stats.put("requestToday", String.valueOf(requestCountToday));
+
+
+
         } catch (Exception e) {
             log.error("❌ Redis 상태 조회 실패", e);
             return Map.of("error", "Failed to fetch Redis stats");
         }
+        return stats;
+
     }
 
     private String formatMemory(String memoryInBytes) {
@@ -136,7 +150,7 @@ public class RedisLogService {
 
     // WebSocket 세션 관리
     public void broadcastRedisStats() {
-        Map<String, String> redisStats = fetchRedisStats();
+        Map<String, Object> redisStats = fetchRedisStats();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             // Map을 JSON 문자열로 변환

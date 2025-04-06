@@ -8,16 +8,29 @@ socket.onopen = () => {
 };
 
 
-socket.onmessage = function (event) {
-    console.log("📥 받은 데이터: ", event.data);
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
 
-    try {
-        const data = JSON.parse(event.data);
-        if (data.type === "redisStats") {
-            updateDashboard(data.data); // 데이터를 HTML로 반영하는 함수
-        }
-    } catch (e) {
-        console.error("❌ JSON 파싱 에러", e);
+    if (data.type === "redisStats") {
+        const usedMemory = Number(data.data.usedMemory) || 0;
+        const connectedClients = Number(data.data.connectedClients) || 0;
+
+        // 현재 시간 라벨 추가
+        const timeLabel = new Date().toLocaleTimeString();
+
+        // 메모리 차트 업데이트
+        memoryChart.data.labels.push(timeLabel);
+        memoryChart.data.datasets[0].data.push(usedMemory);
+        if (memoryChart.data.labels.length > 20) memoryChart.data.labels.shift();
+        if (memoryChart.data.datasets[0].data.length > 20) memoryChart.data.datasets[0].data.shift();
+        memoryChart.update();
+
+        // 클라이언트 차트 업데이트
+        clientChart.data.labels.push(timeLabel);
+        clientChart.data.datasets[0].data.push(connectedClients);
+        if (clientChart.data.labels.length > 20) clientChart.data.labels.shift();
+        if (clientChart.data.datasets[0].data.length > 20) clientChart.data.datasets[0].data.shift();
+        clientChart.update();
     }
 };
 
