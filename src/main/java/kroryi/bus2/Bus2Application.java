@@ -12,8 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableCaching
 @EnableJpaRepositories(basePackages = "kroryi.bus2.repository.jpa")
 @EnableRedisRepositories(basePackages = "kroryi.bus2.repository.redis")
-@ComponentScan(basePackages = "kroryi.bus2")
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "kroryi.bus2")
 @EnableScheduling
 public class Bus2Application implements CommandLineRunner {
 
@@ -32,6 +31,7 @@ public class Bus2Application implements CommandLineRunner {
 //        busRedisService.saveRedisUsage(testMemoryUsage);
 //        System.out.println("Redis 사용량 저장 완료");
     }
+
 
 
 

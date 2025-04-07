@@ -1,5 +1,6 @@
 package kroryi.bus2.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.service.RedisLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -35,10 +36,12 @@ public class DashboardWebSocketHandler extends TextWebSocketHandler {
         log.info("📥 WebSocket 클라이언트로부터 메시지 수신: {}", message.getPayload());
 
         // Redis 상태 정보 수집
-        var redisStats = redisLogService.fetchRedisStats();
+        Map<String, Object> redisStats = redisLogService.fetchRedisStats();
+
 
         // JSON 형식으로 응답 구성
-        String jsonResponse = String.format("{\"type\":\"redisStats\", \"data\":%s}", redisStats.toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonResponse = objectMapper.writeValueAsString(Map.of("type", "redisStats", "data", redisStats));
 
         log.info("📡 WebSocket 클라이언트로 데이터 전송: {}", jsonResponse);
 

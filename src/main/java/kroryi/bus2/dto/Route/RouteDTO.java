@@ -1,11 +1,12 @@
 package kroryi.bus2.dto.Route;
 
+import kroryi.bus2.entity.Route;
 import lombok.*;
 
 import java.io.Serializable;
 
 /**
- * DTO for {@link kroryi.bus2.entity.Route}
+ * DTO for {@link Route}
  */
 @Getter
 @AllArgsConstructor
