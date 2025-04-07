@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import jakarta.transaction.Transactional;
-import kroryi.bus2.entity.BusStop;
-import kroryi.bus2.entity.Link;
-import kroryi.bus2.entity.Node;
-import kroryi.bus2.entity.Route;
+import kroryi.bus2.entity.*;
 
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.LinkRepository;

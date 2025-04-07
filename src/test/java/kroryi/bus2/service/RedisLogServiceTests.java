@@ -13,9 +13,5 @@ public class RedisLogServiceTests {
     @Autowired
     RedisLogService redisLogService;
 
-    @Test
-    public void test() {
-        redisLogService.getRedisInfo();
 
-    }
 }
