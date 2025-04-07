@@ -18,8 +18,10 @@ public class RouteStopLink {
     @Column(name = "route_id")
     private String routeId;
 
+    //    @Column(name = "bs_id")
     @Column(name = "bs_id")
     private String bsId;
+
     private int seq;
 
     @Column(name = "move_dir")
@@ -30,4 +32,9 @@ public class RouteStopLink {
 
     @Column(name = "y_pos")
     private Double yPos;
+
+    // ✅ 정류소 참조
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bs_id", referencedColumnName = "bs_id", insertable = false, updatable = false)
+    private BusStop busStop;
 }

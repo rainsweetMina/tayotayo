@@ -430,6 +430,7 @@ function searchBus() {
                 const ul = document.createElement('ul');
                 ul.classList.add('bus-list');
 
+                // 기존의 버스 노선 서칭
                 data.busNumbers.forEach(bus => {
                     const li = document.createElement('li');
                     li.classList.add('bus-item');
@@ -460,9 +461,9 @@ function searchBus() {
                         const stopPromise = fetch(`/api/bus/bus-route?routeId=${encodeURIComponent(bus.routeId)}`)
                             .then(res => res.json())
                             .then(data => {
-                                const stopList = data.body.items;
-                                console.log("해당 노선의 정류장 데이터 : ", stopList);
-                                drawRouteBusStopMarkers(window.leafletMap, stopList);
+                                // const stopList = data.body.items;
+                                console.log("해당 노선의 정류장 데이터 : ", data);
+                                drawRouteBusStopMarkers(window.leafletMap, data);
                             });
 
                         // ORS
@@ -484,6 +485,69 @@ function searchBus() {
 
                         // ✅ API 모두 끝난 후 로딩 숨기기
                         Promise.all([stopPromise, linkPromiseORS, linkPromiseBUS])
+                            .then(() => hideLoading())
+                            .catch(err => {
+                                console.error("🛑 에러 발생:", err);
+                                hideLoading(); // 에러가 나도 로딩은 끄자!
+                            });
+                        console.log("노선번호:", bus.routeNo);
+                        console.log("노선ID:", bus.routeId);
+                        console.log("방면정보:", bus.routeNote);
+                    });
+
+                    ul.appendChild(li);
+                });
+
+                // 커스텀 버스 노선 서칭
+                data.CustomBusNumber.forEach(bus => {
+                    const li = document.createElement('li');
+                    li.classList.add('bus-item');
+
+                    // 버스 번호 (routeNo)
+                    const mainText = document.createElement('span');
+                    mainText.textContent = bus.routeNo;
+                    mainText.style.fontWeight = 'bold'; // 또는 클래스 지정
+
+                    // 방면 정보 (routeNote)
+                    const subText = document.createElement('span');
+                    subText.textContent = ` ${bus.routeNote}`;
+                    subText.style.fontSize = '0.9em';
+                    subText.style.color = 'gray';
+                    subText.style.marginLeft = '8px';
+
+                    li.appendChild(mainText);
+                    li.appendChild(subText);
+
+                    li.addEventListener('click', () => {
+                        showLoading(); // 로딩 시작!
+                        // 첫 번째 API
+                        const stopPromise = fetch(`/api/bus/bus-route-Custom?routeId=${encodeURIComponent(bus.routeId)}`)
+                            .then(res => res.json())
+                            .then(data => {
+
+                                console.log("해당 노선의 정류장 데이터 : ", data);
+                                drawRouteBusStopMarkers(window.leafletMap, data);
+                            });
+
+                        // ORS
+                        const linkPromiseORS = fetch(`/api/bus/bus-route-link-Custom?routeId=${encodeURIComponent(bus.routeId)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                console.log("해당 노선의 경로 좌표 정보 : ",data);
+                                drawBusRouteMapORS(data);    // ors
+                            });
+
+                        // // 해당 노선의 실시간 버스 위치
+                        // const linkPromiseBUS = fetch(`/api/bus/bus-route-Bus?routeId=${encodeURIComponent(bus.routeId)}`)
+                        //     .then(res => res.json())
+                        //     .then(data => {
+                        //         console.log("해당 노선의 실시간 버스 정보 : ",data);
+                        //         console.log("bus 좌표", data.xpos, data.ypos);
+                        //         // drawRealtimeBusMarkers(data);
+                        //     });
+
+                        // ✅ API 모두 끝난 후 로딩 숨기기
+                        Promise.all([stopPromise, linkPromiseORS])
                             .then(() => hideLoading())
                             .catch(err => {
                                 console.error("🛑 에러 발생:", err);
