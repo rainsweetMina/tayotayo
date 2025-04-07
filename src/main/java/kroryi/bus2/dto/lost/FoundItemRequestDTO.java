@@ -7,6 +7,14 @@ import java.time.LocalDateTime;
 public class FoundItemRequestDTO {
     private String itemName;
     private String busCompany;
+    private String busNumber;
+    private String foundPlace;
+    private String content;
+    private String handlerContact;
+    private String handlerEmail;
+    private String status;
+    private String storageLocation;
     private LocalDateTime foundTime;
-    private Long handlerId; // 버스회사 관리자 user.id
+    private String photoUrl;
+    private Long handlerId;
 }

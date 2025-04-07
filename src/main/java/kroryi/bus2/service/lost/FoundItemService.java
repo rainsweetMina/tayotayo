@@ -1,16 +1,15 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.lost;
 
 import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO; // lost 폴더 기준
 import kroryi.bus2.dto.lost.FoundItemResponseDTO;
-import kroryi.bus2.entity.FoundItem;
+import kroryi.bus2.entity.lost.FoundItem;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,9 +27,18 @@ public class FoundItemService {
         FoundItem item = FoundItem.builder()
                 .itemName(dto.getItemName())
                 .busCompany(dto.getBusCompany())
-                .foundTime(dto.getFoundTime() != null ? dto.getFoundTime() : LocalDateTime.now())
+                .busNumber(dto.getBusNumber())
+                .foundPlace(dto.getFoundPlace())
+                .content(dto.getContent())
+                .handlerContact(dto.getHandlerContact())
+                .handlerEmail(dto.getHandlerEmail())
+                .status(dto.getStatus())
+                .storageLocation(dto.getStorageLocation())
+                .foundTime(dto.getFoundTime())
+                .photoUrl(dto.getPhotoUrl())
                 .handler(handler)
                 .matched(false)
+                .visible(true)
                 .build();
 
         return foundItemRepository.save(item);
@@ -62,6 +70,13 @@ public class FoundItemService {
                 .id(foundItem.getId())
                 .itemName(foundItem.getItemName())
                 .busCompany(foundItem.getBusCompany())
+                .busNumber(foundItem.getBusNumber())
+                .foundPlace(foundItem.getFoundPlace())
+                .content(foundItem.getContent())
+                .handlerContact(foundItem.getHandlerContact())
+                .handlerEmail(foundItem.getHandlerEmail())
+                .status(foundItem.getStatus())
+                .storageLocation(foundItem.getStorageLocation())
                 .foundTime(foundItem.getFoundTime())
                 .photoUrl(photoUrl)
                 .build();

@@ -1,4 +1,4 @@
-package kroryi.bus2.entity;
+package kroryi.bus2.entity.lost;
 
 import jakarta.persistence.*;
 import kroryi.bus2.entity.user.User;
@@ -17,6 +17,14 @@ public class FoundItem {
 
     private String itemName;
     private String busCompany;
+    private String busNumber;
+    private String foundPlace;
+    private String content;
+    private String handlerContact;
+    private String handlerEmail;
+    private String status;
+    private String storageLocation;
+    private String photoUrl;
 
     private LocalDateTime foundTime; // 습득 시각
 
