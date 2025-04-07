@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+</head>
+<body>
+<div>
+    <h1>
+        <a th:href="@{/{loginType}(loginType=${loginType != null ? loginType : 'default'})}">
+            [[${pageName}]]
+        </a>
+    </h1>
+    <hr/>
+    <h2>로그인</h2>
+
+    <form action="/login" method="post" th:object="${loginForm}">
+        <div class="input-group mb-3">
+            <label for="userid">아이디 :</label>
+            <input type="text" name="username" id="userid" placeholder="아이디 입력" />
+        </div>
+        <div class="input-group mb-3">
+            <label for="password">비밀번호 :</label>
+            <input type="password" name="password" id="password" placeholder="비밀번호 입력" />
+        </div>
+
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <br/>
+            <div class="error-class" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></div>
+        </div>
+
+        <div>
+            <input type="checkbox" name="remember-me"> 자동 로그인
+        </div>
+
+        <button type="submit">로그인</button>
+    </form>
+    <div>
+        <a href="/register">
+            <button type="button">회원가입</button>
+        </a>
+    </div>
+
+    <div class="oauth-login">
+        <a href="/oauth2/authorization/kakao">카카오 로그인</a>
+    </div>
+</div>
+</body>
+</html>
