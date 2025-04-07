@@ -25,4 +25,6 @@ public class LostItem {
     private User reporter; // 일반회원 정보 (User 테이블 참조)
 
     private boolean matched = false; // 매칭 여부
+
+    private boolean visible = true;
 }

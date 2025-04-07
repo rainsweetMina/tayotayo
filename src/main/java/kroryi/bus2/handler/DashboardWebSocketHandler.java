@@ -35,15 +35,15 @@ public class DashboardWebSocketHandler extends TextWebSocketHandler {
         log.info("📥 WebSocket 클라이언트로부터 메시지 수신: {}", message.getPayload());
 
         // Redis 상태 정보 수집
-        Map<String, String> redisStats = redisLogService.fetchRedisStats();
+        var redisStats = redisLogService.fetchRedisStats();
 
         // JSON 형식으로 응답 구성
         String jsonResponse = String.format("{\"type\":\"redisStats\", \"data\":%s}", redisStats.toString());
 
         log.info("📡 WebSocket 클라이언트로 데이터 전송: {}", jsonResponse);
 
-
         // WebSocket 클라이언트로 전송
         session.sendMessage(new TextMessage(jsonResponse));
+
     }
 }

@@ -1,4 +1,4 @@
-package kroryi.bus2.dto.busStopDTO;
+package kroryi.bus2.dto.busStop;
 
 import lombok.*;
 
