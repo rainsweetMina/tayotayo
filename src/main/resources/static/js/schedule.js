@@ -158,6 +158,10 @@ function loadRouteMap(routeId) {
             }
             routeMapData = data;
             loadHeaderStops(routeId);
+
+            // 수정 활성화 상태에서 노선&방면을 바꿀 시 다시 디폴트 값으로 전환
+            saveBtn.style.display = "none";
+            editBtn.style.display = "inline-block";
         })
         .catch(err => console.error("노선도 불러오기 실패:", err));
 }
@@ -251,7 +255,7 @@ function highlightSelectableCircles() {
 
 // 수정 → 저장 버튼 로직
 editBtn.addEventListener("click", () => {
-    selectedStops = [];
+    // selectedStops = [];
 
     table.querySelectorAll("td[contenteditable]").forEach(td => {
         td.setAttribute("contenteditable", "true");
@@ -370,7 +374,7 @@ saveBtn.addEventListener("click", () => {
             location.reload();
         });
 
-    // ✅ 정류장 순서 저장
+    // 정류장 순서 저장
     fetch("/api/schedule-header", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

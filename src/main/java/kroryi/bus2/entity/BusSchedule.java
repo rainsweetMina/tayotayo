@@ -36,7 +36,7 @@ public class BusSchedule {
     @Column(name = "schedule_H")
     private String schedule_H;
 
-//    @Column(name = "bustcd")
-//    private String busTCd;
+    @Column(name = "bustcd")
+    private String busTCd;
 
 }
