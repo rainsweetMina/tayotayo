@@ -22,7 +22,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // 💡 CSRF 비활성화 추가
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus").permitAll()
                         .requestMatchers("/mypage/**").authenticated()  // 로그인한 사용자만 접근
                         .anyRequest().permitAll()
                 )
