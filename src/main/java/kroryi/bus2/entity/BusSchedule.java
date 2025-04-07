@@ -8,9 +8,11 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Table(name = "schedule")
 public class BusSchedule {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "route_id")
@@ -18,6 +20,12 @@ public class BusSchedule {
 
     @Column(name = "schedule_no")
     private int scheduleNo;
+
+    @Column(name = "move_dir")
+    private String moveDir;
+
+    @Column(name = "bustcd")
+    private String busTCd;
 
     @Column(name = "schedule_A")
     private String schedule_A;
@@ -36,7 +44,5 @@ public class BusSchedule {
     @Column(name = "schedule_H")
     private String schedule_H;
 
-    @Column(name = "bustcd")
-    private String busTCd;
 
 }

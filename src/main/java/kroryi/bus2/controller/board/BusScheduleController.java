@@ -28,9 +28,6 @@ public class BusScheduleController {
     public String showSchedule(Model model) {
         List<String> routeNos = routeRepository.findDistinctRouteNos();
         model.addAttribute("routeNos", routeNos);
-//
-//        List<String> routeNotes = routeRepository.findDistinctRouteNotes() ;
-//        model.addAttribute("routeNotes",  routeNotes);
         return "/board/busSchedule";
     }
 
@@ -38,18 +35,39 @@ public class BusScheduleController {
     @PostMapping("/api/modify-schedule")
     public ResponseEntity<String> updateSchedules(@RequestBody List<BusSchedule> updatedSchedules) {
         for (BusSchedule schedule : updatedSchedules) {
-            BusSchedule original = scheduleRepository.findById((long) schedule.getScheduleNo())
-                    .orElseThrow(() -> new RuntimeException("스케줄 없음"));
+            if (schedule.getId() == null) {
+                // 신규 추가
+                BusSchedule newSchedule = new BusSchedule();
+                newSchedule.setRouteId(schedule.getRouteId());
+                newSchedule.setMoveDir(schedule.getMoveDir());
+                newSchedule.setBusTCd(schedule.getBusTCd() != null ? schedule.getBusTCd() : "");
+                newSchedule.setScheduleNo(schedule.getScheduleNo());
+                newSchedule.setSchedule_A(schedule.getSchedule_A());
+                newSchedule.setSchedule_B(schedule.getSchedule_B());
+                newSchedule.setSchedule_C(schedule.getSchedule_C());
+                newSchedule.setSchedule_D(schedule.getSchedule_D());
+                newSchedule.setSchedule_E(schedule.getSchedule_E());
+                newSchedule.setSchedule_F(schedule.getSchedule_F());
+                newSchedule.setSchedule_G(schedule.getSchedule_G());
+                newSchedule.setSchedule_H(schedule.getSchedule_H());
 
-            original.setSchedule_A(schedule.getSchedule_A());
-            original.setSchedule_B(schedule.getSchedule_B());
-            original.setSchedule_C(schedule.getSchedule_C());
-            original.setSchedule_D(schedule.getSchedule_D());
-            original.setSchedule_E(schedule.getSchedule_E());
-            original.setSchedule_F(schedule.getSchedule_F());
-            original.setSchedule_G(schedule.getSchedule_G());
-            original.setSchedule_H(schedule.getSchedule_H());
-            scheduleRepository.save(original);
+                scheduleRepository.save(newSchedule);
+            } else {
+                // 수정
+                BusSchedule existing = scheduleRepository.findById(schedule.getId())
+                        .orElseThrow(() -> new RuntimeException("해당 ID 없음"));
+
+                existing.setSchedule_A(schedule.getSchedule_A());
+                existing.setSchedule_B(schedule.getSchedule_B());
+                existing.setSchedule_C(schedule.getSchedule_C());
+                existing.setSchedule_D(schedule.getSchedule_D());
+                existing.setSchedule_E(schedule.getSchedule_E());
+                existing.setSchedule_F(schedule.getSchedule_F());
+                existing.setSchedule_G(schedule.getSchedule_G());
+                existing.setSchedule_H(schedule.getSchedule_H());
+
+                scheduleRepository.save(existing);
+            }
         }
         return ResponseEntity.ok("success");
     }
@@ -65,11 +83,26 @@ public class BusScheduleController {
     @GetMapping("/api/schedules")
     @ResponseBody
     public List<BusSchedule> getSchedulesByRouteInfo(@RequestParam String routeNo,
-                                                     @RequestParam String routeNote) {
-        String routeId = routeRepository.findRouteIdByRouteNoAndNote(routeNo, routeNote);
-        if (routeId == null) {
-            return List.of(); // 데이터 없으면 빈 리스트 반환
+                                                     @RequestParam(required = false) String routeNote,
+                                                     @RequestParam(required = false) String moveDir) {
+
+        String routeId = null;
+
+        if (routeNote != null && !routeNote.isBlank()) {
+            routeId = routeRepository.findRouteIdByRouteNoAndNote(routeNo, routeNote);
+        } else if (moveDir != null && !moveDir.isBlank()) {
+            routeId = routeStopLinkRepository.findRouteIdByRouteNoAndMoveDir(routeNo, moveDir);
         }
+
+        if (routeId == null) {
+            return List.of();
+        }
+
+        // moveDir도 같이 넘겨서 정확한 스케줄만 조회
+        if (moveDir != null && !moveDir.isBlank()) {
+            return scheduleRepository.findByRouteIdAndMoveDir(routeId, moveDir);
+        }
+
         return scheduleRepository.findByRouteId(routeId);
     }
 
@@ -116,5 +149,6 @@ public class BusScheduleController {
         List<String> routeIds = routeStopLinkRepository.findDistinctRouteIdByRouteNoAndMoveDir(routeNo, moveDir);
         return routeIds.isEmpty() ? "" : routeIds.get(0); // 첫 번째 routeId 반환
     }
+
 
 }
