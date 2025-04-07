@@ -16,7 +16,7 @@ public class BusScheduleHeaderService {
     private final BusScheduleHeaderRepository busScheduleHeaderRepository;
     private final ObjectMapper objectMapper;
 
-    public void saveStopOrder(String routeId, List<String> stopOrder) throws JsonProcessingException {
+    public void saveStopOrder(String routeId, List<Integer> stopOrder) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(stopOrder);
 
         BusScheduleHeader header = busScheduleHeaderRepository.findByRouteId(routeId)
@@ -28,12 +28,12 @@ public class BusScheduleHeaderService {
         busScheduleHeaderRepository.save(header);
     }
 
-    public List<String> getStopOrder(String routeId) {
+    public List<Integer> getStopOrder(String routeId) {
         Optional<BusScheduleHeader> header = busScheduleHeaderRepository.findByRouteId(routeId);
 
         if (header.isPresent()) {
             try {
-                String[] array = objectMapper.readValue(header.get().getStopOrder(), String[].class);
+                Integer[] array = objectMapper.readValue(header.get().getStopOrder(), Integer[].class);
                 return Arrays.asList(array);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -12,6 +12,7 @@ const tbody = document.getElementById("schedule-tbody");
 document.getElementById("routeNoteWrapper").style.display = "none";
 
 let selectedStops = [];
+let routeMapData = [];
 let currentRouteId = "";
 
 // 노선 선택 시 방면 목록 가져오기
@@ -155,6 +156,7 @@ function loadRouteMap(routeId) {
                 });
                 mapContainer.appendChild(line);
             }
+            routeMapData = data;
             loadHeaderStops(routeId);
         })
         .catch(err => console.error("노선도 불러오기 실패:", err));
@@ -162,13 +164,22 @@ function loadRouteMap(routeId) {
 
 // 저장된 정류장 리스트를 서버에서 불러옴
 function loadHeaderStops(routeId) {
-    fetch(`/api/schedule-header?routeId=${routeId}`)
+    fetch(`/api/schedule-header?routeId=${encodeURIComponent(routeId)}`)
         .then(res => res.json())
         .then(data => {
-            selectedStops = data;
-            updateScheduleHeader();          // 테이블 헤더 반영
-            highlightSelectedCircles();      // 원 색상 반영 (오렌지)
+            if (!Array.isArray(data)) {
+                console.warn("서버로부터 배열이 아님:", data);
+                selectedStops = [];
+            } else {
+                selectedStops = data;
+            }
+            updateScheduleHeader();
+            highlightSelectedCircles();
         })
+        .catch(err => {
+            console.error("정류장 목록 불러오기 실패:", err);
+            selectedStops = [];
+        });
 }
 
 // 지정 정류장 표시
@@ -194,14 +205,14 @@ function highlightSelectedCircles() {
 
     // 시작/끝은 선택 불가
     allCircles.forEach(circle => {
-        const stopName = circle.dataset.bsNm;
+        const seq = parseInt(circle.parentElement.dataset.seq);
         circle.classList.remove("selected", "start-stop", "end-stop");
 
         if (circle === startCircle) {
             circle.classList.add("start-stop");
         } else if (circle === endCircle) {
             circle.classList.add("end-stop");
-        } else if (selectedStops.includes(stopName)) {
+        } else if (selectedStops.includes(seq)) {
             circle.classList.add("selected");
         }
     });
@@ -212,22 +223,28 @@ function highlightSelectableCircles() {
     let minSeq = Infinity;
     let maxSeq = -Infinity;
 
-    // seq 범위 파악
+    // 시작 / 끝 seq 탐색
     allCircles.forEach(circle => {
         const seq = parseInt(circle.parentElement.dataset.seq);
-        if (seq < minSeq) minSeq = seq;
-        if (seq > maxSeq) maxSeq = seq;
+        if (seq < minSeq) {
+            minSeq = seq;
+            startCircle = circle;
+        }
+        if (seq > maxSeq) {
+            maxSeq = seq;
+            endCircle = circle;
+        }
     });
 
     allCircles.forEach(circle => {
         const seq = parseInt(circle.parentElement.dataset.seq);
-        // 중간 정류장만 선택 가능하게
-        if (seq !== minSeq && seq !== maxSeq) {
+
+        circle.classList.remove("selectable");
+        circle.removeEventListener("click", onCircleClick);
+
+        if (circle !== startCircle && circle !== endCircle) {
             circle.classList.add("selectable");
-            circle.addEventListener("click", onCircleClick); // ✅ 여기!!
-        } else {
-            circle.classList.remove("selectable");
-            circle.removeEventListener("click", onCircleClick);
+            circle.addEventListener("click", onCircleClick);
         }
     });
 }
@@ -249,18 +266,18 @@ editBtn.addEventListener("click", () => {
 // 원클릭 함수
 function onCircleClick(e) {
     const circle = e.currentTarget;
-    const stopName = circle.dataset.bsNm;
-    const isSelected = selectedStops.includes(stopName);
+    const seq = parseInt(circle.parentElement.dataset.seq);
+    const isSelected = selectedStops.includes(seq);
 
     if (isSelected) {
-        selectedStops = selectedStops.filter(name => name !== stopName);
+        selectedStops = selectedStops.filter(s => s !== seq);
         circle.classList.remove("selected");
     } else {
         if (selectedStops.length >= 6) {
             alert("더 이상 선택하실 수 없습니다.");
             return;
         }
-        selectedStops.push(stopName);
+        selectedStops.push(seq);
         circle.classList.add("selected");
     }
     updateScheduleHeader();
@@ -272,10 +289,11 @@ function updateScheduleHeader() {
         theadRow.removeChild(theadRow.lastChild);
     }
 
-    const sortedStops = [...selectedStops].sort((a, b) => getSeqByStopName(a) - getSeqByStopName(b));
-    sortedStops.forEach(name => {
+    const sortedStops = [...selectedStops].sort((a, b) => a - b);
+    sortedStops.forEach(seq => {
         const th = document.createElement("th");
-        th.textContent = name;
+        const stop = routeMapData.find(stop => stop.seq === seq);
+        th.textContent = stop ? stop.bsNm : `정류장(${seq})`;
         theadRow.appendChild(th);
     });
 }
@@ -314,28 +332,26 @@ saveBtn.addEventListener("click", () => {
 
     // 시작점/끝점 자동 포함
     const allStops = [...document.querySelectorAll(".stop-container")];
-    let firstStop = null;
-    let lastStop = null;
+    let firstSeq = null;
+    let lastSeq = null;
     let minSeq = Infinity;
     let maxSeq = -Infinity;
 
-
     allStops.forEach(stop => {
         const seq = parseInt(stop.dataset.seq);
-        const name = stop.querySelector(".circle").dataset.bsNm;
         if (seq < minSeq) {
             minSeq = seq;
-            firstStop = name;
+            firstSeq = seq;
         }
         if (seq > maxSeq) {
             maxSeq = seq;
-            lastStop = name;
+            lastSeq = seq;
         }
     });
 
     // 최종 저장용 stopOrder 구성
-    const sortedSelectedStops = [...selectedStops].sort((a, b) => getSeqByStopName(a) - getSeqByStopName(b));
-    const stopOrder = [firstStop, ...sortedSelectedStops, lastStop];
+    const sortedSeqStops = [...selectedStops].sort((a, b) => a - b);
+    const stopOrder = [firstSeq, ...sortedSeqStops, lastSeq];
 
     // 시간표 저장
     fetch("/api/modify-schedule", {
