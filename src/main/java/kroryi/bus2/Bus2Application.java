@@ -10,7 +10,8 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableCaching
-@EnableJpaRepositories(basePackages = "kroryi.bus2.repository.jpa")
+@EnableJpaRepositories(basePackages = {
+        "kroryi.bus2.repository.jpa"})
 @EnableRedisRepositories(basePackages = "kroryi.bus2.repository.redis")
 @ComponentScan(basePackages = "kroryi.bus2")
 @SpringBootApplication
@@ -20,7 +21,6 @@ public class Bus2Application implements CommandLineRunner {
     public static void main(String[] args) {
         SpringApplication.run(Bus2Application.class, args);
     }
-
 
     // Redis 저장 확인용 로그
     @Override

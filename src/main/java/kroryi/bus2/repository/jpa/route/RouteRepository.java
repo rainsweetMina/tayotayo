@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RouteRepository extends JpaRepository<Route,Long> {
@@ -21,8 +22,19 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
     List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
 
+
+    @Query("SELECT DISTINCT TRIM(r.routeNo) FROM Route r ORDER BY TRIM(r.routeNo)")
+    List<String> findDistinctRouteNos();
+
+    @Query("SELECT DISTINCT r.routeNote FROM Route r WHERE r.routeNo = :routeNo AND r.routeNote IS NOT NULL")
+    List<String> findDistinctRouteNoteByRouteNo(@Param("routeNo") String routeNo);
+
+    @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo AND r.routeNote = :routeNote")
+    String findRouteIdByRouteNoAndNote(@Param("routeNo") String routeNo, @Param("routeNote") String routeNote);
+
+    @Query("SELECT r.routeId FROM Route r")
+    List<String> findAllRouteIds();
+
     boolean existsByRouteId(String routeId);
-
-
 
 }

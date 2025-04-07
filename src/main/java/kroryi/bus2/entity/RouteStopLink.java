@@ -18,10 +18,10 @@ public class RouteStopLink {
     @Column(name = "route_id")
     private String routeId;
 
-    //    @Column(name = "bs_id")
     @Column(name = "bs_id")
     private String bsId;
 
+    @Column(name = "seq")
     private int seq;
 
     @Column(name = "move_dir")
@@ -37,4 +37,5 @@ public class RouteStopLink {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bs_id", referencedColumnName = "bs_id", insertable = false, updatable = false)
     private BusStop busStop;
+
 }

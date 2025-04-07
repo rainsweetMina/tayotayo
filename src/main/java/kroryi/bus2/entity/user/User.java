@@ -1,9 +1,14 @@
 package kroryi.bus2.entity.user;
 
 import jakarta.persistence.*;
+import kroryi.bus2.entity.FoundItem;
+import kroryi.bus2.entity.LostFoundMatch;
+import kroryi.bus2.entity.LostItem;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")  // DB 테이블 이름
@@ -43,4 +48,14 @@ public class User {
 
     @Column(name = "signup_date")
     private LocalDate signupDate;
+
+    @OneToMany(mappedBy = "handler")
+    private Set<FoundItem> foundItems = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "matchedBy")
+    private Set<LostFoundMatch> lostFoundMatches = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "reporter")
+    private Set<LostItem> lostItems = new LinkedHashSet<>();
+
 }
