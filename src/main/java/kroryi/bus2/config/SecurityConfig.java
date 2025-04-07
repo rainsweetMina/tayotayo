@@ -20,21 +20,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
         http
+                .csrf(csrf -> csrf.disable()) // 💡 CSRF 비활성화 추가
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/bus", "/login", "/css/**", "/js/**").permitAll() // 로그인 페이지 및 정적 리소스 허용
-                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/mypage/**").authenticated()  // 로그인한 사용자만 접근
+                        .anyRequest().permitAll()
                 )
-                .formLogin(login -> login
-                        .loginPage("/login") // 로그인 페이지 설정
-                        .defaultSuccessUrl("/") // 로그인 성공 시 메인 페이지 이동
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/mypage", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 )
-                .userDetailsService(userDetailsService); // 🔹 UserDetailsService 설정 추가
+                .userDetailsService(userDetailsService); // UserDetailsService 설정 추가
 
         return http.build();
     }

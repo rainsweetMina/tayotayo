@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+</head>
+<body>
+<h1>마이페이지</h1>
+
+<p><strong>아이디:</strong> <span th:text="${user.userId}"></span></p>
+<p><strong>이메일:</strong> <span th:text="${user.email}"></span></p>
+<p><strong>이름:</strong> <span th:text="${user.username}"></span></p>
+<p><strong>전화번호:</strong> <span th:text="${user.phoneNumber}"></span></p>
+
+<a href="/mypage/edit">정보 수정</a><br/>
+<a href="/logout">로그아웃</a>
+
+<form th:action="@{/mypage/delete}" method="post">
+    <button type="submit">회원 탈퇴</button>
+</form>
+</body>
+</html>

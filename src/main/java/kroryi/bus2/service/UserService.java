@@ -46,4 +46,14 @@ public class UserService {
 
         return user;
     }
+
+    public User findByUserId(String userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    }
+
+    public void deleteByUserId(String userId) {
+        userRepository.deleteByUserId(userId);
+    }
+
 }
