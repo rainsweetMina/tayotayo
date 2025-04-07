@@ -26,7 +26,7 @@
         </div>
         <!-- 방면 선택 (기본값은 숨김 처리 -> 해당 노선이 방면이 있는 경우 True) -->
         <div id="routeNoteWrapper" style="display: none;">
-            <label for="routeNote">방면 선택 : </label>
+            <label for="routeNote">방향 선택 : </label>
             <select name="routeNote" id="routeNote">
                 <option value="" disabled selected>방면 선택</option>
                 <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>

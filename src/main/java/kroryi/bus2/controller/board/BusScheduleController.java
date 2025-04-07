@@ -2,6 +2,7 @@ package kroryi.bus2.controller.board;
 
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.entity.BusSchedule;
+import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.repository.jpa.board.BusScheduleRepository;
 import kroryi.bus2.service.board.RouteStopLinkService;
@@ -18,6 +19,7 @@ import java.util.List;
 public class BusScheduleController {
 
     private final BusScheduleRepository scheduleRepository;
+    private final RouteStopLinkRepository routeStopLinkRepository;
     private final RouteRepository routeRepository;
     private final RouteStopLinkService routeStopLinkService;
 
@@ -73,14 +75,46 @@ public class BusScheduleController {
 
     @GetMapping("/api/route-map")
     @ResponseBody
-    public List<BusStopDTO> getRouteMap(@RequestParam String routeId) {
+    public List<BusStopDTO> getRouteMap(@RequestParam String routeId, @RequestParam(required = false) String moveDir) {
+        if (moveDir != null) {
+            return routeStopLinkService.getStopsWithNamesByRouteIdAndMoveDir(routeId, moveDir);
+        }
         return routeStopLinkService.getStopsWithNamesByRouteId(routeId);
     }
 
+    @GetMapping("/api/route-directions")
+    @ResponseBody
+    public List<String> getDirectionsByRouteNo(@RequestParam String routeNo) {
+        String routeId = routeRepository.findRouteIdByRouteNoOnly(routeNo);
+        if (routeId == null) return List.of();
+        return routeStopLinkRepository.findDistinctMoveDirByRouteId(routeId);
+    }
+
+
     @GetMapping("/api/route-id")
     @ResponseBody
-    public String getRouteIdByRouteNoAndNote(@RequestParam String routeNo, @RequestParam String routeNote) {
-        return routeRepository.findRouteIdByRouteNoAndNote(routeNo, routeNote);
+    public String getRouteIdByRouteNoAndNote(@RequestParam String routeNo,
+                                             @RequestParam(required = false) String routeNote,
+                                             @RequestParam(required = false) String moveDir) {
+        if (routeNote != null && !routeNote.isBlank()) {
+            return routeRepository.findRouteIdByRouteNoAndNote(routeNo, routeNote);
+        } else if (moveDir != null) {
+            return routeStopLinkRepository.findRouteIdByRouteNoAndMoveDir(routeNo, moveDir);
+        }
+        return null;
+    }
+
+    @GetMapping("/api/route-id/movedirs")
+    @ResponseBody
+    public List<String> getMoveDirsByRouteNo(@RequestParam String routeNo) {
+        return routeStopLinkRepository.findDistinctMoveDirsByRouteNo(routeNo);
+    }
+
+    @GetMapping("/api/route-id/by-movedir")
+    @ResponseBody
+    public String getRouteIdByMoveDir(@RequestParam String routeNo, @RequestParam String moveDir) {
+        List<String> routeIds = routeStopLinkRepository.findDistinctRouteIdByRouteNoAndMoveDir(routeNo, moveDir);
+        return routeIds.isEmpty() ? "" : routeIds.get(0); // 첫 번째 routeId 반환
     }
 
 }

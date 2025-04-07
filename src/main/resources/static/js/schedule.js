@@ -18,49 +18,43 @@ let currentRouteId = "";
 // 노선 선택 시 방면 목록 가져오기
 document.getElementById("routeNo").addEventListener("change", () => {
     const routeNo = document.getElementById("routeNo").value;
+
+    const moveDirWrapper = document.getElementById("moveDirWrapper");
+    if (moveDirWrapper) moveDirWrapper.remove();
+
     const routeNoteSelect = document.getElementById("routeNote");
     const routeNoteWrapper = document.getElementById("routeNoteWrapper");
-
     // 해당 노선의 방면 선택이 없는 경우를 위해 숨김을 기본값으로 설정
     routeNoteWrapper.style.display = "none";
     routeNoteSelect.innerHTML = "";
 
     fetch(`/api/route-notes?routeNo=${routeNo}`)
         .then(res => res.json())
-        .then(data => {
-            const validNotes = data.filter(note => note && note.trim() !== "");
+        .then(notes => {
+            const validNotes = notes.filter(n => n && n.trim() !== "");
 
             if (validNotes.length === 0) {
-                // 선택 노선의 방면이 없는 경우 그대로 숨기고 바로 routeId 바로 조회
-                fetch(`/api/route-id?routeNo=${routeNo}&routeNote=`)
-                    .then(res => res.text())
-                    .then(routeId => {
-                        if (routeId) {
-                            currentRouteId = routeId;
-                            loadSchedule(routeNo, "");
-                            loadRouteMap(routeId);
-                        }
-                    });
-            } else {
-                // ✅ 방면 있음 → select 구성 후 보여주기
-                const defaultOption = document.createElement("option");
-                defaultOption.value = "";
-                defaultOption.textContent = "방면 선택";
-                defaultOption.disabled = true;
-                defaultOption.selected = true;
-                routeNoteSelect.appendChild(defaultOption);
-
-                validNotes.forEach(note => {
-                    const option = document.createElement("option");
-                    option.value = note;
-                    option.textContent = note;
-                    routeNoteSelect.appendChild(option);
-                });
-
-                // ✅ fetch 이후에만 보이게 함
-                routeNoteWrapper.style.display = "inline-block";
-                routeNoteSelect.style.display = "inline-block";
+                loadMoveDirSelector(routeNo);
+                return;
             }
+
+            // routeNoteSelect.innerHTML = "";
+
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "방면 선택";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            routeNoteSelect.appendChild(defaultOption);
+
+            validNotes.forEach(note => {
+                const option = document.createElement("option");
+                option.value = note;
+                option.textContent = note;
+                routeNoteSelect.appendChild(option);
+            });
+
+            routeNoteWrapper.style.display = "inline-block";
         });
 });
 
@@ -71,12 +65,18 @@ document.getElementById("routeNote").addEventListener("change", () => {
 
     if (!routeNo) return;
 
-    fetch(`/api/route-id?routeNo=${routeNo}&routeNote=${routeNote}`)
+    const isMoveDir = routeNote === "0" || routeNote === "1";
+
+    const url = isMoveDir
+        ? `/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${routeNote}`
+        : `/api/route-id?routeNo=${routeNo}&routeNote=${routeNote}`;
+
+    fetch(url)
         .then(res => res.text())
         .then(routeId => {
             if (routeId) {
                 currentRouteId = routeId;
-                loadSchedule(routeNo, routeNote);
+                loadSchedule(routeNo, isMoveDir ? "" : routeNote);
                 loadRouteMap(routeId);
             } else {
                 console.warn("해당 routeId를 찾을 수 없습니다.");
@@ -89,6 +89,42 @@ function loadSchedule(routeNo, routeNote) {
     fetch(`/api/schedules?routeNo=${routeNo}&routeNote=${routeNote}`)
         .then(res => res.json())
         .then(renderScheduleTable);
+}
+
+function loadMoveDirSelector(routeNo) {
+    const routeNoteWrapper = document.getElementById("routeNoteWrapper");
+    const oldMoveDirWrapper = document.getElementById("moveDirWrapper");
+    if (routeNoteWrapper) routeNoteWrapper.style.display = "none";
+    if (oldMoveDirWrapper) oldMoveDirWrapper.remove();
+
+    const container = document.createElement("div");
+    container.id = "moveDirWrapper";
+    // select 박스 초기화
+    container.innerHTML = `
+        <label for="moveDirSelect">방향 선택:</label>
+        <select id="moveDirSelect">
+            <option value="" disabled selected>방향 선택</option>
+            <option value="0">정방향</option>
+            <option value="1">역방향</option>
+        </select>
+    `;
+    document.getElementById("routeNo").parentElement.after(container);
+
+    document.getElementById("moveDirSelect").addEventListener("change", () => {
+        const moveDir = document.getElementById("moveDirSelect").value;
+
+        fetch(`/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${moveDir}`)
+            .then(res => res.text())
+            .then(routeId => {
+                if (!routeId || routeId.includes("html")) {
+                    alert("해당 방향의 노선이 없습니다");
+                    return;
+                }
+                currentRouteId = routeId;
+                loadSchedule(routeNo, "");
+                loadRouteMap(routeId, moveDir);
+            });
+    });
 }
 
 function renderScheduleTable(schedules) {
@@ -118,8 +154,13 @@ function renderScheduleTable(schedules) {
 }
 
 // 노선도 로딩
-function loadRouteMap(routeId) {
-    fetch(`/api/route-map?routeId=${routeId}`)
+function loadRouteMap(routeId, moveDir = null) {
+    let url = `/api/route-map?routeId=${routeId}`;
+    if (moveDir !== null) {
+        url += `&moveDir=${moveDir}`;
+    }
+
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             const mapContainer = document.getElementById("route-map");
@@ -226,6 +267,8 @@ function highlightSelectableCircles() {
     const allCircles = document.querySelectorAll(".circle");
     let minSeq = Infinity;
     let maxSeq = -Infinity;
+    let startCircle = null;
+    let endCircle = null;
 
     // 시작 / 끝 seq 탐색
     allCircles.forEach(circle => {
@@ -271,6 +314,12 @@ editBtn.addEventListener("click", () => {
 function onCircleClick(e) {
     const circle = e.currentTarget;
     const seq = parseInt(circle.parentElement.dataset.seq);
+    // 시작/끝 정류장은 선택 불가 (방어코드)
+    const allCircles = document.querySelectorAll(".circle");
+    let minSeq = Math.min(...[...allCircles].map(c => parseInt(c.parentElement.dataset.seq)));
+    let maxSeq = Math.max(...[...allCircles].map(c => parseInt(c.parentElement.dataset.seq)));
+    if (seq === minSeq || seq === maxSeq) return;
+
     const isSelected = selectedStops.includes(seq);
 
     if (isSelected) {
@@ -311,11 +360,6 @@ function getSeqByStopName(name) {
 
 // 저장
 saveBtn.addEventListener("click", () => {
-    if (selectedStops.length !== 6) {
-        alert("중간 정류장은 6개를 지정하셔야 합니다..");
-        return;
-    }
-
     const rows = table.querySelectorAll("tbody tr");
     const data = [];
     rows.forEach(row => {
@@ -334,33 +378,10 @@ saveBtn.addEventListener("click", () => {
         data.push(rowData);
     });
 
-    // 시작점/끝점 자동 포함
-    const allStops = [...document.querySelectorAll(".stop-container")];
-    let firstSeq = null;
-    let lastSeq = null;
-    let minSeq = Infinity;
-    let maxSeq = -Infinity;
-
-    allStops.forEach(stop => {
-        const seq = parseInt(stop.dataset.seq);
-        if (seq < minSeq) {
-            minSeq = seq;
-            firstSeq = seq;
-        }
-        if (seq > maxSeq) {
-            maxSeq = seq;
-            lastSeq = seq;
-        }
-    });
-
-    // 최종 저장용 stopOrder 구성
-    const sortedSeqStops = [...selectedStops].sort((a, b) => a - b);
-    const stopOrder = [firstSeq, ...sortedSeqStops, lastSeq];
-
-    // 시간표 저장
+    // 스케줄은 무조건 저장
     fetch("/api/modify-schedule", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data)
     }).then(res => res.text())
         .then(() => {
@@ -374,14 +395,37 @@ saveBtn.addEventListener("click", () => {
             location.reload();
         });
 
-    // 정류장 순서 저장
-    fetch("/api/schedule-header", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            routeId: currentRouteId,
-            stopOrder: stopOrder
-        })
-    });
+    // 정류장 선택이 6개일 때만 stopOrder 저장
+    if (selectedStops.length === 6) {
+        const allStops = [...document.querySelectorAll(".stop-container")];
+        let firstSeq = null;
+        let lastSeq = null;
+        let minSeq = Infinity;
+        let maxSeq = -Infinity;
+
+        allStops.forEach(stop => {
+            const seq = parseInt(stop.dataset.seq);
+            if (seq < minSeq) {
+                minSeq = seq;
+                firstSeq = seq;
+            }
+            if (seq > maxSeq) {
+                maxSeq = seq;
+                lastSeq = seq;
+            }
+        });
+
+        const sortedSeqStops = [...selectedStops].sort((a, b) => a - b);
+        const stopOrder = [firstSeq, ...sortedSeqStops, lastSeq];
+
+        fetch("/api/schedule-header", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                routeId: currentRouteId,
+                stopOrder: stopOrder
+            })
+        });
+    }
 });
 
