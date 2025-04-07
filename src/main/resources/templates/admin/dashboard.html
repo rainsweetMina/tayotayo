@@ -2,100 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Redis Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        canvas {
-            margin: 20px;
-            width: 80%;
-            height: 300px;
-        }
-    </style>
+    <title>대시보드</title>
 </head>
 <body>
-<h2>Redis Dashboard</h2>
-<div>
-    <h3>Memory Usage (KB)</h3>
-    <canvas id="memoryChart"></canvas>
-</div>
-<div>
-    <h3>Connected Clients</h3>
-    <canvas id="clientChart"></canvas>
-</div>
-
-<script>
-    const memoryChartCtx = document.getElementById('memoryChart').getContext('2d');
-    const clientChartCtx = document.getElementById('clientChart').getContext('2d');
-
-    // 그래프 초기 설정
-    const memoryChart = new Chart(memoryChartCtx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Memory Usage (KB)',
-                data: [],
-                borderColor: 'blue',
-                borderWidth: 2,
-                fill: false
-            }]
-        },
-        options: {
-            scales: {
-                x: { title: { display: true, text: 'Time' } },
-                y: { title: { display: true, text: 'Memory (KB)' } }
-            }
-        }
-    });
-
-    const clientChart = new Chart(clientChartCtx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Connected Clients',
-                data: [],
-                borderColor: 'green',
-                borderWidth: 2,
-                fill: false
-            }]
-        },
-        options: {
-            scales: {
-                x: { title: { display: true, text: 'Time' } },
-                y: { title: { display: true, text: 'Clients' } }
-            }
-        }
-    });
-
-    // WebSocket 연결
-    const socket = new WebSocket("wss://localhost:8081/ws/dashboard");
-
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-
-        if (data.type === "redisStats") {
-            const usedMemory = parseInt(data.data.usedMemory) || 0;
-            const connectedClients = parseInt(data.data.connectedClients) || 0;
-
-            // 현재 시간 라벨 추가
-            const timeLabel = new Date().toLocaleTimeString();
-
-            // 메모리 차트 업데이트
-            memoryChart.data.labels.push(timeLabel);
-            memoryChart.data.datasets[0].data.push(usedMemory);
-            if (memoryChart.data.labels.length > 20) memoryChart.data.labels.shift();
-            if (memoryChart.data.datasets[0].data.length > 20) memoryChart.data.datasets[0].data.shift();
-            memoryChart.update();
-
-            // 클라이언트 차트 업데이트
-            clientChart.data.labels.push(timeLabel);
-            clientChart.data.datasets[0].data.push(connectedClients);
-            if (clientChart.data.labels.length > 20) clientChart.data.labels.shift();
-            if (clientChart.data.datasets[0].data.length > 20) clientChart.data.datasets[0].data.shift();
-            clientChart.update();
-        }
-    };
-</script>
+<h1>관리자 대시보드</h1>
+<p>Routes Count: <span id="routesCount">-</span></p>
+<p>Requests Today: <span id="requestToday">-</span></p>
+<p>Memory Usage: <span id="memoryUsage">-</span></p>
+<p>Connected Clients: <span id="connectedClients">-</span></p>
 </body>
+<script src="/js/dashboard.js"></script>
 </html>

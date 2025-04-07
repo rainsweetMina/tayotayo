@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.repository.redis.ApiLogRepository;
+import kroryi.bus2.repository.redis.RedisRouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.cache.annotation.CachePut;
@@ -14,27 +15,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class RedisLogService {
+public class RouteLogService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+    private final ApiLogRepository apiLogRepository;
+    private final RedisRouteRepository redisRouteRepository;
 
 
     // 메모리에 있는 Redis 읽기 (DB저장X)
 
-    @Cacheable(value = "redisStats", key = "'info'")
+    @Cacheable(value = "routeStats", key = "'info'")
     public Map<String, String> getRedisInfo() {
         log.info("캐시 미스 - Redis 정보를 직접 조회합니다.");
         return collectRedisStats();
     }
 
-    @CachePut(value = "redisStats", key = "'info'")
+    @CachePut(value = "routeStats", key = "'info'")
     @Scheduled(fixedRate = 60000)  // 1분마다 캐시 갱신
     public Map<String, String> updateRedisInfo() {
         log.info("캐시 갱신 - Redis 정보를 다시 수집합니다.");
@@ -58,15 +63,11 @@ public class RedisLogService {
             }
 
             // Redis 상태 정보 수집
-            Properties info = connection.info();
-            if (info == null) {
-                log.error("❌ Redis 상태 정보가 NULL입니다.");
-                return Map.of("error", "Redis 상태 정보 없음");
-            }
+            Properties info = redisTemplate.getConnectionFactory().getConnection().info();
 
-            String usedMemory = info.getProperty("used_memory");
-            String maxMemory = info.getProperty("maxmemory");
-            String connectedClients = info.getProperty("connected_clients");
+            String usedMemory = info.getProperty("used_memory","0");
+            String maxMemory = info.getProperty("maxmemory","0");
+            String connectedClients = info.getProperty("connected_clients","0");
 
             // Null 체크 후 기본 값으로 대체
             usedMemory = (usedMemory != null) ? usedMemory : "0";
@@ -112,7 +113,7 @@ public class RedisLogService {
 
 
 //            // Routes Count, Requests Today 받아오는 쿼리인데, Redis 메모리값 읽어오는거라 복잡한 쿼리가 실행 안됨.
-            long routeCount = routeRepository.count();  // Route 개수\
+            long routeCount = redisRouteRepository.count();  // Route 개수\
             log.info("🔍 Redis Route 개수: {}", routeCount);
 
             // RedisTemplate을 사용하여 단순 키 수 조회
@@ -151,7 +152,7 @@ public class RedisLogService {
 
     // WebSocket 세션 관리
     public void broadcastRedisStats() {
-        Map<String, String> redisStats = fetchRedisStats();
+        Map<String, Object> redisStats = fetchRedisStats();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             // Map을 JSON 문자열로 변환

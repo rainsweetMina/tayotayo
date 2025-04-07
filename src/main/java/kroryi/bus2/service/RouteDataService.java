@@ -7,6 +7,7 @@ import kroryi.bus2.dto.busStop.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 
 import kroryi.bus2.entity.Route;
+import kroryi.bus2.entity.Route;
 
 import kroryi.bus2.repository.jpa.NodeRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
