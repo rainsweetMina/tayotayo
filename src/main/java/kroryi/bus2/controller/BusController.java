@@ -32,7 +32,11 @@ public class BusController {
         return "bus/addRouteStopLink";
     }
 
-
+    // 버스 노선 불러오는거
+    @GetMapping("/GetRouteStopLink")
+    public String getBusRoute() {
+        return "bus/getRouteStopLink";
+    }
 
 
 //    @GetMapping
