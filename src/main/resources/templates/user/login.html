@@ -14,7 +14,23 @@
     <hr/>
     <h2>로그인</h2>
 
-    <form action="/login" method="post" th:object="${loginForm}">
+    <!-- ✅ 회원가입 성공 메시지 -->
+    <div th:if="${param.registerSuccess}" style="color:green; margin-top: 1rem;">
+        <p>회원가입이 완료되었습니다! 로그인해주세요.</p>
+    </div>
+
+    <!-- ✅ 로그인 에러 메시지 출력 -->
+    <div th:if="${errorMessage}" class="error-message" style="color:red; margin-top: 1rem;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <!-- ✅ 로그아웃 메시지 출력 -->
+    <div th:if="${logoutMessage}" style="color:green; margin-top: 1rem;">
+        <p th:text="${logoutMessage}"></p>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <form action="/login" method="post">
         <div class="input-group mb-3">
             <label for="userid">아이디 :</label>
             <input type="text" name="username" id="userid" placeholder="아이디 입력" />
@@ -24,17 +40,13 @@
             <input type="password" name="password" id="password" placeholder="비밀번호 입력" />
         </div>
 
-        <div th:if="${#fields.hasGlobalErrors()}">
-            <br/>
-            <div class="error-class" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></div>
-        </div>
-
         <div>
             <input type="checkbox" name="remember-me"> 자동 로그인
         </div>
 
         <button type="submit">로그인</button>
     </form>
+
     <div>
         <a href="/register">
             <button type="button">회원가입</button>

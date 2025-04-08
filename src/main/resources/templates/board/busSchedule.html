@@ -4,78 +4,75 @@
       layout:decorate="~{layout/layout.html}" lang="ko">
 <head>
     <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>버스 시간표 페이지</title>
 </head>
+
+<th:block layout:fragment="sidebar"></th:block>
 
 <div layout:fragment="content">
 
-    <!-- 헤드부분 날짜, 노선, 방면 선택 -->
-    <!-- 방면이 하나밖에 없는 경우 방면선택 라벨이 숨김으로 설정 -->
-    <!-- 스케줄 데이터가 없는 노선은 노출이 되지않도로고 설정 -->
-    <h2>버스 시간표</h2>
-    <div>
-        <label for="runDate">운행일 : </label>
-        <input type="date" id="runDate">
-    </div>
-    <div style="display: flex; gap: 10px">
+    <section>
+        <!-- 헤드부분 날짜, 노선, 방면 선택 -->
+        <!-- 방면이 하나밖에 없는 경우 방면선택 라벨이 숨김으로 설정 -->
+        <!-- 스케줄 데이터가 없는 노선은 노출이 되지않도로고 설정 -->
+        <h2>버스 시간표</h2>
         <div>
-            <label for="routeNo">노선 선택 : </label>
-            <select name="routeNo" id="routeNo">
-                <option value="" disabled selected>노선 선택</option>
-                <option th:each="no : ${routeNos}" th:value="${no}" th:text="${no}"></option>
-            </select>
+            <label for="runDate">운행일 : </label>
+            <input type="date" id="runDate">
         </div>
-        <!-- 방면 선택 (기본값은 숨김 처리 -> 해당 노선이 방면이 있는 경우 True) -->
-        <div id="routeNoteWrapper" style="display: none;">
-            <label for="routeNote">방면 선택 : </label>
-            <select name="routeNote" id="routeNote">
-                <option value="" disabled selected>방면 선택</option>
-                <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>
-            </select>
+        <div style="display: flex; gap: 10px">
+            <div>
+                <label for="routeNo">노선 선택 : </label>
+                <select name="routeNo" id="routeNo">
+                    <option value="" disabled selected>노선 선택</option>
+                    <option th:each="no : ${routeNos}" th:value="${no}" th:text="${no}"></option>
+                </select>
+            </div>
+            <!-- 방면 선택 (기본값은 숨김 처리 -> 해당 노선이 방면이 있는 경우 True) -->
+            <div id="routeNoteWrapper" style="display: none;">
+                <label for="routeNote">방향 선택 : </label>
+                <select name="routeNote" id="routeNote">
+                    <option value="" disabled selected>방면 선택</option>
+                    <option th:each="note : ${routeNotes}" th:value="${note}" th:text="${note}"></option>
+                </select>
+            </div>
         </div>
-    </div>
-    <hr>
+        <hr>
 
-    <!-- 해당 버스의 전체 노선 -->
-    <div id="route-map" class="route-map"></div>
+        <!-- 해당 버스의 전체 노선 -->
+        <div id="route-map" class="route-map"></div>
 
-
-    <hr>
-    <!-- 스케줄 테이블 -->
-    <!-- 수정버튼이 권한이 있는 관리자만 보이도록 -->
-    <!-- 테이블에 행을 추가할 수 있는 버튼을 추가하거나 modify 페이지가 필요 -->
-    <table id="schedule-table" style="display: none">
-        <thead id="schedule-thead">
-        <tr>
-            <th>순서</th>
-<!--            <th>A</th>-->
-<!--            <th>B</th>-->
-<!--            <th>C</th>-->
-<!--            <th>D</th>-->
-<!--            <th>E</th>-->
-<!--            <th>F</th>-->
-<!--            <th>G</th>-->
-<!--            <th>H</th>-->
-        </tr>
-        </thead>
-        <tbody id="schedule-tbody">
-        <tr th:each="s : ${schedules}">
-            <td th:text="${s.scheduleNo}"></td>
-            <td contenteditable="false" th:text="${s.schedule_A}"></td>
-            <td contenteditable="false" th:text="${s.schedule_B}"></td>
-            <td contenteditable="false" th:text="${s.schedule_C}"></td>
-            <td contenteditable="false" th:text="${s.schedule_D}"></td>
-            <td contenteditable="false" th:text="${s.schedule_E}"></td>
-            <td contenteditable="false" th:text="${s.schedule_F}"></td>
-            <td contenteditable="false" th:text="${s.schedule_G}"></td>
-            <td contenteditable="false" th:text="${s.schedule_H}"></td>
-        </tr>
-        </tbody>
-    </table>
-    <div class="text-end" style="margin-top: 10px;">    <!-- 권한 설정 필요 -->
-        <button class="btn btn-outline-primary" id="editBtn">수정</button>
-        <button class="btn btn-outline-primary" id="saveBtn" style="display: none;">저장</button>
-    </div>
-
+        <!-- 스케줄 테이블 -->
+        <!-- 수정버튼이 권한이 있는 관리자만 보이도록 -->
+        <!-- 테이블에 행을 추가할 수 있는 버튼을 추가하거나 modify 페이지가 필요 -->
+        <table id="schedule-table" style="display: none">
+            <thead id="schedule-thead">
+            <tr>
+                <th>순서</th>
+            </tr>
+            </thead>
+            <tbody id="schedule-tbody">
+            <tr th:each="s : ${schedules}">
+                <td th:text="${s.scheduleNo}"></td>
+                <td contenteditable="false" th:text="${s.schedule_A}"></td>
+                <td contenteditable="false" th:text="${s.schedule_B}"></td>
+                <td contenteditable="false" th:text="${s.schedule_C}"></td>
+                <td contenteditable="false" th:text="${s.schedule_D}"></td>
+                <td contenteditable="false" th:text="${s.schedule_E}"></td>
+                <td contenteditable="false" th:text="${s.schedule_F}"></td>
+                <td contenteditable="false" th:text="${s.schedule_G}"></td>
+                <td contenteditable="false" th:text="${s.schedule_H}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="text-end" style="margin-top: 10px;">    <!-- 권한 설정 필요 -->
+            <button class="btn btn-outline-danger" id="deleteRowBtn" style="display: none; margin-top: 10px;">-</button>
+            <button class="btn btn-outline-success" id="addRowBtn" style="display: none; margin-top: 10px;">+</button>
+            <button class="btn btn-outline-primary" id="editBtn">수정</button>
+            <button class="btn btn-outline-primary" id="saveBtn" style="display: none;">저장</button>
+        </div>
+    </section>
     <script src="/js/schedule.js"></script>
 </div>
+
 </html>

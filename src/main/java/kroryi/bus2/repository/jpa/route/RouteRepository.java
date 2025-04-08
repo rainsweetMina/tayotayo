@@ -35,6 +35,9 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
     @Query("SELECT r.routeId FROM Route r")
     List<String> findAllRouteIds();
 
+    @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
+    String findRouteIdByRouteNoOnly(@Param("routeNo") String routeNo);
+
     boolean existsByRouteId(String routeId);
 
 }

@@ -16,11 +16,13 @@
 
 <div>
     <div class="d-flex">
-        <div class="d-flex flex-column border bg-light" style="flex-basis:150px">
-            <nav class="col-md-3 col-lg-2 d-none bg-light sidebar"
-                 th:replace="~{fragments/sidebar::sidebarFragment}">
-            </nav>
-        </div>
+        <th:block layout:fragment="sidebar">
+            <div class="d-flex flex-column border bg-light" style="flex-basis:150px">
+                <nav class="col-md-3 col-lg-2 d-none bg-light sidebar"
+                     th:replace="~{fragments/sidebar::sidebarFragment}">
+                </nav>
+            </div>
+        </th:block>
         <div class="border flex-grow-1">
             <main class="" layout:fragment="content">
             </main>
@@ -29,7 +31,6 @@
 </div>
 
 <!--<footer th:replace="~{fragments/footer::footerFragment}"></footer>-->
-
 
 
 <th:block layout:fragment="script">

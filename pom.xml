@@ -147,6 +147,18 @@
             <artifactId>commons-pool2</artifactId>
         </dependency>
 
+        <!-- JavaMailSender로 실제 이메일 전송 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- Oauth -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

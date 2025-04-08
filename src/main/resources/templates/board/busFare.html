@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+<!--    <link rel="stylesheet" th:href="@{/css/routeMap.css}">-->
+    <title>버스 요금안내 페이지</title>
+    <style>
+        table {
+            border: 1px solid black;
+        }
+        th{
+            text-align: center;
+        }
+        td{
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <h2>버스 요금 안내</h2>
+    <div>
+        <h3>요금(2025.02.24부터 적용)</h3>
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th colspan="2">구분</th>
+                    <th>일반<br>(19세이상)</th>
+                    <th>청소년<br>(13~18세)</th>
+                    <th>어린이<br>(6~12세)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="f, stat : ${fares}">
+                    <!-- 버스 유형 셀 -->
+                    <td th:if="${stat.index == 0 or fares[stat.index - 1].busType != f.busType}"
+                        rowspan="2"
+                        th:text="${f.busTypeName}">
+                    </td>
+                    <td th:text="${f.payTypeName}"></td>
+                    <td th:text="${f.getFareAdult()}"></td>
+                    <td th:text="${f.getFareTeen()}"></td>
+                    <td th:text="${f.getFareChild()}"></td>
+                </tr>
+                </tbody>
+                <tfoot>
+                ※ 보호자(성인)가 동반하는 6세 미만의 소아 3인은 무임으로 운송하며, 3인을 초과하는 인원에 대하여는 어린이의 운임을 적용
+                </tfoot>
+            </table>
+        </div>
+        <div>
+            <h3>환승 안내</h3>
+            <ul>
+                <li>환승시간 : 하차후 30분이내, 2회</li>
+                <li>환승대상 : 대구 시내버스(같은 노선버스는 제외), 도시철도 및 8개 시·군 시내버스(경산시, 영천시, 청도군, 고령군, 성주군, 구미시, 김천시, 칠곡군), 대경선</li>
+                <li>환승방법 : 반드시 뒷문의 하차단말기에 교통카드를 체크 하셔야 무료 환승 혜택을 받을 수 있습니다.단, 하차단말기 2회(3분초과) 체크시 요금 발생됩니다.</li>
+                <li>교통카드 1장당 1인에 대하여 환승 혜택이 적용됩니다.</li>
+                <li>일반버스->직행버스·급행버스 환승 시 차액요금이 차감됩니다.</li>
+                <li>승차 및 하차시 동일한 카드를 사용 하셔야 환승 혜택이 적용됩니다.</li>
+            </ul>
+        </div>
+    </div>
+
+
+</div>
+</html>

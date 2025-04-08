@@ -20,6 +20,9 @@ public class BusScheduleHeader {
     @Column(name = "route_id")
     private String routeId;
 
-    @Column(name = "stop_order", columnDefinition = "varchar(500)")
+    @Column(name = "move_dir")
+    private String moveDir;
+
+    @Column(name = "stop_order")
     private String stopOrder;
 }

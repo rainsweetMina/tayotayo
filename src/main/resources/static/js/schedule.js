@@ -4,63 +4,54 @@ const runDate = document.getElementById("runDate");
 runDate.min = today;
 runDate.value = today;
 
+// DOM 요소 참조
 const editBtn = document.getElementById("editBtn");
 const saveBtn = document.getElementById("saveBtn");
+const addRowBtn = document.getElementById("addRowBtn");
+const deleteRowBtn = document.getElementById("deleteRowBtn");
 const table = document.getElementById("schedule-table");
 const tbody = document.getElementById("schedule-tbody");
+const routeNoteWrapper = document.getElementById("routeNoteWrapper");
+routeNoteWrapper.style.display = "none";
 
-document.getElementById("routeNoteWrapper").style.display = "none";
+// 전역 선언
+let selectedStops = [];     // 맵 선택
+let routeMapData = [];      // 전체 노선 정보
+let deletedRowIds = [];     // 행 삭제
+let currentRouteId = "";   // 선택된 routeId
+let moveDir = null;          // 노선 방향
 
-let selectedStops = [];
-let routeMapData = [];
-let currentRouteId = "";
-
-// 노선 선택 시 방면 목록 가져오기
+// 노선 선택 시 방면 조회
 document.getElementById("routeNo").addEventListener("change", () => {
     const routeNo = document.getElementById("routeNo").value;
-    const routeNoteSelect = document.getElementById("routeNote");
-    const routeNoteWrapper = document.getElementById("routeNoteWrapper");
+    // 이전 moveDir 선택박스 제거
+    document.getElementById("moveDirWrapper")?.remove();
 
-    // 해당 노선의 방면 선택이 없는 경우를 위해 숨김을 기본값으로 설정
-    routeNoteWrapper.style.display = "none";
+    // 방면 초기화
+    const routeNoteSelect = document.getElementById("routeNote");
     routeNoteSelect.innerHTML = "";
+    routeNoteWrapper.style.display = "none";
 
     fetch(`/api/route-notes?routeNo=${routeNo}`)
         .then(res => res.json())
-        .then(data => {
-            const validNotes = data.filter(note => note && note.trim() !== "");
+        .then(notes => {
+            const validNotes = notes.filter(n => n && n.trim() !== "");
 
             if (validNotes.length === 0) {
-                // 선택 노선의 방면이 없는 경우 그대로 숨기고 바로 routeId 바로 조회
-                fetch(`/api/route-id?routeNo=${routeNo}&routeNote=`)
-                    .then(res => res.text())
-                    .then(routeId => {
-                        if (routeId) {
-                            currentRouteId = routeId;
-                            loadSchedule(routeNo, "");
-                            loadRouteMap(routeId);
-                        }
-                    });
-            } else {
-                // ✅ 방면 있음 → select 구성 후 보여주기
-                const defaultOption = document.createElement("option");
-                defaultOption.value = "";
-                defaultOption.textContent = "방면 선택";
-                defaultOption.disabled = true;
-                defaultOption.selected = true;
-                routeNoteSelect.appendChild(defaultOption);
-
-                validNotes.forEach(note => {
-                    const option = document.createElement("option");
-                    option.value = note;
-                    option.textContent = note;
-                    routeNoteSelect.appendChild(option);
-                });
-
-                // ✅ fetch 이후에만 보이게 함
-                routeNoteWrapper.style.display = "inline-block";
-                routeNoteSelect.style.display = "inline-block";
+                loadMoveDirSelector(routeNo);
+                return;
             }
+
+            // 방면 select 옵션 채우기
+            const defaultOption = new Option("방면 선택", "", true, true);
+            defaultOption.disabled = true;
+            routeNoteSelect.appendChild(defaultOption);
+
+            validNotes.forEach(note => {
+                routeNoteSelect.appendChild(new Option(note, note));
+            });
+
+            routeNoteWrapper.style.display = "inline-block";
         });
 });
 
@@ -69,83 +60,139 @@ document.getElementById("routeNote").addEventListener("change", () => {
     const routeNo = document.getElementById("routeNo").value;
     const routeNote = document.getElementById("routeNote").value || "";
 
+    table.style.display = "none";
+    tbody.innerHTML = "";
+
     if (!routeNo) return;
 
-    fetch(`/api/route-id?routeNo=${routeNo}&routeNote=${routeNote}`)
+    const isMoveDir = routeNote === "0" || routeNote === "1";
+    const url = isMoveDir
+        ? `/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${routeNote}`
+        : `/api/route-id?routeNo=${routeNo}&routeNote=${routeNote}`;
+
+    fetch(url)
         .then(res => res.text())
         .then(routeId => {
             if (routeId) {
                 currentRouteId = routeId;
-                loadSchedule(routeNo, routeNote);
-                loadRouteMap(routeId);
+                loadSchedule(routeNo, isMoveDir ? "" : routeNote);
+                loadRouteMap(routeId, isMoveDir ? routeNote : null);
             } else {
                 console.warn("해당 routeId를 찾을 수 없습니다.");
             }
         });
 });
 
+// 방향 선택 생성
+function loadMoveDirSelector(routeNo) {
+    routeNoteWrapper.style.display = "none";
+    document.getElementById("moveDirWrapper")?.remove();
+
+    const wrapper = document.createElement("div");
+    wrapper.id = "moveDirWrapper";
+    wrapper.innerHTML = `
+        <label for="moveDirSelect">방향 선택:</label>
+        <select id="moveDirSelect">
+            <option value="" disabled selected>방향 선택</option>
+            <option value="0">정방향</option>
+            <option value="1">역방향</option>
+        </select>
+    `;
+    document.getElementById("routeNo").parentElement.after(wrapper);
+
+    document.getElementById("moveDirSelect").addEventListener("change", () => {
+        moveDir = document.getElementById("moveDirSelect").value;
+        fetch(`/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${moveDir}`)
+            .then(res => res.text())
+            .then(routeId => {
+                table.style.display = "none";
+                tbody.innerHTML = "";
+
+                if (!routeId || routeId.includes("html")) {
+                    alert("해당 방향의 노선이 없습니다");
+                    return;
+                }
+                currentRouteId = routeId;
+                loadSchedule(routeNo, "", moveDir);
+                loadRouteMap(routeId, moveDir);
+            });
+    });
+}
+
 // 시간표 로딩
-function loadSchedule(routeNo, routeNote) {
-    fetch(`/api/schedules?routeNo=${routeNo}&routeNote=${routeNote}`)
+function loadSchedule(routeNo, routeNote = "", moveDir = "") {
+    const params = new URLSearchParams({
+        routeNo,
+        ...(routeNote && {routeNote}),
+        ...(moveDir && {moveDir})
+    });
+
+    fetch(`/api/schedules?${params.toString()}`)
         .then(res => res.json())
         .then(renderScheduleTable);
 }
 
+// 스케줄 데이터 조회
 function renderScheduleTable(schedules) {
     // DB에 스케줄 데이터가 없을 시 숨김처리
-    // if (!schedules || schedules.length === 0) {
-    //     table.style.display = "none";
-    //     return;
-    // }
+    if (!schedules || schedules.length === 0) {
+        table.style.display = "none";
+        return;
+    }
 
     table.style.display = "table";
     tbody.innerHTML = "";
 
     schedules.forEach(s => {
         const row = document.createElement("tr");
+        row.setAttribute("data-id", s.id);
         row.innerHTML = `
                 <td>${s.scheduleNo}</td>
-                <td contenteditable="false">${s.schedule_A}</td>
-                <td contenteditable="false">${s.schedule_B}</td>
-                <td contenteditable="false">${s.schedule_C}</td>
-                <td contenteditable="false">${s.schedule_D}</td>
-                <td contenteditable="false">${s.schedule_E}</td>
-                <td contenteditable="false">${s.schedule_F}</td>
-                <td contenteditable="false">${s.schedule_G}</td>
-                <td contenteditable="false">${s.schedule_H}</td>`;
+                <td contenteditable="false">${s.schedule_A ?? ""}</td>
+                <td contenteditable="false">${s.schedule_B ?? ""}</td>
+                <td contenteditable="false">${s.schedule_C ?? ""}</td>
+                <td contenteditable="false">${s.schedule_D ?? ""}</td>
+                <td contenteditable="false">${s.schedule_E ?? ""}</td>
+                <td contenteditable="false">${s.schedule_F ?? ""}</td>
+                <td contenteditable="false">${s.schedule_G ?? ""}</td>
+                <td contenteditable="false">${s.schedule_H ?? ""}</td>`;
         tbody.appendChild(row);
     });
 }
 
 // 노선도 로딩
-function loadRouteMap(routeId) {
-    fetch(`/api/route-map?routeId=${routeId}`)
+function loadRouteMap(routeId, moveDir = null) {
+    let url = `/api/route-map?routeId=${routeId}`;
+    if (moveDir !== null) {
+        url += `&moveDir=${moveDir}`;
+    }
+
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             const mapContainer = document.getElementById("route-map");
             mapContainer.innerHTML = "";
-
             const stopsPerLine = 8;
+
             for (let i = 0; i < data.length; i += stopsPerLine) {
                 const line = document.createElement("div");
                 line.className = "route-line";
-
                 const chunk = data.slice(i, i + stopsPerLine);
+
                 chunk.forEach((stop, index) => {
                     const stopContainer = document.createElement("div");
                     stopContainer.className = "stop-container";
+                    stopContainer.dataset.seq = stop.seq;
 
                     const circle = document.createElement("div");
                     circle.className = "circle";
                     circle.dataset.bsNm = stop.bsNm;
-                    stopContainer.dataset.seq = stop.seq;
 
                     const name = document.createElement("div");
                     name.className = "stop-name";
                     name.textContent = stop.bsNm;
 
-                    stopContainer.appendChild(circle);
-                    stopContainer.appendChild(name);
+                    stopContainer.append(circle, name);
                     line.appendChild(stopContainer);
 
                     if (index < chunk.length - 1) {
@@ -157,34 +204,31 @@ function loadRouteMap(routeId) {
                 mapContainer.appendChild(line);
             }
             routeMapData = data;
-            loadHeaderStops(routeId);
+            loadHeaderStops(routeId, moveDir);
 
             // 수정 활성화 상태에서 노선&방면을 바꿀 시 다시 디폴트 값으로 전환
             saveBtn.style.display = "none";
             editBtn.style.display = "inline-block";
-        })
-        .catch(err => console.error("노선도 불러오기 실패:", err));
-}
+            addRowBtn.style.display = "none";
+            deleteRowBtn.style.display = "none";
 
-// 저장된 정류장 리스트를 서버에서 불러옴
-function loadHeaderStops(routeId) {
-    fetch(`/api/schedule-header?routeId=${encodeURIComponent(routeId)}`)
-        .then(res => res.json())
-        .then(data => {
-            if (!Array.isArray(data)) {
-                console.warn("서버로부터 배열이 아님:", data);
-                selectedStops = [];
-            } else {
-                selectedStops = data;
-            }
-            updateScheduleHeader();
-            highlightSelectedCircles();
-        })
-        .catch(err => {
-            console.error("정류장 목록 불러오기 실패:", err);
-            selectedStops = [];
         });
 }
+
+// 저장된 정류장 리스트를 서버에서 불러옴 (시작 종점 + 선택 정거장 + 끝 종점)
+function loadHeaderStops(routeId, moveDir = null) {
+    const params = new URLSearchParams({routeId});
+    if (moveDir !== null) params.append("moveDir", moveDir);
+
+    fetch(`/api/schedule-header?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+            selectedStops = Array.isArray(data) ? data : [];
+            updateScheduleHeader();
+            highlightSelectedCircles();
+        });
+}
+
 
 // 지정 정류장 표시
 function highlightSelectedCircles() {
@@ -222,40 +266,157 @@ function highlightSelectedCircles() {
     });
 }
 
+// 클릭기능 정거장 설정
 function highlightSelectableCircles() {
     const allCircles = document.querySelectorAll(".circle");
     let minSeq = Infinity;
     let maxSeq = -Infinity;
+    // let startCircle = null;
+    // let endCircle = null;
 
     // 시작 / 끝 seq 탐색
     allCircles.forEach(circle => {
         const seq = parseInt(circle.parentElement.dataset.seq);
-        if (seq < minSeq) {
-            minSeq = seq;
-            startCircle = circle;
-        }
-        if (seq > maxSeq) {
-            maxSeq = seq;
-            endCircle = circle;
-        }
+        minSeq = Math.min(minSeq, seq);
+        maxSeq = Math.max(maxSeq, seq);
     });
 
     allCircles.forEach(circle => {
         const seq = parseInt(circle.parentElement.dataset.seq);
-
         circle.classList.remove("selectable");
         circle.removeEventListener("click", onCircleClick);
 
-        if (circle !== startCircle && circle !== endCircle) {
+        if (seq !== minSeq && seq !== maxSeq) {
             circle.classList.add("selectable");
             circle.addEventListener("click", onCircleClick);
         }
     });
 }
 
-// 수정 → 저장 버튼 로직
+// 원 클릭 함수
+function onCircleClick(e) {
+    const circle = e.currentTarget;
+    const seq = parseInt(circle.parentElement.dataset.seq);
+    const allSeqs = [...document.querySelectorAll(".circle")].map(c => parseInt(c.parentElement.dataset.seq));
+    const minSeq = Math.min(...allSeqs);
+    const maxSeq = Math.max(...allSeqs);
+
+    if (seq === minSeq || seq === maxSeq) return;
+
+    const middleStops = selectedStops.filter(s => s !== minSeq && s !== maxSeq);
+    const isSelected = selectedStops.includes(seq);
+
+    if (isSelected) {
+        selectedStops = selectedStops.filter(s => s !== seq);
+        circle.classList.remove("selected");
+    } else {
+        if (middleStops.length >= 6) {
+            alert("더 이상 선택할 수 없습니다.");
+            return;
+        }
+        selectedStops.push(seq);
+        circle.classList.add("selected");
+    }
+
+    updateScheduleHeader();
+}
+
+// 스케줄 테이블 헤더 업데이트
+function updateScheduleHeader() {
+    const theadRow = document.getElementById("schedule-thead").querySelector("tr");
+    while (theadRow.children.length > 1) {
+        theadRow.removeChild(theadRow.lastChild);
+    }
+
+    const sortedStops = [...selectedStops].sort((a, b) => a - b);
+    sortedStops.forEach(seq => {
+        const stop = routeMapData.find(stop => stop.seq === seq);
+        const th = document.createElement("th");
+        th.textContent = stop ? stop.bsNm : `정류장(${seq})`;
+        theadRow.appendChild(th);
+    });
+}
+
+// 저장
+saveBtn.addEventListener("click", () => {
+    // 스케줄 테이블 저장
+    const rows = table.querySelectorAll("tbody tr");
+    const data = [];
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const isNewRow = row.getAttribute("data-new") === "true";
+        const id = row.getAttribute("data-id");
+
+        const rowData = {
+            id: isNewRow ? null : (id ? parseInt(id) : null),
+            scheduleNo: parseInt(cells[0].innerText.trim()),
+            schedule_A: cells[1].innerText.trim(),
+            schedule_B: cells[2].innerText.trim(),
+            schedule_C: cells[3].innerText.trim(),
+            schedule_D: cells[4].innerText.trim(),
+            schedule_E: cells[5].innerText.trim(),
+            schedule_F: cells[6].innerText.trim(),
+            schedule_G: cells[7].innerText.trim(),
+            schedule_H: cells[8].innerText.trim(),
+            routeId: currentRouteId,
+            moveDir: moveDir || "",
+        };
+        data.push(rowData);
+    });
+
+    fetch("/api/modify-schedule", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            schedules: data,
+            deletedIds: deletedRowIds
+        })
+    }).then(res => res.text())
+        .then(() => {
+            alert("저장 완료!");
+            deletedRowIds = [];
+
+            table.querySelectorAll("td[contenteditable]").forEach(td => {
+                td.setAttribute("contenteditable", "false");
+                td.style.backgroundColor = "";
+            });
+            saveBtn.style.display = "none";
+            editBtn.style.display = "inline-block";
+            addRowBtn.style.display = "none";
+            deleteRowBtn.style.display = "none";
+            location.reload();
+        });
+
+    // stopOrder 저장 (노선 중 지정 정거장)
+    const allStops = [...document.querySelectorAll(".stop-container")];
+    let minSeq = Infinity;
+    let maxSeq = -Infinity;
+
+    allStops.forEach(stop => {
+        const seq = parseInt(stop.dataset.seq);
+        minSeq = Math.min(minSeq, seq);
+        maxSeq = Math.max(maxSeq, seq);
+    });
+
+    const pureMiddleStops = selectedStops.filter(seq => seq !== minSeq && seq !== maxSeq);
+    if (pureMiddleStops.length === 6) {
+        const stopOrder = [minSeq, ...pureMiddleStops, maxSeq];
+        fetch("/api/schedule-header", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                routeId: currentRouteId,
+                moveDir: moveDir,
+                stopOrder: stopOrder
+            })
+        });
+    }
+});
+
+// 수정버튼
 editBtn.addEventListener("click", () => {
-    // selectedStops = [];
+    // 스케줄 데이터가 없을 경우 숨김표시 상태에서 수정버튼 누르면 노출
+    table.style.display = "inline-block";
 
     table.querySelectorAll("td[contenteditable]").forEach(td => {
         td.setAttribute("contenteditable", "true");
@@ -265,123 +426,55 @@ editBtn.addEventListener("click", () => {
     highlightSelectableCircles();
     editBtn.style.display = "none";
     saveBtn.style.display = "inline-block";
+    // 행 추가&제거 버튼
+    addRowBtn.style.display = "inline-block";
+    deleteRowBtn.style.display = "inline-block";
 });
 
-// 원클릭 함수
-function onCircleClick(e) {
-    const circle = e.currentTarget;
-    const seq = parseInt(circle.parentElement.dataset.seq);
-    const isSelected = selectedStops.includes(seq);
+// 행 추가 버튼
+document.getElementById("addRowBtn").addEventListener("click", () => {
+    const tbody = document.getElementById("schedule-tbody");
 
-    if (isSelected) {
-        selectedStops = selectedStops.filter(s => s !== seq);
-        circle.classList.remove("selected");
-    } else {
-        if (selectedStops.length >= 6) {
-            alert("더 이상 선택하실 수 없습니다.");
-            return;
-        }
-        selectedStops.push(seq);
-        circle.classList.add("selected");
-    }
-    updateScheduleHeader();
-}
+    // 현재 있는 scheduleNo들 중 최대값 찾기
+    const maxNo = Math.max(
+        0,
+        ...Array.from(tbody.querySelectorAll("tr")).map(tr =>
+            parseInt(tr.querySelector("td")?.innerText || "0")
+        )
+    );
 
-function updateScheduleHeader() {
-    const theadRow = document.getElementById("schedule-thead").querySelector("tr");
-    while (theadRow.children.length > 1) {
-        theadRow.removeChild(theadRow.lastChild);
-    }
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = `
+        <td>${maxNo + 1}</td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+    `;
+    newRow.setAttribute("data-new", "true");
+    newRow.setAttribute("data-id", "");
+    tbody.appendChild(newRow);
+});
 
-    const sortedStops = [...selectedStops].sort((a, b) => a - b);
-    sortedStops.forEach(seq => {
-        const th = document.createElement("th");
-        const stop = routeMapData.find(stop => stop.seq === seq);
-        th.textContent = stop ? stop.bsNm : `정류장(${seq})`;
-        theadRow.appendChild(th);
-    });
-}
-
-// 정류장 이름으로 seq 찾는 함수
-function getSeqByStopName(name) {
-    const container = [...document.querySelectorAll(".stop-container")]
-        .find(div => div.querySelector(".circle")?.dataset.bsNm === name);
-    return container ? parseInt(container.dataset.seq) : Infinity;
-}
-
-// 저장
-saveBtn.addEventListener("click", () => {
-    if (selectedStops.length !== 6) {
-        alert("중간 정류장은 6개를 지정하셔야 합니다..");
+// 행 삭제 버튼
+document.getElementById("deleteRowBtn").addEventListener("click", () => {
+    const rows = document.querySelectorAll("#schedule-tbody tr");
+    if (rows.length === 0) {
+        alert("삭제할 행이 없습니다.");
         return;
     }
+    const lastRow = rows[rows.length - 1]
+    const isNewRow = lastRow.getAttribute("data-new") === "true";
+    const rowId = lastRow.getAttribute("data-id");
 
-    const rows = table.querySelectorAll("tbody tr");
-    const data = [];
-    rows.forEach(row => {
-        const cells = row.querySelectorAll("td");
-        const rowData = {
-            scheduleNo: cells[0].innerText.trim(),
-            schedule_A: cells[1].innerText.trim(),
-            schedule_B: cells[2].innerText.trim(),
-            schedule_C: cells[3].innerText.trim(),
-            schedule_D: cells[4].innerText.trim(),
-            schedule_E: cells[5].innerText.trim(),
-            schedule_F: cells[6].innerText.trim(),
-            schedule_G: cells[7].innerText.trim(),
-            schedule_H: cells[8].innerText.trim()
-        };
-        data.push(rowData);
-    });
-
-    // 시작점/끝점 자동 포함
-    const allStops = [...document.querySelectorAll(".stop-container")];
-    let firstSeq = null;
-    let lastSeq = null;
-    let minSeq = Infinity;
-    let maxSeq = -Infinity;
-
-    allStops.forEach(stop => {
-        const seq = parseInt(stop.dataset.seq);
-        if (seq < minSeq) {
-            minSeq = seq;
-            firstSeq = seq;
+    if (isNewRow || confirm("정말 삭제하시겠습니까?")) {
+        if (!isNewRow && rowId) {
+            deletedRowIds.push(parseInt(rowId));
         }
-        if (seq > maxSeq) {
-            maxSeq = seq;
-            lastSeq = seq;
-        }
-    });
-
-    // 최종 저장용 stopOrder 구성
-    const sortedSeqStops = [...selectedStops].sort((a, b) => a - b);
-    const stopOrder = [firstSeq, ...sortedSeqStops, lastSeq];
-
-    // 시간표 저장
-    fetch("/api/modify-schedule", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    }).then(res => res.text())
-        .then(() => {
-            alert("저장 완료!");
-            table.querySelectorAll("td[contenteditable]").forEach(td => {
-                td.setAttribute("contenteditable", "false");
-                td.style.backgroundColor = "";
-            });
-            saveBtn.style.display = "none";
-            editBtn.style.display = "inline-block";
-            location.reload();
-        });
-
-    // 정류장 순서 저장
-    fetch("/api/schedule-header", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            routeId: currentRouteId,
-            stopOrder: stopOrder
-        })
-    });
-});
-
+            lastRow.remove();
+    }
+})

@@ -55,6 +55,19 @@ public class RouteStopLinkService {
                 .collect(Collectors.toList());
     }
 
+    public List<BusStopDTO> getStopsWithNamesByRouteIdAndMoveDir(String routeId, String moveDir) {
+        List<Object[]> rows = routeStopLinkRepository.findRawStopDataByRouteIdAndMoveDir(routeId, moveDir);
+
+        return rows.stream()
+                .map(row -> new BusStopDTO(
+                        ((Number) row[0]).intValue(),      // seq
+                        (String) row[1],                   // bsNm
+                        (String) row[2],                   // bsId
+                        (Double) row[3],                   // xPos
+                        (Double) row[4]                    // yPos
+                ))
+                .collect(Collectors.toList());
+    }
 
     // 특정 노선 정보 가져오기
     public void fetchSingleRouteStopLink(String routeId) {
