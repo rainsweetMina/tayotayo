@@ -35,7 +35,13 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**",
+                                "/swagger-ui/**",         // ✅ Swagger UI 경로
+                                "/swagger-ui.html",         // ✅ Swagger UI 경로
+                                "/v3/api-docs/**",        // ✅ Swagger 문서 JSON
+                                "/swagger-resources/**",  // ✅ Swagger 리소스
+                                "/webjars/**"             // ✅ Swagger 스타일 등 정적 리소스
+                                        ).permitAll()
                         .requestMatchers("/mypage/**").authenticated()
                         .anyRequest().permitAll()
                 )
