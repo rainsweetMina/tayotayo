@@ -8,12 +8,11 @@ import java.io.Serializable;
 /**
  * DTO for {@link Route}
  */
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class RouteDTO implements Serializable {
-    private Long id;
     private String routeId;
     private String routeNo;
     private String stBsId;
@@ -21,4 +20,8 @@ public class RouteDTO implements Serializable {
     private String stNm;
     private String edNm;
     private String routeNote;
+    private String dataconnareacd;
+    private String dirRouteNote;
+    private String ndirRouteNote;
+    private String routeTCd;
 }

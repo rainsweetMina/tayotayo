@@ -1,18 +1,14 @@
-package kroryi.bus2.service.CustomeRoute;
+package kroryi.bus2.service.Route;
 
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.RouteStopLink;
 import kroryi.bus2.repository.jpa.AddRouteStopLinkRepository;
-import kroryi.bus2.service.RouteDataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +24,11 @@ public class GetCustomRouteService {
     }
 
     public List<Map<String, Object>> getBusRoute(String routeId) throws IOException {
-        List<RouteStopLink> stops = getByRouteId(routeId);
+        List<RouteStopLink> stops = getByRouteId(routeId)
+                .stream()
+                .sorted(Comparator.comparingInt(RouteStopLink::getSeq))  // ✅ seq 기준 정렬
+                .toList();
+
         return stops.stream().map(stop -> {
             Map<String, Object> map = new HashMap<>();
             map.put("bsId", stop.getBsId());
@@ -45,7 +45,10 @@ public class GetCustomRouteService {
 
     // moveDir 기준으로 나눠서 CoordinateDTO로 변환해서 반환
     public Map<String, List<CoordinateDTO>> getCoordinatesByRouteIdGrouped(String routeId) {
-        List<RouteStopLink> links = getByRouteId(routeId);
+        List<RouteStopLink> links = getByRouteId(routeId)
+                .stream()
+                .sorted(Comparator.comparingInt(RouteStopLink::getSeq))
+                .toList();
 
         Map<String, List<CoordinateDTO>> grouped = new HashMap<>();
 

@@ -1,17 +1,15 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.Route;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import kroryi.bus2.dto.Route.RouteDTO;
 import kroryi.bus2.dto.busStop.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 
 import kroryi.bus2.entity.CustomRoute;
 import kroryi.bus2.entity.Route;
-import kroryi.bus2.entity.Route;
 
-import kroryi.bus2.entity.RouteStopLink;
-import kroryi.bus2.repository.jpa.AddRouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.NodeRepository;
 import kroryi.bus2.repository.jpa.route.CustomRouteRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
@@ -264,7 +262,45 @@ public class RouteDataService {
 // 진짜진짜 요약 : 노선ID로 노선불러와서 정방향, 역방향 구분 후 각각 ORS에 넣어 버스 노선도의 좌표를 받아서 인코딩 후 합쳐서 반환
 
 
+    // 그냥노선 + Custom노선의 정보를 가져오는거
+    public RouteDTO getRouteByRouteId(String routeId) {
+        return routeRepository.findByRouteId(routeId)
+                .map(this::convertToDTO)
+                .or(() -> customRouteRepository.findByRouteId(routeId).map(this::convertToDTO))
+                .orElseThrow(() -> new IllegalArgumentException("노선이 존재하지 않습니다: " + routeId));
+    }
 
+    private RouteDTO convertToDTO(Route route) {
+        return RouteDTO.builder()
+                .routeId(route.getRouteId())
+                .routeNo(route.getRouteNo())
+                .stBsId(route.getStBsId())
+                .edBsId(route.getEdBsId())
+                .stNm(route.getStNm())
+                .edNm(route.getEdNm())
+                .routeNote(route.getRouteNote())
+                .dataconnareacd(route.getDataconnareacd())
+                .dirRouteNote(route.getDirRouteNote())
+                .ndirRouteNote(route.getNdirRouteNote())
+                .routeTCd(route.getRouteTCd())
+                .build();
+    }
+
+    private RouteDTO convertToDTO(CustomRoute route) {
+        return RouteDTO.builder()
+                .routeId(route.getRouteId())
+                .routeNo(route.getRouteNo())
+                .stBsId(route.getStBsId())
+                .edBsId(route.getEdBsId())
+                .stNm(route.getStNm())
+                .edNm(route.getEdNm())
+                .routeNote(route.getRouteNote())
+                .dataconnareacd(route.getDataconnareacd())
+                .dirRouteNote(route.getDirRouteNote())
+                .ndirRouteNote(route.getNdirRouteNote())
+                .routeTCd(route.getRouteTCd())
+                .build();
+    }
 
 
 }
