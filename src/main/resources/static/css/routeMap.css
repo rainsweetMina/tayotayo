@@ -1,3 +1,6 @@
+section{
+    margin: 1em;
+}
 .stop-container {
     display: flex;
     flex-direction: column;
@@ -73,12 +76,12 @@
 }
 
 
-table {
+#schedule-table {
     border-collapse: collapse;
     width: 100%;
 }
 
-th, td {
+#schedule-table th, td {
     border: 1px solid #ddd;
     padding: 5px;
     min-width: 100px;
@@ -86,10 +89,10 @@ th, td {
     text-align: center;
 }
 
-th:first-child {
+#schedule-table th:first-child {
     width: 30px;
 }
 
-th {
+#schedule-table th {
     background-color: #f2f2f2;
 }
