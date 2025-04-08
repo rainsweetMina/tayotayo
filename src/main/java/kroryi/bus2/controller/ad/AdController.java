@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.ad;
 
 import kroryi.bus2.dto.ad.AdRequestDTO;
 import kroryi.bus2.dto.ad.AdResponseDTO;
@@ -65,6 +65,10 @@ public class AdController {
     public ResponseEntity<Ad> updateAd(@PathVariable Long id, @RequestBody AdUpdateRequestDTO dto) {
         Ad updatedAd = adService.updateAd(id, dto);
         return ResponseEntity.ok(updatedAd);
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<AdResponseDTO> getAdById(@PathVariable Long id) {
+        return ResponseEntity.ok(adService.getAdById(id));
     }
 
 
