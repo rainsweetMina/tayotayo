@@ -13,11 +13,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class SecurityConfig {
@@ -64,9 +67,16 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .defaultSuccessUrl("/mypage", true)
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService((OAuth2UserService) customOAuth2UserService)
+                                .userService((OAuth2UserService<OAuth2UserRequest, OAuth2User>) customOAuth2UserService)
                         )
+                        .failureHandler((request, response, exception) -> {
+                            exception.printStackTrace(); // 콘솔에 로그
+
+                            String encodedMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
+                            response.sendRedirect("/login?error=" + encodedMessage);
+                        })
                 )
+
                 .rememberMe(remember -> remember
                         .key("remember-me-key")
                         .tokenValiditySeconds(7 * 24 * 60 * 60) // 7일
