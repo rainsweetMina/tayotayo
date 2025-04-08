@@ -3,6 +3,7 @@ package kroryi.bus2.service.ad;
 
 import kroryi.bus2.dto.ad.AdCompanyDropdownDTO;
 import kroryi.bus2.dto.ad.AdCompanyRequestDTO;
+import kroryi.bus2.dto.ad.AdCompanyResponseDTO;
 import kroryi.bus2.dto.ad.AdCompanyUpdateRequestDTO;
 import kroryi.bus2.entity.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
@@ -10,12 +11,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdCompanyService {
 
     private final AdCompanyRepository adCompanyRepository;
+
+    public List<AdCompany> getAllCompanies() {
+        return adCompanyRepository.findByDeletedFalse();  // 🔁 전체 조회 대신 삭제 안 된 것만
+    }
+
 
     public AdCompany registerCompany(AdCompanyRequestDTO dto) {
         AdCompany company = AdCompany.builder()
@@ -43,5 +50,14 @@ public class AdCompanyService {
                 .map(company -> new AdCompanyDropdownDTO(company.getId(), company.getName()))
                 .toList();
     }
+    public void softDeleteCompany(Long id) {
+        AdCompany company = adCompanyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("광고회사를 찾을 수 없습니다."));
+
+        company.setDeleted(true);
+        adCompanyRepository.save(company); // 삭제 대신 상태만 바꿈
+    }
+
+
 
 }

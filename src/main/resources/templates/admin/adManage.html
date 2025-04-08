@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>광고 관리</title>
+  <script src="/js/adManage.js" defer></script>
+</head>
+<body>
+
+<h1>📢 광고 관리</h1>
+
+<!-- 광고 등록/수정 폼 -->
+<section>
+  <h2>광고 등록
+  <span id="adEditStatus" style="color: orange; display: none;">(수정 중)</span> <!-- ✅ 여기 -->
+  </h2>
+  <form id="adForm">
+    <input type="hidden" id="adId" /> <!-- 수정용 ID -->
+
+    <label>제목: <input type="text" id="title" /></label><br />
+    <label>이미지 URL: <input type="text" id="imageUrl" /></label><br />
+    <label>링크 URL: <input type="text" id="linkUrl" /></label><br />
+    <label>시작일: <input type="datetime-local" id="startDateTime" /></label><br />
+    <label>종료일: <input type="datetime-local" id="endDateTime" /></label><br />
+
+    <label>광고회사:
+      <select id="companySelect"></select>
+    </label><br />
+
+    <button type="submit" id="adSubmitBtn">등록</button>
+  </form>
+</section>
+
+<hr />
+
+<!-- 광고 목록 테이블 -->
+<section>
+  <h2>등록된 광고 목록</h2>
+  <table border="1">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>제목</th>
+      <th>회사</th>
+      <th>시작일</th>
+      <th>종료일</th>
+      <th>상태</th>
+      <th>수정</th>
+      <th>삭제</th>
+    </tr>
+    </thead>
+    <tbody id="adList">
+    <!-- JS로 광고 목록 추가 -->
+    </tbody>
+  </table>
+</section>
+
+<hr />
+
+<!-- 광고회사 등록/수정 폼 -->
+<section>
+  <h2>광고회사 관리
+  <span id="companyEditStatus" style="color: orange; display: none;">(수정 중)</span> <!-- ✅ 여기 -->
+  </h2>
+  <form id="companyForm">
+    <input type="hidden" id="companyId" />
+
+    <label>회사명: <input type="text" id="companyName" /></label><br />
+    <label>담당자명: <input type="text" id="managerName" /></label><br />
+    <label>전화번호: <input type="text" id="contactNumber" /></label><br />
+    <label>이메일: <input type="email" id="email" /></label><br />
+
+    <button type="submit" id="companySubmitBtn">등록</button> <!-- ✅ ID 추가 -->
+  </form>
+</section>
+
+<!-- 광고회사 목록 테이블 -->
+<section>
+  <table border="1">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>회사명</th>
+      <th>담당자</th>
+      <th>연락처</th>
+      <th>이메일</th>
+      <th>수정</th>
+      <th>삭제</th>
+    </tr>
+    </thead>
+    <tbody id="companyList">
+    <!-- JS로 회사 목록 추가 -->
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

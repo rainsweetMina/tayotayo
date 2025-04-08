@@ -2,6 +2,7 @@ package kroryi.bus2.service;
 
 
 import kroryi.bus2.dto.lost.LostStatResponseDTO;
+import kroryi.bus2.entity.ApiLog;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
 import kroryi.bus2.repository.jpa.LostItemRepository;
@@ -12,7 +13,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -42,7 +47,6 @@ public class DashboardService {
         return new LostStatResponseDTO(reported, found, matched);
     }
     // 🔵 분실물 통계 메서드 종료
-
 
 
     // 검색량, 오늘 요구량, 레디스 사용량 받기

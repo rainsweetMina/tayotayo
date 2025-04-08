@@ -8,8 +8,11 @@ import org.springframework.stereotype.Repository;
 
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface ApiLogRepository extends JpaRepository<ApiLog, Long> {
     long countByTimestampBetween(LocalDateTime start, LocalDateTime end);
+
+    List<ApiLog> findByTimestampBetween(LocalDateTime timestampAfter, LocalDateTime timestampBefore);
 }
