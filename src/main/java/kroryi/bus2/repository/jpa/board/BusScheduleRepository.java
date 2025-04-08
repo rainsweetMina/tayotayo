@@ -11,4 +11,8 @@ public interface BusScheduleRepository extends JpaRepository<BusSchedule, Long> 
     List<BusSchedule> findByRouteId(String routeId);
 
     List<BusSchedule> findByRouteIdAndMoveDir(String routeId, String moveDir);
+
+    List<BusSchedule> findByRouteIdAndBusTCd(String routeId, String busTCd);
+
+    List<BusSchedule> findByRouteIdAndMoveDirAndBusTCd(String routeId, String moveDir, String busTCd);
 }

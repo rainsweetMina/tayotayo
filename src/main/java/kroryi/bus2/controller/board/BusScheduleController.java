@@ -167,5 +167,4 @@ public class BusScheduleController {
         return routeIds.isEmpty() ? "" : routeIds.get(0); // 첫 번째 routeId 반환
     }
 
-
 }
