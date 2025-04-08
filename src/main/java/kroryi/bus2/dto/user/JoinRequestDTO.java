@@ -17,25 +17,32 @@ import java.time.LocalDate;
 public class JoinRequestDTO {
 
     @NotBlank(message = "아이디를 입력하세요.")
-    private String userId;  // 로그인 아이디
+    private String userId;  // 로그인 ID
 
     @NotBlank(message = "비밀번호를 입력하세요.")
     private String password;
 
-    @NotBlank(message = "비밀번호를 다시 입력하세요.")
+    @NotBlank(message = "비밀번호 확인을 입력하세요.")
     private String passwordCheck;
 
     @NotBlank(message = "이름을 입력하세요.")
-    private String username;  // 닉네임 → 이름으로 변경
+    private String username;
 
+    @NotBlank(message = "이메일을 입력하세요.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
+    private String emailVerificationCode; // 사용자가 입력한 이메일 인증 코드
+
+    private boolean emailVerified = false; // 인증 완료 여부 (기본 false)
+
     private String phoneNumber;
 
-    private SignupType signupType = SignupType.GENERAL; // 기본값 GENERAL
+    private SignupType signupType = SignupType.GENERAL; // 소셜/일반 회원가입 구분
 
-    // 비밀번호 암호화 후 엔티티로 변환
+    /**
+     * 비밀번호 암호화 이후, 엔티티로 변환
+     */
     public User toEntity(String encodedPassword) {
         return User.builder()
                 .userId(this.userId)
@@ -44,8 +51,19 @@ public class JoinRequestDTO {
                 .email(this.email)
                 .phoneNumber(this.phoneNumber)
                 .signupType(this.signupType)
-                .role(Role.USER)  // 기본 권한 USER
-                .signupDate(LocalDate.now())  // 가입 날짜 설정
+                .role(Role.USER)  // 일반 사용자 권한
+                .signupDate(LocalDate.now())
                 .build();
     }
+
+    // emailVerified 값을 반환하는 getter 메서드
+    public Boolean getEmailVerified() {
+        return emailVerified;  // emailVerified 값을 반환
+    }
+
+    // emailVerified 값을 설정하는 setter 메서드
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;  // emailVerified 값을 설정
+    }
+
 }

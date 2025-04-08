@@ -1,16 +1,19 @@
 package kroryi.bus2.service;
 
+import jakarta.transaction.Transactional;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginRequestDTO;
+import kroryi.bus2.dto.mypage.ModifyUserDTO;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -23,25 +26,48 @@ public class UserService {
         return userRepository.existsByUserId(userId);
     }
 
-    // 회원가입
-    public void join(JoinRequestDTO jdto) {
-        String encodedPassword = passwordEncoder.encode(jdto.getPassword());
-        userRepository.save(jdto.toEntity(encodedPassword));
+    // 회원가입 처리
+    public void join(JoinRequestDTO dto) {
+        // 이메일 인증 여부 확인
+        if (dto.getEmailVerified() == null || !dto.getEmailVerified()) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        // 아이디 중복 확인
+        if (userRepository.existsByUserId(dto.getUserId())) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        }
+
+        // 이메일 중복 확인
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("이미 등록된 이메일입니다.");
+        }
+
+        // 비밀번호 확인
+        if (!dto.getPassword().equals(dto.getPasswordCheck())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 비밀번호 유효성 검사
+        if (!isValidPassword(dto.getPassword())) {
+            throw new IllegalArgumentException("비밀번호는 8자 이상이며, 문자, 숫자, 특수문자를 포함해야 합니다.");
+        }
+
+        // 저장
+        String encodedPassword = passwordEncoder.encode(dto.getPassword());
+        User user = dto.toEntity(encodedPassword);
+        userRepository.save(user);
     }
 
     // 로그인
     public User login(LoginRequestDTO ldto) {
         Optional<User> optionalUser = userRepository.findByUserId(ldto.getUserId());
 
-        if (optionalUser.isEmpty()) {
-            return null;  // 아이디가 없으면 로그인 실패
-        }
+        if (optionalUser.isEmpty()) return null;
 
         User user = optionalUser.get();
-
-
         if (!passwordEncoder.matches(ldto.getPassword(), user.getPassword())) {
-            return null;  // 비밀번호 불일치 시 로그인 실패
+            return null;
         }
 
         return user;
@@ -56,4 +82,36 @@ public class UserService {
         userRepository.deleteByUserId(userId);
     }
 
+    // 회원 정보 수정
+    @Transactional
+    public boolean modifyUserInfo(String userId, ModifyUserDTO dto) {
+        User user = findByUserId(userId);
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        return true; // ← 성공적으로 수정되었음을 반환
+    }
+
+    // 비밀번호 유효성 검사
+    private boolean isValidPassword(String password) {
+        // 최소 8자, 대소문자, 숫자, 특수문자 하나 이상 포함
+        String regex = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
+        return password.matches(regex);
+    }
+
+    // 비밀번호 변경
+    @Transactional
+    public boolean changePassword(String userId, String currentPassword, String newPassword) {
+        User user = findByUserId(userId);
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            return false;
+        }
+
+        if (!isValidPassword(newPassword)) {
+            throw new IllegalArgumentException("비밀번호는 8자 이상이며, 문자, 숫자, 특수문자를 포함해야 합니다.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        return true;
+    }
 }

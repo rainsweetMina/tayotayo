@@ -1,77 +1,102 @@
 package kroryi.bus2.controller;
 
-import jakarta.validation.Valid;
 import kroryi.bus2.dto.user.JoinRequestDTO;
-import kroryi.bus2.dto.user.LoginRequestDTO;
-import kroryi.bus2.entity.user.User;
+import kroryi.bus2.dto.user.LoginFormDTO;
+import kroryi.bus2.service.EmailService;
 import kroryi.bus2.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
+import java.util.HashMap;
+import java.util.Map;
+
+@Log4j2
 @Controller
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+    private final EmailService emailService;
 
-    // 👉 회원가입 폼
+    // 로그인 페이지
+    @GetMapping("/login")
+    public String login(@RequestParam(value = "errorCode", required = false) String errorCode,
+                        @RequestParam(value = "logout", required = false) String logout,
+                        Model model) {
+        log.info("로그인 페이지 요청");
+        log.info("logout: {}", logout);
+
+        if (logout != null) {
+            model.addAttribute("logoutMessage", "로그아웃되었습니다.");
+        }
+
+        if (errorCode != null) {
+            switch (errorCode) {
+                case "bad_credentials":
+                    model.addAttribute("errorMessage", "아이디 또는 비밀번호가 올바르지 않습니다.");
+                    break;
+                case "disabled":
+                    model.addAttribute("errorMessage", "비활성화된 계정입니다.");
+                    break;
+                case "locked":
+                    model.addAttribute("errorMessage", "잠긴 계정입니다.");
+                    break;
+                case "expired":
+                    model.addAttribute("errorMessage", "계정이 만료되었습니다.");
+                    break;
+                default:
+                    model.addAttribute("errorMessage", "로그인 중 오류가 발생했습니다.");
+                    break;
+            }
+        }
+
+        model.addAttribute("loginForm", new LoginFormDTO());
+        return "user/login";
+    }
+
+    // 회원가입 페이지
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("joinRequestDTO", new JoinRequestDTO());
         return "user/register";
     }
 
-    // 👉 회원가입 처리
+    // 회원가입 처리
     @PostMapping("/register")
-    public String register(@ModelAttribute @Valid JoinRequestDTO joinRequestDTO, BindingResult bindingResult) {
-        if (!joinRequestDTO.getPassword().equals(joinRequestDTO.getPasswordCheck())) {
-            bindingResult.rejectValue("passwordCheck", "password.mismatch", "비밀번호가 일치하지 않습니다.");
-        }
+    public String register(@ModelAttribute("joinRequestDTO") JoinRequestDTO jdto, Model model) {
+        try {
+            if (jdto.getEmailVerified() == null || !jdto.getEmailVerified()) {
+                throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
+            }
 
-        if (userService.checkUserIdDuplicate(joinRequestDTO.getUserId())) {
-            bindingResult.rejectValue("userId", "userId.duplicate", "이미 사용 중인 아이디입니다.");
-        }
-
-        if (bindingResult.hasErrors()) {
+            userService.join(jdto);
+            model.addAttribute("registrationSuccess", true);
+            return "redirect:/register?success=true";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("registrationSuccess", false);
             return "user/register";
         }
-
-        userService.join(joinRequestDTO);
-        return "redirect:/login";
     }
 
-    // 👉 로그인 폼
-    @GetMapping("/login")
-    public String loginForm(Model model) {
-        model.addAttribute("loginForm", new LoginRequestDTO());
-        return "user/login";
+    // 이메일 인증 코드 전송
+    @ResponseBody
+    @GetMapping("/email/send")
+    public String sendEmailVerificationCode(@RequestParam String email) {
+        emailService.sendVerificationCode(email);
+        return "인증 코드 전송 완료";
     }
 
-    // 👉 마이페이지
-    @GetMapping("/mypage")
-    public String mypage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        if (userDetails == null) {
-            return "redirect:/login";
-        }
-
-        User user = userService.findByUserId(userDetails.getUsername());
-        model.addAttribute("user", user);
-        return "user/mypage";
-    }
-
-    // 👉 회원 탈퇴
-    @PostMapping("/mypage/delete")
-    public String deleteAccount(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails != null) {
-            userService.deleteByUserId(userDetails.getUsername());
-        }
-        return "redirect:/login?deleted";
+    // 이메일 인증 코드 검증
+    @ResponseBody
+    @GetMapping("/email/verify")
+    public Map<String, Object> verifyEmailCode(@RequestParam String email, @RequestParam String code) {
+        boolean result = emailService.verifyCode(email, code);
+        Map<String, Object> response = new HashMap<>();
+        response.put("verified", result);
+        return response;
     }
 }
