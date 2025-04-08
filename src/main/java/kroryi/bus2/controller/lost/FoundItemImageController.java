@@ -1,7 +1,7 @@
 package kroryi.bus2.controller.lost;
 
-import kroryi.bus2.entity.FoundItem;
-import kroryi.bus2.entity.Photo;
+import kroryi.bus2.entity.lost.FoundItem;
+import kroryi.bus2.entity.lost.Photo;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.PhotoRepository;
 import lombok.RequiredArgsConstructor;

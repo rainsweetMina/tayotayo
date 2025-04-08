@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노선 정류소 리스트</title>
+</head>
+<body>
+<h1>노선 정류소 출력 (Custom + 기존 Route)</h1>
+
+<label>노선 ID 입력: <input type="text" id="routeIdInput" placeholder="예: 36008429002"></label>
+<button onclick="loadBusStops()">불러오기</button>
+
+<hr>
+
+<table border="1" id="resultTable">
+    <thead>
+    <tr>
+        <th>seq</th>
+        <th>방향 (moveDir)</th>
+        <th>정류소 ID</th>
+        <th>정류소 이름</th>
+        <th>좌표 (x, y)</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody">
+    <!-- 결과 데이터 삽입 -->
+    </tbody>
+</table>
+
+<script>
+    async function loadBusStops() {
+        const routeId = document.getElementById('routeIdInput').value.trim();
+        if (!routeId) {
+            alert('노선 ID를 입력해주세요!');
+            return;
+        }
+
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        let data = null;
+
+        // 1차 시도: 일반 노선
+        try {
+            const res = await fetch(`/api/bus/bus-route?routeId=${routeId}`);
+            if (res.ok) {
+                data = await res.json();
+            }
+        } catch (err) {
+            console.warn("일반 노선 조회 실패, 커스텀으로 시도");
+        }
+
+        // 2차 시도: 커스텀 노선
+        if (!data) {
+            try {
+                const res = await fetch(`/api/bus/bus-route-Custom?routeId=${routeId}`);
+                if (res.ok) {
+                    data = await res.json();
+                }
+            } catch (err) {
+                console.error("커스텀 노선도 조회 실패:", err);
+            }
+        }
+
+        // 결과 처리
+        if (data && data.length > 0) {
+            data.forEach(stop => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                <td>${stop.seq}</td>
+                <td>${stop.moveDir}</td>
+                <td>${stop.bsId}</td>
+                <td>${stop.bsNm ?? '-'}</td>
+                <td>${stop.xPos}, ${stop.yPos}</td>
+            `;
+                tbody.appendChild(row);
+            });
+        } else {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td colspan="5">해당 노선 ID로 조회된 정류장이 없습니다.</td>`;
+            tbody.appendChild(row);
+        }
+    }
+
+</script>
+</body>
+</html>

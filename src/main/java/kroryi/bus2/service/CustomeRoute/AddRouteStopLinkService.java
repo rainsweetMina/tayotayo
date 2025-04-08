@@ -1,4 +1,4 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.CustomeRoute;
 
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.entity.RouteStopLink;

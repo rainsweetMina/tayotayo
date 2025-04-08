@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 
 @Repository
-public interface ApiLogRepository extends CrudRepository<ApiLog, Long> {
+public interface ApiLogRepository extends JpaRepository<ApiLog, Long> {
     long countByTimestampBetween(LocalDateTime start, LocalDateTime end);
 }

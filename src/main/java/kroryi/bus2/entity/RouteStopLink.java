@@ -33,4 +33,9 @@ public class RouteStopLink {
     @Column(name = "y_pos")
     private Double yPos;
 
+    // ✅ 정류소 참조
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bs_id", referencedColumnName = "bs_id", insertable = false, updatable = false)
+    private BusStop busStop;
+
 }

@@ -1,6 +1,6 @@
 package kroryi.bus2.repository.jpa;
 
-import kroryi.bus2.entity.FoundItem;
+import kroryi.bus2.entity.lost.FoundItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;

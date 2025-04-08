@@ -1,9 +1,9 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.lost;
 
 import kroryi.bus2.dto.lost.LostFoundMatchRequestDTO;
-import kroryi.bus2.entity.FoundItem;
-import kroryi.bus2.entity.LostItem;
-import kroryi.bus2.entity.LostFoundMatch;
+import kroryi.bus2.entity.lost.FoundItem;
+import kroryi.bus2.entity.lost.LostItem;
+import kroryi.bus2.entity.lost.LostFoundMatch;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.LostItemRepository;

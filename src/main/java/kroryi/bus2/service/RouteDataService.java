@@ -6,9 +6,14 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import kroryi.bus2.dto.busStop.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 
+import kroryi.bus2.entity.CustomRoute;
+import kroryi.bus2.entity.Route;
 import kroryi.bus2.entity.Route;
 
+import kroryi.bus2.entity.RouteStopLink;
+import kroryi.bus2.repository.jpa.AddRouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.NodeRepository;
+import kroryi.bus2.repository.jpa.route.CustomRouteRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -39,6 +44,8 @@ public class RouteDataService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final NodeRepository nodeRepository;
+    private final CustomRouteRepository customRouteRepository;
+
 
     @Value("${api.bus.base-url}")
     private String baseUrl;
@@ -76,9 +83,13 @@ public class RouteDataService {
 
         return result;
     }
+    public List<CustomRoute> getCustomBusByNm(String keyword) {
+        return customRouteRepository.searchByRouteNumberFull(keyword);
+    }
 
 
-    // 노선ID로 경로 가져옴
+
+        // 노선ID로 경로 가져옴
     public JsonNode getBusRoute(String routeId) throws IOException {
         String redisKey = "BUS_ROUTE::" + routeId;
 
@@ -113,8 +124,6 @@ public class RouteDataService {
 
         return jsonNode;
     }
-
-
 
 
 

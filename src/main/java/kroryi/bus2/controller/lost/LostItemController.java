@@ -3,8 +3,8 @@ package kroryi.bus2.controller.lost;
 
 import kroryi.bus2.dto.lost.LostItemListResponseDTO;
 import kroryi.bus2.dto.lost.LostItemRequestDTO;
-import kroryi.bus2.entity.LostItem;
-import kroryi.bus2.service.LostItemService;
+import kroryi.bus2.entity.lost.LostItem;
+import kroryi.bus2.service.lost.LostItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

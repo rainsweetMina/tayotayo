@@ -1,7 +1,7 @@
 package kroryi.bus2.scheduler;
 
 import groovy.util.logging.Slf4j;
-import kroryi.bus2.entity.LostItem;
+import kroryi.bus2.entity.lost.LostItem;
 import kroryi.bus2.repository.jpa.LostItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

@@ -5,7 +5,7 @@
     <title>버스 노선 추가</title>
 </head>
 <body>
-<h1>버스 경유 정류장 추가</h1>
+<h1>버스 노선 추가하기</h1>
 
 <!-- 🔍 검색 기능 영역 -->
 <div>
@@ -17,56 +17,116 @@
 <hr>
 
 <form id="busForm">
-    <div id="stopContainer">
-         정류장 입력 블럭
-        <div class="stop-block">
-            <h3>정류장 1</h3>
-            Route ID: <input type="text" name="routeId"><br>
-            BS ID: <input type="text" name="bsId"><br>
-            Seq: <input type="number" name="seq"><br>
-            Move Dir: <input type="text" name="moveDir"><br>
-            X Pos: <input type="number" step="0.000001" name="xpos"><br>
-            Y Pos: <input type="number" step="0.000001" name="ypos"><br>
-            <hr>
-        </div>
-    </div>
+    <h2>노선 기본 정보</h2>
+    Route ID: <input type="text" name="routeId" required><br>
+    Route No: <input type="text" name="routeNo" required><br>
+    출발 정류소 ID: <input type="text" name="stBsId" oninput="fetchStopName(this)" required><br>
+    도착 정류소 ID: <input type="text" name="edBsId" oninput="fetchStopName(this)" required><br>
+    출발 정류소명: <input type="text" name="stNm" readonly disabled><br>
+    도착 정류소명: <input type="text" name="edNm" readonly disabled><br>
+    노선 설명: <input type="text" name="routeNote"><br>
+    데이터 연결 여부: <input type="text" name="dataconnareacd" value="Y"><br>
+    정방향 설명: <input type="text" name="dirRouteNote"><br>
+    역방향 설명: <input type="text" name="ndirRouteNote"><br>
+    노선 타입 코드: <input type="text" name="routeTCd"><br>
 
-    <button type="submit">추가</button>
+    <hr>
+
+    <h2>경유 정류장 (정방향)</h2>
+    <div id="forwardStops" class="direction-block"></div>
+    <button type="button" onclick="addStop('forward')">+ 정방향 경유지 추가</button>
+
+    <h2>경유 정류장 (역방향)</h2>
+    <div id="backwardStops" class="direction-block"></div>
+    <button type="button" onclick="addStop('backward')">+ 역방향 경유지 추가</button>
+
+    <br><br>
+    <button type="submit">노선 등록</button>
 </form>
+
 <script>
     document.getElementById('busForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const data = Array.from(document.querySelectorAll('.stop-block')).map(block =>
-            Array.from(block.querySelectorAll('input')).reduce((obj, input) => {
-                obj[input.name] = input.type === 'number' ? parseFloat(input.value) : input.value;
-                return obj;
-            }, {})
-        );
+        const form = e.target;
+
+        const route = {
+            routeId: form.routeId.value,
+            routeNo: form.routeNo.value,
+            stBsId: form.stBsId.value,
+            edBsId: form.edBsId.value,
+            stNm: form.stNm.value,
+            edNm: form.edNm.value,
+            routeNote: form.routeNote.value,
+            dataconnareacd: form.dataconnareacd.value,
+            dirRouteNote: form.dirRouteNote.value,
+            ndirRouteNote: form.ndirRouteNote.value,
+            routeTCd: form.routeTCd.value
+        };
+
+        const stopsForward = Array.from(document.querySelectorAll('#forwardStops .stop-block')).map(block => {
+            return {
+                bsId: block.querySelector('[name="bsId"]').value,
+                moveDir: "1"
+            };
+        });
+
+        const stopsBackward = Array.from(document.querySelectorAll('#backwardStops .stop-block')).map(block => {
+            return {
+                bsId: block.querySelector('[name="bsId"]').value,
+                moveDir: "0"
+            };
+        });
+
+        const payload = {
+            route: route,
+            stopsForward: stopsForward,
+            stopsBackward: stopsBackward
+        };
 
         try {
-            const res = await fetch('/api/add/AddRouteStopLink', {
+            const res = await fetch('/api/add/AddBusRoute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
-                alert('버스 노선이 성공적으로 추가되었습니다!');
-                console.log(JSON.stringify(data, null, 2));
-
-                e.target.reset();
+                alert('노선이 성공적으로 추가되었습니다!');
+                console.log("전송 데이터:", JSON.stringify(payload, null, 2));
+                form.reset();
+                document.getElementById("forwardStops").innerHTML = "";
+                document.getElementById("backwardStops").innerHTML = "";
             } else {
-                alert('등록 실패! 서버 상태를 확인해주세요.');
+                const error = await res.json();
+                alert('등록 실패: ' + error.message);
             }
         } catch (err) {
             console.error('에러 발생:', err);
             alert('에러 발생! 콘솔을 확인하세요.');
         }
     });
-</script>
 
-<script>
+    function addStop(direction) {
+        const container = document.getElementById(direction + 'Stops');
+        const idx = container.children.length + 1;
+
+        const newBlock = document.createElement('div');
+        newBlock.className = 'stop-block';
+        newBlock.innerHTML = `
+            <h4>${direction === 'forward' ? '정방향' : '역방향'} 정류장 ${idx}</h4>
+            BS ID: <input type="text" name="bsId" oninput="fetchStopName(this)"><br>
+                정류소명: <input type="text" name="Nm" readonly disabled><br>
+            <button type="button" onclick="removeStopBlock(this)">삭제</button>
+            <hr>
+        `;
+        container.appendChild(newBlock);
+    }
+
+    function removeStopBlock(button) {
+        const block = button.closest('.stop-block');
+        block.remove();
+    }
 
     function searchBus() {
         const query = document.getElementById('searchInput').value;
@@ -80,11 +140,45 @@
                 'Content-Type': 'application/json'
             }
         })
-            .then(response => response.json()) // 받아온 json을 자바스크립트에서 사용가능한 js로 또 변환 (거의 필수)
+            .then(response => response.json())
             .then(data => {
-                console.log("data2 : ", data);
+                console.log("검색결과:", data);
             })
             .catch(error => console.error('오류 발생:', error));
+    }
+</script>
+
+<script>
+    function fetchStopName(input) {
+        const bsId = input.value.trim();
+
+        if (!bsId) return;
+
+        fetch(`/api/bus/stop-name?bsId=${encodeURIComponent(bsId)}`)
+            .then(res => {
+                if (!res.ok) throw new Error("not found");
+                return res.text();
+            })
+            .then(name => {
+                if (input.name === 'stBsId') {
+                    document.querySelector('input[name="stNm"]').value = name;
+                } else if (input.name === 'edBsId') {
+                    document.querySelector('input[name="edNm"]').value = name;
+                } else if (input.name === 'bsId') {
+                    const block = input.closest('.stop-block');
+                    block.querySelector('input[name="Nm"]').value = name;
+                }
+            })
+            .catch(() => {
+                if (input.name === 'stBsId') {
+                    document.querySelector('input[name="stNm"]').value = '';
+                } else if (input.name === 'edBsId') {
+                    document.querySelector('input[name="edNm"]').value = '';
+                } else if (input.name === 'bsId') {
+                    const block = input.closest('.stop-block');
+                    block.querySelector('input[name="Nm"]').value = '';
+                }
+            });
     }
 
 </script>

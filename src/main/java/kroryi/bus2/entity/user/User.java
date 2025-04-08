@@ -1,9 +1,9 @@
 package kroryi.bus2.entity.user;
 
 import jakarta.persistence.*;
-import kroryi.bus2.entity.FoundItem;
-import kroryi.bus2.entity.LostFoundMatch;
-import kroryi.bus2.entity.LostItem;
+import kroryi.bus2.entity.lost.FoundItem;
+import kroryi.bus2.entity.lost.LostFoundMatch;
+import kroryi.bus2.entity.lost.LostItem;
 import lombok.*;
 
 import java.time.LocalDate;

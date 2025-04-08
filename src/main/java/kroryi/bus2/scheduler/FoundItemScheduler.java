@@ -1,6 +1,6 @@
 package kroryi.bus2.scheduler;
 
-import kroryi.bus2.entity.FoundItem;
+import kroryi.bus2.entity.lost.FoundItem;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

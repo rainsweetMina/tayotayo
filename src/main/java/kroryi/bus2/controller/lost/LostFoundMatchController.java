@@ -1,8 +1,8 @@
 package kroryi.bus2.controller.lost;
 
 import kroryi.bus2.dto.lost.LostFoundMatchRequestDTO;
-import kroryi.bus2.entity.LostFoundMatch;
-import kroryi.bus2.service.LostFoundMatchService;
+import kroryi.bus2.entity.lost.LostFoundMatch;
+import kroryi.bus2.service.lost.LostFoundMatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

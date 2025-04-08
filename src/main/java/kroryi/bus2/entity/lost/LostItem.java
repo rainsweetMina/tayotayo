@@ -1,4 +1,4 @@
-package kroryi.bus2.entity;
+package kroryi.bus2.entity.lost;
 
 import jakarta.persistence.*;
 import kroryi.bus2.entity.user.User;
