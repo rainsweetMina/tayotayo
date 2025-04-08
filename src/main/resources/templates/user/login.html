@@ -14,6 +14,11 @@
     <hr/>
     <h2>로그인</h2>
 
+    <!-- ✅ 회원가입 성공 메시지 -->
+    <div th:if="${param.registerSuccess}" style="color:green; margin-top: 1rem;">
+        <p>회원가입이 완료되었습니다! 로그인해주세요.</p>
+    </div>
+
     <!-- ✅ 로그인 에러 메시지 출력 -->
     <div th:if="${errorMessage}" class="error-message" style="color:red; margin-top: 1rem;">
         <p th:text="${errorMessage}"></p>

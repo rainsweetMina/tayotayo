@@ -1,4 +1,4 @@
-package kroryi.bus2.controller.mypage;
+package kroryi.bus2.controller;
 
 import jakarta.validation.Valid;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+// ... 생략된 import는 그대로 두고 ...
 
 @Log4j2
 @Controller
@@ -104,12 +106,35 @@ public class MypageController {
                 return "mypage/modify";
             }
 
-            // 성공 메시지를 flash 속성으로 전달
             redirectAttributes.addFlashAttribute("success", "회원 정보가 성공적으로 수정되었습니다.");
             return "redirect:/mypage";
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             return "mypage/modify";
         }
+    }
+
+    // 즐겨찾기 페이지
+    @GetMapping("/favorites")
+    public String favorites() {
+        return "mypage/favorites";
+    }
+
+    // 분실물 신고 페이지
+    @GetMapping("/lost-report")
+    public String lostReport() {
+        return "mypage/lost-report";
+    }
+
+    // 질문과 답변 페이지
+    @GetMapping("/qna")
+    public String qna() {
+        return "mypage/qna";
+    }
+
+    // 최근 검색 내역 페이지
+    @GetMapping("/recent-searches")
+    public String recentSearches() {
+        return "mypage/recent-searches";
     }
 }

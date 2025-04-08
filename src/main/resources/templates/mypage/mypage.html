@@ -7,6 +7,14 @@
 <body>
 <h1>마이페이지</h1>
 
+<nav style="margin-bottom: 20px;">
+    <strong>메뉴</strong><br/>
+    <a href="/favorites">즐겨찾기</a> |
+    <a href="/lost-report">분실물 신고</a> |
+    <a href="/qna">질문/답변</a> |
+    <a href="/recent-search">최근 검색 내역</a>
+</nav>
+
 <div th:if="${success}" style="color: green; font-weight: bold;" th:text="${success}"></div>
 
 <p>안녕하세요, <span th:text="${user.username}">사용자</span>님!</p>

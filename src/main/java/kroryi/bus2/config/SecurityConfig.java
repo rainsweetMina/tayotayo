@@ -14,11 +14,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.io.IOException;
 
 @Configuration
 public class SecurityConfig {
+
+    @Autowired
+    private OAuth2UserService<?, ?> customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -30,7 +35,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus").permitAll()
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
                         .requestMatchers("/mypage/**").authenticated()
                         .anyRequest().permitAll()
                 )
@@ -55,9 +60,16 @@ public class SecurityConfig {
                         })
                         .permitAll()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/mypage", true)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService((OAuth2UserService) customOAuth2UserService)
+                        )
+                )
                 .rememberMe(remember -> remember
                         .key("remember-me-key")
-                        .tokenValiditySeconds(7 * 24 * 60 * 60) // 7일간 자동 로그인 유지
+                        .tokenValiditySeconds(7 * 24 * 60 * 60) // 7일
                         .rememberMeParameter("remember-me")
                         .userDetailsService(userDetailsService)
                 )

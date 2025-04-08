@@ -9,6 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,23 +35,14 @@ public class UserController {
         }
 
         if (errorCode != null) {
-            switch (errorCode) {
-                case "bad_credentials":
-                    model.addAttribute("errorMessage", "아이디 또는 비밀번호가 올바르지 않습니다.");
-                    break;
-                case "disabled":
-                    model.addAttribute("errorMessage", "비활성화된 계정입니다.");
-                    break;
-                case "locked":
-                    model.addAttribute("errorMessage", "잠긴 계정입니다.");
-                    break;
-                case "expired":
-                    model.addAttribute("errorMessage", "계정이 만료되었습니다.");
-                    break;
-                default:
-                    model.addAttribute("errorMessage", "로그인 중 오류가 발생했습니다.");
-                    break;
-            }
+            String errorMessage = switch (errorCode) {
+                case "bad_credentials" -> "아이디 또는 비밀번호가 올바르지 않습니다.";
+                case "disabled"       -> "비활성화된 계정입니다.";
+                case "locked"         -> "잠긴 계정입니다.";
+                case "expired"        -> "계정이 만료되었습니다.";
+                default               -> "로그인 중 오류가 발생했습니다.";
+            };
+            model.addAttribute("errorMessage", errorMessage);
         }
 
         model.addAttribute("loginForm", new LoginFormDTO());
@@ -60,25 +52,30 @@ public class UserController {
     // 회원가입 페이지
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        model.addAttribute("joinRequestDTO", new JoinRequestDTO());
+        if (!model.containsAttribute("joinRequestDTO")) {
+            model.addAttribute("joinRequestDTO", new JoinRequestDTO());
+        }
         return "user/register";
     }
 
     // 회원가입 처리
     @PostMapping("/register")
-    public String register(@ModelAttribute("joinRequestDTO") JoinRequestDTO jdto, Model model) {
+    public String register(@ModelAttribute("joinRequestDTO") JoinRequestDTO jdto,
+                           RedirectAttributes redirectAttributes) {
         try {
-            if (jdto.getEmailVerified() == null || !jdto.getEmailVerified()) {
+            if (!jdto.getEmailVerified()) {
                 throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
             }
 
             userService.join(jdto);
-            model.addAttribute("registrationSuccess", true);
-            return "redirect:/register?success=true";
+            return "redirect:/login?registerSuccess=true";
+
         } catch (Exception e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("registrationSuccess", false);
-            return "user/register";
+            log.error("회원가입 오류: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("registrationSuccess", false);
+            redirectAttributes.addFlashAttribute("joinRequestDTO", jdto);
+            return "redirect:/register";
         }
     }
 
@@ -93,7 +90,8 @@ public class UserController {
     // 이메일 인증 코드 검증
     @ResponseBody
     @GetMapping("/email/verify")
-    public Map<String, Object> verifyEmailCode(@RequestParam String email, @RequestParam String code) {
+    public Map<String, Object> verifyEmailCode(@RequestParam String email,
+                                               @RequestParam String code) {
         boolean result = emailService.verifyCode(email, code);
         Map<String, Object> response = new HashMap<>();
         response.put("verified", result);
