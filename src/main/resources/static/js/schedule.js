@@ -7,6 +7,8 @@ runDate.value = today;
 // DOM 요소 참조
 const editBtn = document.getElementById("editBtn");
 const saveBtn = document.getElementById("saveBtn");
+const addRowBtn = document.getElementById("addRowBtn");
+const deleteRowBtn = document.getElementById("deleteRowBtn");
 const table = document.getElementById("schedule-table");
 const tbody = document.getElementById("schedule-tbody");
 const routeNoteWrapper = document.getElementById("routeNoteWrapper");
@@ -15,6 +17,7 @@ routeNoteWrapper.style.display = "none";
 // 전역 선언
 let selectedStops = [];     // 맵 선택
 let routeMapData = [];      // 전체 노선 정보
+let deletedRowIds = [];     // 행 삭제
 let currentRouteId = "";   // 선택된 routeId
 let moveDir = null;          // 노선 방향
 
@@ -56,6 +59,9 @@ document.getElementById("routeNo").addEventListener("change", () => {
 document.getElementById("routeNote").addEventListener("change", () => {
     const routeNo = document.getElementById("routeNo").value;
     const routeNote = document.getElementById("routeNote").value || "";
+
+    table.style.display = "none";
+    tbody.innerHTML = "";
 
     if (!routeNo) return;
 
@@ -99,6 +105,9 @@ function loadMoveDirSelector(routeNo) {
         fetch(`/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${moveDir}`)
             .then(res => res.text())
             .then(routeId => {
+                table.style.display = "none";
+                tbody.innerHTML = "";
+
                 if (!routeId || routeId.includes("html")) {
                     alert("해당 방향의 노선이 없습니다");
                     return;
@@ -126,10 +135,10 @@ function loadSchedule(routeNo, routeNote = "", moveDir = "") {
 // 스케줄 데이터 조회
 function renderScheduleTable(schedules) {
     // DB에 스케줄 데이터가 없을 시 숨김처리
-    // if (!schedules || schedules.length === 0) {
-    //     table.style.display = "none";
-    //     return;
-    // }
+    if (!schedules || schedules.length === 0) {
+        table.style.display = "none";
+        return;
+    }
 
     table.style.display = "table";
     tbody.innerHTML = "";
@@ -200,12 +209,15 @@ function loadRouteMap(routeId, moveDir = null) {
             // 수정 활성화 상태에서 노선&방면을 바꿀 시 다시 디폴트 값으로 전환
             saveBtn.style.display = "none";
             editBtn.style.display = "inline-block";
+            addRowBtn.style.display = "none";
+            deleteRowBtn.style.display = "none";
+
         });
 }
 
 // 저장된 정류장 리스트를 서버에서 불러옴 (시작 종점 + 선택 정거장 + 끝 종점)
 function loadHeaderStops(routeId, moveDir = null) {
-    const params = new URLSearchParams({ routeId });
+    const params = new URLSearchParams({routeId});
     if (moveDir !== null) params.append("moveDir", moveDir);
 
     fetch(`/api/schedule-header?${params.toString()}`)
@@ -351,22 +363,27 @@ saveBtn.addEventListener("click", () => {
         };
         data.push(rowData);
     });
-    console.log("=== 실제 데이터 출력 ===");
-    console.log(JSON.stringify(data, null, 2));
 
     fetch("/api/modify-schedule", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+            schedules: data,
+            deletedIds: deletedRowIds
+        })
     }).then(res => res.text())
         .then(() => {
             alert("저장 완료!");
+            deletedRowIds = [];
+
             table.querySelectorAll("td[contenteditable]").forEach(td => {
                 td.setAttribute("contenteditable", "false");
                 td.style.backgroundColor = "";
             });
             saveBtn.style.display = "none";
             editBtn.style.display = "inline-block";
+            addRowBtn.style.display = "none";
+            deleteRowBtn.style.display = "none";
             location.reload();
         });
 
@@ -398,6 +415,9 @@ saveBtn.addEventListener("click", () => {
 
 // 수정버튼
 editBtn.addEventListener("click", () => {
+    // 스케줄 데이터가 없을 경우 숨김표시 상태에서 수정버튼 누르면 노출
+    table.style.display = "inline-block";
+
     table.querySelectorAll("td[contenteditable]").forEach(td => {
         td.setAttribute("contenteditable", "true");
         td.style.backgroundColor = "#fff8dc";
@@ -406,8 +426,9 @@ editBtn.addEventListener("click", () => {
     highlightSelectableCircles();
     editBtn.style.display = "none";
     saveBtn.style.display = "inline-block";
-    // 행추가
-    document.getElementById("addRowBtn").style.display = "inline-block";
+    // 행 추가&제거 버튼
+    addRowBtn.style.display = "inline-block";
+    deleteRowBtn.style.display = "inline-block";
 });
 
 // 행 추가 버튼
@@ -438,3 +459,22 @@ document.getElementById("addRowBtn").addEventListener("click", () => {
     newRow.setAttribute("data-id", "");
     tbody.appendChild(newRow);
 });
+
+// 행 삭제 버튼
+document.getElementById("deleteRowBtn").addEventListener("click", () => {
+    const rows = document.querySelectorAll("#schedule-tbody tr");
+    if (rows.length === 0) {
+        alert("삭제할 행이 없습니다.");
+        return;
+    }
+    const lastRow = rows[rows.length - 1]
+    const isNewRow = lastRow.getAttribute("data-new") === "true";
+    const rowId = lastRow.getAttribute("data-id");
+
+    if (isNewRow || confirm("정말 삭제하시겠습니까?")) {
+        if (!isNewRow && rowId) {
+            deletedRowIds.push(parseInt(rowId));
+        }
+            lastRow.remove();
+    }
+})

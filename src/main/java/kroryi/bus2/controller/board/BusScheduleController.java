@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.board;
 
+import kroryi.bus2.dto.SchedulePayload;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.entity.BusSchedule;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -7,6 +8,7 @@ import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.repository.jpa.board.BusScheduleRepository;
 import kroryi.bus2.service.board.RouteStopLinkService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,43 +35,58 @@ public class BusScheduleController {
 
     // 스케줄 테이블 수정
     @PostMapping("/api/modify-schedule")
-    public ResponseEntity<String> updateSchedules(@RequestBody List<BusSchedule> updatedSchedules) {
-        for (BusSchedule schedule : updatedSchedules) {
-            if (schedule.getId() == null) {
-                // 신규 추가
-                BusSchedule newSchedule = new BusSchedule();
-                newSchedule.setRouteId(schedule.getRouteId());
-                newSchedule.setMoveDir(schedule.getMoveDir());
-                newSchedule.setBusTCd(schedule.getBusTCd() != null ? schedule.getBusTCd() : "");
-                newSchedule.setScheduleNo(schedule.getScheduleNo());
-                newSchedule.setSchedule_A(schedule.getSchedule_A());
-                newSchedule.setSchedule_B(schedule.getSchedule_B());
-                newSchedule.setSchedule_C(schedule.getSchedule_C());
-                newSchedule.setSchedule_D(schedule.getSchedule_D());
-                newSchedule.setSchedule_E(schedule.getSchedule_E());
-                newSchedule.setSchedule_F(schedule.getSchedule_F());
-                newSchedule.setSchedule_G(schedule.getSchedule_G());
-                newSchedule.setSchedule_H(schedule.getSchedule_H());
+    public ResponseEntity<String> updateSchedules(@RequestBody SchedulePayload request) {
+        try {
+            List<BusSchedule> updatedSchedules = request.getSchedules();
+            List<Long> deletedIds = request.getDeletedIds();
 
-                scheduleRepository.save(newSchedule);
-            } else {
-                // 수정
-                BusSchedule existing = scheduleRepository.findById(schedule.getId())
-                        .orElseThrow(() -> new RuntimeException("해당 ID 없음"));
+            if (updatedSchedules != null && !updatedSchedules.isEmpty()) {
 
-                existing.setSchedule_A(schedule.getSchedule_A());
-                existing.setSchedule_B(schedule.getSchedule_B());
-                existing.setSchedule_C(schedule.getSchedule_C());
-                existing.setSchedule_D(schedule.getSchedule_D());
-                existing.setSchedule_E(schedule.getSchedule_E());
-                existing.setSchedule_F(schedule.getSchedule_F());
-                existing.setSchedule_G(schedule.getSchedule_G());
-                existing.setSchedule_H(schedule.getSchedule_H());
+                for (BusSchedule schedule : updatedSchedules) {
+                    if (schedule.getId() == null) {
+                        // 신규 추가
+                        BusSchedule newSchedule = new BusSchedule();
+                        newSchedule.setRouteId(schedule.getRouteId());
+                        newSchedule.setMoveDir(schedule.getMoveDir());
+                        newSchedule.setBusTCd(schedule.getBusTCd() != null ? schedule.getBusTCd() : "");
+                        newSchedule.setScheduleNo(schedule.getScheduleNo());
+                        newSchedule.setSchedule_A(schedule.getSchedule_A());
+                        newSchedule.setSchedule_B(schedule.getSchedule_B());
+                        newSchedule.setSchedule_C(schedule.getSchedule_C());
+                        newSchedule.setSchedule_D(schedule.getSchedule_D());
+                        newSchedule.setSchedule_E(schedule.getSchedule_E());
+                        newSchedule.setSchedule_F(schedule.getSchedule_F());
+                        newSchedule.setSchedule_G(schedule.getSchedule_G());
+                        newSchedule.setSchedule_H(schedule.getSchedule_H());
 
-                scheduleRepository.save(existing);
+                        scheduleRepository.save(newSchedule);
+                    } else {
+                        // 수정
+                        BusSchedule existing = scheduleRepository.findById(schedule.getId())
+                                .orElseThrow(() -> new RuntimeException("해당 ID 없음"));
+
+                        existing.setSchedule_A(schedule.getSchedule_A());
+                        existing.setSchedule_B(schedule.getSchedule_B());
+                        existing.setSchedule_C(schedule.getSchedule_C());
+                        existing.setSchedule_D(schedule.getSchedule_D());
+                        existing.setSchedule_E(schedule.getSchedule_E());
+                        existing.setSchedule_F(schedule.getSchedule_F());
+                        existing.setSchedule_G(schedule.getSchedule_G());
+                        existing.setSchedule_H(schedule.getSchedule_H());
+
+                        scheduleRepository.save(existing);
+                    }
+                }
             }
+            if (deletedIds != null && !deletedIds.isEmpty()) {
+                scheduleRepository.deleteAllByIdInBatch(deletedIds);
+            }
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("스케줄 처리 중 오류 발생: " + e.getMessage());
         }
-        return ResponseEntity.ok("success");
     }
 
     // 해당 노선의 방면 정보 가져오기
