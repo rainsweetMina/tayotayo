@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노선에 정류소 삽입</title>
+</head>
+<body>
+<h1>노선에 정류소 삽입 (시각화를 위한 지도는 2차때 삽입 예정)</h1>
+
+<form id="insertForm">
+    <label>노선 ID:
+        <input type="text" name="routeId" id="routeIdInput" required onblur="loadRouteLinks()">
+    </label><br>
+
+    <label>방향 (0: 역방향, 1: 정방향):
+        <select name="moveDir">
+            <option value="1">정방향 (1)</option>
+            <option value="0">역방향 (0)</option>
+        </select>
+    </label><br>
+
+    <label>삽입할 순서 (seq):
+        <input type="number" name="seq" min="1" required>
+    </label><br>
+
+    <label>정류소 ID (bsId):
+        <input type="text" name="bsId" required>
+    </label><br>
+
+    <button type="submit">정류소 삽입</button>
+</form>
+
+<hr>
+
+<h2>📍 현재 노선 정류장 목록</h2>
+<table border="1">
+    <thead>
+    <tr>
+        <th>SEQ</th>
+        <th>정류소 ID</th>
+        <th>정류소 이름</th>
+        <th>방향 (moveDir)</th>
+    </tr>
+    </thead>
+    <tbody id="routeLinkTableBody">
+    <tr><td colspan="4">노선 ID를 입력하면 정류장 목록이 표시됩니다.</td></tr>
+    </tbody>
+</table>
+
+<script>
+    document.getElementById('insertForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+
+        const payload = {
+            routeId: form.routeId.value.trim(),
+            moveDir: form.moveDir.value,
+            seq: parseInt(form.seq.value),
+            bsId: form.bsId.value.trim()
+        };
+
+        try {
+            const res = await fetch('/api/bus/InsertStop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("✅ 정류소 삽입 완료!");
+                form.reset();
+                loadRouteLinks(); // 삽입 후 리스트 갱신
+            } else {
+                alert("🚫 오류 발생: " + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("❌ 서버 요청 실패");
+        }
+    });
+
+    async function loadRouteLinks() {
+        const routeId = document.getElementById('routeIdInput').value.trim();
+        if (!routeId) return;
+
+        const tbody = document.getElementById("routeLinkTableBody");
+        tbody.innerHTML = "";
+
+        try {
+            const res = await fetch(`/api/bus/bus-route-Custom?routeId=${routeId}`);
+            if (!res.ok) throw new Error("데이터 없음");
+
+            const data = await res.json();
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4">정류장 정보 없음</td></tr>`;
+                return;
+            }
+
+            data.sort((a, b) => a.moveDir.localeCompare(b.moveDir) || a.seq - b.seq); // moveDir, seq 순 정렬
+
+            for (const stop of data) {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${stop.seq}</td>
+                    <td>${stop.bsId}</td>
+                    <td>${stop.bsNm ?? "-"}</td>
+                    <td>${stop.moveDir}</td>
+                `;
+                tbody.appendChild(row);
+            }
+
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="4">불러오기 실패</td></tr>`;
+        }
+    }
+</script>
+</body>
+</html>
