@@ -31,9 +31,11 @@
         🚫 노선 삭제
     </button>
 
-    <button id="editRouteBtn" style="background-color:orange; color:white; font-weight:bold; margin-left: 10px;">
-        ✏️ 노선 수정
+    <button id="editRouteBtn" style="background-color:orange; color:white; font-weight:bold; margin-left: 10px;"
+            onclick="editRoute()">
+        ✏️ 노선 정보 수정
     </button>
+
 </div>
 
 <hr>
@@ -204,6 +206,27 @@
         } catch (err) {
             console.error("삭제 중 에러:", err);
             alert("서버 오류 발생");
+        }
+    });
+</script>
+<script>
+    function editRoute() {
+        const routeId = document.getElementById("routeId").textContent;
+        if (!routeId || routeId === "-") {
+            alert("노선 ID가 유효하지 않습니다.");
+            return;
+        }
+        window.location.href = `/UpdateCustomRouteInfo?routeId=${routeId}`;
+    }
+</script>
+<script>
+    window.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const routeId = params.get("routeId");
+
+        if (routeId) {
+            document.getElementById("routeIdInput").value = routeId;
+            loadBusStops();
         }
     });
 </script>

@@ -20,7 +20,7 @@ import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.route.CustomRouteRepository;
 import kroryi.bus2.service.BusInfoInitService;
-import kroryi.bus2.service.BusStopDataService;
+import kroryi.bus2.service.BusStop.BusStopDataService;
 import kroryi.bus2.service.Route.*;
 import kroryi.bus2.service.Route.RouteDataService;
 import kroryi.bus2.service.*;
@@ -66,8 +66,8 @@ public class BusDataController {
     private String serviceKey;
 
 
-    // 전체 버스정류장 불러오는거, 데이터가 너무 많아서 5개만 불러옴 이젠 안씀 추후 삭제 예정
-    @Operation(summary = "5개의 정류장 불러오기", description = "전체 버스정류장 불러오는거, 데이터가 너무 많아서 5개만 불러옴 이젠 안씀 추후 삭제 예정")
+    // 전체 버스정류장 불러오는거
+    @Operation(summary = "정류장 불러오기", description = "전체 버스정류장 불러오는거")
     @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
 
@@ -76,6 +76,19 @@ public class BusDataController {
         return ResponseEntity.ok(list);
     }
 
+    @Operation(summary = "좌표기반 정류소 서칭", description = "전체 버스정류장을 좌표기반으로 불러오는거")
+    @GetMapping("/busStopsInBounds")
+    public ResponseEntity<List<BusStopDTO>> getBusStopsInBounds(
+            @RequestParam double minX,
+            @RequestParam double minY,
+            @RequestParam double maxX,
+            @RequestParam double maxY
+    ) {
+//        System.out.println("좌표들 : " + minX + ", " + minY + ", " + maxX + ", " + maxY);
+        List<BusStopDTO> stops = busStopRepository.findInBounds(minX, maxX, minY, maxY);
+//        System.out.println("stops: " + stops);
+        return ResponseEntity.ok(stops);
+    }
 
     // 이건 웹에서 정류장 클릭하면 해당 정류장의 버스 도착 정보 날려주는거
     // @param bsId 정류장 ID
@@ -95,37 +108,28 @@ public class BusDataController {
     @Operation(summary = "노선, 정류장 검색", description = "사용자가 검색창에 키워드를 입력했을 때, 해당 키워드에 해당하는 정류장명 또는 버스 노선명을 검색하여 반환")
     @GetMapping(value = "/searchBSorBN", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> searchBSOrBN(@RequestParam String keyword) throws JsonProcessingException {
-
-
         System.out.println("검색어 : " + keyword);
-
         List<BusStop> busStop = busStopDataService.getBusStopsByNm(keyword);
-
         System.out.println("-----------------------------------");
-
         List<Route> busNumber = routeDataService.getBusByNm(keyword);
-
         List<CustomRoute> CustomBusNumber = routeDataService.getCustomBusByNm(keyword);
-
         Map<String, Object> response = new HashMap<>();
         response.put("busStops", busStop);
         response.put("busNumbers", busNumber);
         response.put("CustomBusNumber", CustomBusNumber);
-
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "정류장 불러오기", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌")
     @GetMapping(value = "/bus-route", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Map<String, Object>> getBusRoute(@RequestParam String routeId) throws IOException {
-//        JsonNode result = routeDataService.getBusRoute(routeId);
         List<Map<String, Object>> result = getCustomRouteService.getBusRoute(routeId);
 
         return ResponseEntity.ok(result).getBody();
     }
 
-    //     ORS 활용한 api 지도에 노선 그리는거
-    @Operation(summary = "경로 불러오기", description = "노선Id로 해당하는 노선의 경로의 좌표 값을 뿌려줌 (ORS 활용)")
+    //     ORS 활용한 api 지도에 노선 그리는거 근대 이거 불안정함 일단 사용x
+    @Operation(summary = "경로 불러오기", description = "노선Id로 해당하는 노선의 경로의 좌표 값을 뿌려줌 (ORS 활용) 근대 이거 불안정함 일단 사용x")
     @GetMapping("/bus-route-link")
     public ResponseEntity<Map<String, List<CoordinateDTO>>> getBusRouteLinkWithCoordsORS(@RequestParam String routeId) throws IOException, InterruptedException {
         String redisKey = "bus:route:ors:" + routeId;
@@ -295,6 +299,7 @@ public class BusDataController {
         }
     }
 
+    @Operation(summary = "노선 삭제", description = "노선을 삭제해줌 *기존의 노선도 삭제 가능하니 조심!")
     @DeleteMapping("/deleteCustomRoute")
     public ResponseEntity<?> deleteCustomRoute(@RequestParam String routeId) {
         try {

@@ -32,7 +32,9 @@
             justify-content: center;
             align-items: center;
         }
+
     </style>
+
 
     <!-- 지도 표시 영역 -->
     <div id="map" style="width:100%; height:850px;"></div>
@@ -44,14 +46,39 @@
     <button onclick="relayout()">새로고침</button>
 
 <!--    <script src="/js/map.js"></script>-->
-    <script src="/js/Leaflet-map.js"></script>
 
+<!--    기본적으로 맵 설정 하는거-->
+    <script src="/js/Leaflet-map.js"></script>
 
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
     </div>
+
+
+<!--    밑의 놈들은 지도에 기본적으로 모든 정류장을 뿌려주는것들-->
+    <script src="/js/busStop/busStopMarkerLoader.js"></script>
+    <script>
+        // // 마커 저장용 배열, 정류장 마커들을 저장하는 배열
+        // // 나중에 지도 이동/줌할 때 이 배열의 마커들을 지우고 새로 표시함
+        const markers = [];
+
+
+        // 지도 이벤트 핸들링
+        // moveend: 지도를 드래그해서 이동이 끝났을 때
+        // zoomend: 줌 레벨 조절이 끝났을 때
+        // loadBusStopsInView() : 정류장 마커 불러오는 외부 함수
+        leafletMap.on("moveend", () => loadBusStopsInView(leafletMap, markers));
+        leafletMap.on("zoomend", () => loadBusStopsInView(leafletMap, markers));
+
+        // 지도가 처음 로드됐을 때 초기 화면 범위에 있는 정류장들을 불러오기 위해 즉시 1회 실행
+        loadBusStopsInView(leafletMap, markers);
+    </script>
 </div>
+
+
+
+
 </body>
 </html>
 

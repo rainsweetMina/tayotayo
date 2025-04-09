@@ -57,30 +57,14 @@ public class RouteDataService {
     @Value("${ors.api.key}")
     private String orsApiKey;
 
-    // 버스 노선명으로 검색
+    // 버스 노선명으로 검색 (일반 노선)
     public List<Route> getBusByNm(String routeNo) {
-        String redisKey = "bus:routeNo" + routeNo;
-
-        // Redis에서 먼저 조회
-        Object cache = redisTemplate.opsForValue().get(redisKey);
-        if (cache != null) {
-            System.out.println("[Redis Cache Hit] key: " + redisKey);
-            return (List<Route>) cache;
-        }
-
-        // 레디스에 없으면 db에서 조회
-        System.out.println("[Cache Miss] DB에서 조회 - routeNo: " + routeNo);
+        System.out.println("[DB 조회] 일반 노선 - routeNo: " + routeNo);
         List<Route> result = routeRepository.searchByRouteNumberFull(routeNo);
         System.out.printf("노선 result: %s\n", result);
-
-        long CACHE_EXPIRATION = 3600L;
-
-        // 조회 결과 Redis에 저장 (15초 TTL)
-        redisTemplate.opsForValue().set(redisKey, result, CACHE_EXPIRATION, TimeUnit.SECONDS);
-        System.out.println("[Cache Store] Redis에 저장됨, TTL: " + CACHE_EXPIRATION + "초 (1시간)");
-
         return result;
     }
+
     public List<CustomRoute> getCustomBusByNm(String keyword) {
         return customRouteRepository.searchByRouteNumberFull(keyword);
     }

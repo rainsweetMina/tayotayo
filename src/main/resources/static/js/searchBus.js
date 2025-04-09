@@ -467,7 +467,7 @@ function searchBus() {
                             });
 
                         // ORS
-                        const linkPromiseORS = fetch(`/api/bus/bus-route-link?routeId=${encodeURIComponent(bus.routeId)}`)
+                        const linkPromiseORS = fetch(`/api/bus/bus-route-link-Custom?routeId=${encodeURIComponent(bus.routeId)}`)
                             .then(res => res.json())
                             .then(data => {
                                 console.log("해당 노선의 경로 좌표 정보 : ",data);
@@ -589,6 +589,15 @@ function searchBus() {
         .catch(error => console.error('오류 발생:', error));
 }
 
+
+
+
+
+
+
+
+
+
 // 레스트컨트롤러에서 json으로 받아온 실시간 버스 도착 정보 데이터를 화면에 뿌려주는 함수
 function getBusNav(bsId, targetContainer) {
     fetch(`/api/bus/bus-arrival?bsId=${bsId}`)
@@ -663,6 +672,12 @@ function getBusNav(bsId, targetContainer) {
         })
         .catch(error => console.error('오류 발생:', error));
 }
+
+
+
+
+
+
 
 
 function showLoading() {

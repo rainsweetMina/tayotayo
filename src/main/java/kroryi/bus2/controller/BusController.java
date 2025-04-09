@@ -27,31 +27,49 @@ public class BusController {
     // 버스의 노선 추가 하는 페이지
     @GetMapping("/AddRouteStopLink")
     public String AddBusRoute() {
-        return "bus/addRouteStopLink";
+        return "bus/route/addRouteStopLink";
     }
 
     // 버스 노선 불러오는 페이지
     @GetMapping("/GetRouteStopLink")
     public String getBusRoute() {
-        return "bus/getRouteStopLink";
+        return "bus/route/getRouteStopLink";
     }
 
     // 커스텀 노선 정보 불러오는 페이지
     @GetMapping("/UpdateCustomRouteInfo")
     public String UpdateCustomRoute() {
-        return "bus/updateCustomRouteInfo";
+        return "bus/route/updateCustomRouteInfo";
     }
 
     // 커스텀 노선의 순서 변경하는 페이지
     @GetMapping("/UpdateRouteLink")
     public String UpdateRouteLink() {
-        return "bus/updateRouteLinkSeq";
+        return "bus/route/updateRouteLinkSeq";
     }
 
     // 노선에 정류장 추가하는 페이지
     @GetMapping("/InsertStop")
     public String InsertStop() {
-        return "bus/InsertStopIntoRouteLink";
+        return "bus/route/InsertStopIntoRouteLink";
+    }
+
+    // 정류장을 새로 추가하는 페이지
+    @GetMapping("/AddBusStop")
+    public String addStop() {
+        return "bus/bus_stop/addBusStop";
+    }
+
+    // 정류장을 상세정보 보는 페이지
+    @GetMapping("/GetBusStop")
+    public String getStop() {
+        return "bus/bus_stop/getBusStop";
+    }
+
+    // 정류장의 정보를 수정하는 페이지
+    @GetMapping("/UpdateBusStop")
+    public String updateStop() {
+        return "bus/bus_stop/updateBusStop";
     }
 
 

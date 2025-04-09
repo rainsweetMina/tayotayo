@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>정류장 검색 및 상세보기</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    #map {
+      height: 400px;
+      margin-top: 20px;
+    }
+
+    #resultList {
+      list-style: none;
+      padding: 0;
+    }
+
+    #resultList li {
+      cursor: pointer;
+      padding: 4px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #resultList li:hover {
+      background-color: #f0f0f0;
+    }
+
+    #detail p {
+      margin: 2px 0;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🚌 정류장 검색</h2>
+
+<input type="text" id="searchInput" placeholder="정류장 이름 입력 (예: 경북대)" style="width: 300px;" oninput="searchBusStops(this.value)">
+<ul id="resultList"></ul>
+
+<hr>
+
+<div id="detail" style="display:none;">
+  <h3>📍 정류장 상세정보</h3>
+  <p><strong>ID:</strong> <span id="bsId"></span></p>
+  <p><strong>이름:</strong> <span id="bsNm"></span></p>
+  <p><strong>위도(Y):</strong> <span id="ypos"></span></p>
+  <p><strong>경도(X):</strong> <span id="xpos"></span></p>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([35.8714, 128.6014], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+  }).addTo(map);
+
+  let marker = null;
+
+  async function searchBusStops(keyword) {
+    if (!keyword.trim()) {
+      document.getElementById("resultList").innerHTML = "";
+      return;
+    }
+
+    const res = await fetch(`/api/bus/searchBS?keyword=${encodeURIComponent(keyword)}`);
+    const data = await res.json();
+
+    const resultList = document.getElementById("resultList");
+    resultList.innerHTML = "";
+
+    data.forEach(stop => {
+      const li = document.createElement("li");
+      li.textContent = `${stop.bsNm} (${stop.bsId})`;
+      li.addEventListener("click", () => fetchBusStopDetail(stop.bsId));
+      resultList.appendChild(li);
+    });
+  }
+
+  async function fetchBusStopDetail(bsId) {
+    const res = await fetch(`/api/bus/busStop?bsId=${bsId}`);
+    if (!res.ok) {
+      alert("정류장 정보를 불러올 수 없습니다.");
+      return;
+    }
+
+    const data = await res.json();
+
+    // 상세 정보 표시
+    document.getElementById("detail").style.display = "block";
+    document.getElementById("bsId").textContent = data.bsId;
+    document.getElementById("bsNm").textContent = data.bsNm;
+    document.getElementById("xpos").textContent = data.xpos;
+    document.getElementById("ypos").textContent = data.ypos;
+
+    // 지도 마커 갱신
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([data.ypos, data.xpos]).addTo(map)
+            .bindPopup(`<strong>${data.bsNm}</strong>`).openPopup();
+    map.setView([data.ypos, data.xpos], 17);
+  }
+</script>
+
+</body>
+</html>
