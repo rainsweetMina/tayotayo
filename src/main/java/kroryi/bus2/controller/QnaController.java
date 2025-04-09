@@ -1,10 +1,7 @@
 package kroryi.bus2.controller;
 
 import jakarta.validation.Valid;
-import kroryi.bus2.dto.qna.QnaAnswerDTO;
-import kroryi.bus2.dto.qna.QnaRequestDTO;
-import kroryi.bus2.dto.qna.QnaResponseDTO;
-import kroryi.bus2.dto.qna.QnaStatsDTO;
+import kroryi.bus2.dto.qna.*;
 import kroryi.bus2.service.QnaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,7 +34,10 @@ public class QnaController {
     // ✅ 단건 Q&A 조회
     @GetMapping("/{id}")
     public ResponseEntity<QnaResponseDTO> getQnaDetail(@PathVariable Long id) {
-        QnaResponseDTO response = qnaService.getQnaDetail(id);
+        Long memberId = 1L; // ✅ 실제 로그인 사용자 ID로 대체
+        boolean isAdmin = false; // ✅ 관리자 여부 판단 로직 필요 (예: ROLE 체크)
+
+        QnaResponseDTO response = qnaService.getQnaDetail(id, memberId, isAdmin);
         return ResponseEntity.ok(response);
     }
     @PostMapping("/admin/answer")
@@ -60,6 +60,23 @@ public class QnaController {
         QnaStatsDTO stats = qnaService.getQnaStatistics();
         return ResponseEntity.ok(stats);
     }
+    @PatchMapping("/{id}")
+    public ResponseEntity<String> updateQna(@PathVariable Long id,
+                                            @RequestBody QnaUpdateDTO dto) {
+        Long memberId = 1L; // ✅ 실제 로그인 사용자 ID로 대체해야 함 (임시값)
+
+        qnaService.updateQna(id, memberId, dto);
+        return ResponseEntity.ok("질문글이 수정되었습니다.");
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteQna(@PathVariable Long id) {
+        Long memberId = 1L; // ✅ 실제 로그인 사용자 ID로 대체해야 함 (임시값)
+
+        qnaService.deleteQna(id, memberId);
+        return ResponseEntity.ok("질문글이 삭제되었습니다.");
+    }
+
+
 
 
 

@@ -28,7 +28,7 @@ public class DashboardController {
     // dashboard.html 페이지를 반환하는 메서드
     @GetMapping
     public String getDashboard() {
-        return "dashboard/dashboard";
+        return "admin/dashboard";
     }
 
 

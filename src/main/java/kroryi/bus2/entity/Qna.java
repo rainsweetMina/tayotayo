@@ -38,6 +38,7 @@ public class Qna {
     @Column(columnDefinition = "TEXT")
     private String answer; // 관리자 답변
 
+    @Setter
     private boolean isSecret;   // 비공개 여부
     private boolean isDeleted;  // 사용자 soft delete
     private boolean visible;    // 관리자 숨김 처리

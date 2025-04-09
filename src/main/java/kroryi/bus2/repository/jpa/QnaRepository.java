@@ -20,7 +20,7 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
     List<Qna> findByMemberIdAndIsDeletedFalseOrderByCreatedAtDesc(Long memberId);
 
     // 조건 기반 단건 조회 (예: 비공개 필터링에 활용)
-    Optional<Qna> findByIdAndIsDeletedFalseAndVisibleTrue(Long id);
+    Optional<Qna> findByIdAndIsDeletedFalse(Long id);
 
     // 미답변 QnA 개수
     long countByStatus(QnaStatus status);
