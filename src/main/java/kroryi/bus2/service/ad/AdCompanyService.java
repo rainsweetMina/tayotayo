@@ -3,15 +3,13 @@ package kroryi.bus2.service.ad;
 
 import kroryi.bus2.dto.ad.AdCompanyDropdownDTO;
 import kroryi.bus2.dto.ad.AdCompanyRequestDTO;
-import kroryi.bus2.dto.ad.AdCompanyResponseDTO;
 import kroryi.bus2.dto.ad.AdCompanyUpdateRequestDTO;
-import kroryi.bus2.entity.AdCompany;
+import kroryi.bus2.entity.ad.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

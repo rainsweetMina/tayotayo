@@ -1,8 +1,8 @@
 package kroryi.bus2.service.ad;
 
 import kroryi.bus2.dto.ad.*;
-import kroryi.bus2.entity.Ad;
-import kroryi.bus2.entity.AdCompany;
+import kroryi.bus2.entity.ad.Ad;
+import kroryi.bus2.entity.ad.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
 import kroryi.bus2.repository.jpa.AdRepository;
 import lombok.RequiredArgsConstructor;

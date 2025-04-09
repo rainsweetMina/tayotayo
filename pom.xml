@@ -71,12 +71,12 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.projectlombok.test/test-maven-lombok -->
-        <dependency>
-            <groupId>org.projectlombok.test</groupId>
-            <artifactId>test-maven-lombok</artifactId>
-            <version>1.18.0.0</version>
-        </dependency>
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.projectlombok.test/test-maven-lombok &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.projectlombok.test</groupId>-->
+<!--            <artifactId>test-maven-lombok</artifactId>-->
+<!--            <version>1.18.0.0</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

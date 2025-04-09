@@ -1,4 +1,4 @@
-package kroryi.bus2.entity;
+package kroryi.bus2.entity.ad;
 
 import jakarta.persistence.*;
 import lombok.*;

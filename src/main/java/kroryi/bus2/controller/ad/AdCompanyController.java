@@ -4,7 +4,7 @@ import kroryi.bus2.dto.ad.AdCompanyDropdownDTO;
 import kroryi.bus2.dto.ad.AdCompanyRequestDTO;
 import kroryi.bus2.dto.ad.AdCompanyResponseDTO;
 import kroryi.bus2.dto.ad.AdCompanyUpdateRequestDTO;
-import kroryi.bus2.entity.AdCompany;
+import kroryi.bus2.entity.ad.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
 import kroryi.bus2.service.ad.AdCompanyService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
