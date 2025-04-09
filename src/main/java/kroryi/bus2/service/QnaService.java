@@ -110,22 +110,20 @@ public class QnaService {
         Qna qna = qnaRepository.findById(qnaId)
                 .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
 
-        // 본인 확인
+        System.out.println("🔍 Qna DB memberId: " + qna.getMemberId());
+        System.out.println("🔍 요청한 memberId: " + memberId);
+
         if (!qna.getMemberId().equals(memberId)) {
             throw new AccessDeniedException("본인만 수정할 수 있습니다.");
         }
 
-        if (dto.getTitle() != null) {
-            qna.setTitle(dto.getTitle());
-        }
+        System.out.println("요청된 memberId: " + memberId);
+        System.out.println("글 작성자 memberId: " + qna.getMemberId());
 
-        if (dto.getContent() != null) {
-            qna.setContent(dto.getContent());
-        }
 
-        if (dto.getIsSecret() != null) {
-            qna.setSecret(dto.getIsSecret());
-        }
+        if (dto.getTitle() != null) qna.setTitle(dto.getTitle());
+        if (dto.getContent() != null) qna.setContent(dto.getContent());
+        if (dto.getIsSecret() != null) qna.setSecret(dto.getIsSecret());
     }
     @Transactional
     public void deleteQna(Long qnaId, Long memberId) {

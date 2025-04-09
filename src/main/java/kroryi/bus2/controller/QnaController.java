@@ -63,11 +63,11 @@ public class QnaController {
     @PatchMapping("/{id}")
     public ResponseEntity<String> updateQna(@PathVariable Long id,
                                             @RequestBody QnaUpdateDTO dto) {
-        Long memberId = 1L; // ✅ 실제 로그인 사용자 ID로 대체해야 함 (임시값)
-
+        Long memberId = dto.getMemberId(); // ✅ 요청에서 꺼내기
         qnaService.updateQna(id, memberId, dto);
         return ResponseEntity.ok("질문글이 수정되었습니다.");
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteQna(@PathVariable Long id) {
         Long memberId = 1L; // ✅ 실제 로그인 사용자 ID로 대체해야 함 (임시값)
