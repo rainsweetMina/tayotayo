@@ -60,12 +60,26 @@
 
   <!-- 이메일 인증 -->
   <div>
-    <label for="email">이메일</label>
-    <input type="email" id="email" th:field="*{email}" oninput="validateEmail();" />
-    <button type="button" onclick="sendVerificationCode()">인증 코드 전송</button>
+    <label for="emailLocal">이메일</label>
+    <input type="text" id="emailLocal"/> @
+    <input type="text" id="emailDomain"/>
+    <select id="emailSelect" onchange="handleEmailDomainChange(this.value)">
+      <option value="">도메인 선택</option>
+      <option value="naver.com">naver.com</option>
+      <option value="gmail.com">gmail.com</option>
+      <option value="daum.net">daum.net</option>
+      <option value="kakao.com">kakao.com</option>
+      <option value="직접입력">직접입력</option>
+    </select>
+    <button type="button" onclick="sendVerificationCode()">인증 코드 전송</button><br/>
+
     <span id="emailValidationMessage" class="error-message"></span>
     <span id="emailSendResult" class="success-message"></span><br/>
+    <span id="emailTimer" class="info-message"></span>
     <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></span>
+
+    <!-- 최종 이메일 주소를 여기에 hidden 필드로 -->
+    <input type="hidden" id="email" name="email" th:field="*{email}" />
   </div>
 
   <div>
@@ -79,10 +93,11 @@
 
   <div>
     <label for="phoneNumber">전화번호</label>
-    <input type="text" id="phoneNumber" th:field="*{phoneNumber}" />
+    <input type="text" id="phoneNumber" th:field="*{phoneNumber}"
+           maxlength="13" oninput="formatPhoneNumber(this)"/>
+    <span th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="error-message"></span>
   </div>
 
-  <!-- signupType은 기본 GENERAL 이므로 숨김 처리 -->
   <input type="hidden" th:field="*{signupType}" />
 
   <div>
@@ -92,6 +107,29 @@
 </form>
 
 <script>
+  let timerInterval;
+
+  function startEmailTimer(durationSeconds) {
+    let remainingTime = durationSeconds;
+    const timerElement = document.getElementById("emailTimer");
+
+    if (timerInterval) clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      timerElement.innerText = `인증 유효시간: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+      remainingTime--;
+
+      if (remainingTime < 0) {
+        clearInterval(timerInterval);
+        timerElement.innerText = "인증 유효시간이 만료되었습니다. 다시 시도해주세요.";
+        document.getElementById("emailVerified").value = "false";
+      }
+    }, 1000);
+  }
+
   function validateEmail() {
     const email = document.getElementById("email").value;
     const message = document.getElementById("emailValidationMessage");
@@ -125,6 +163,9 @@
             .then(response => response.text())
             .then(data => {
               document.getElementById("emailSendResult").innerText = "인증 코드가 전송되었습니다.";
+              document.getElementById("verifyResult").innerText = "";
+              document.getElementById("emailVerified").value = "false";
+              startEmailTimer(180);
             })
             .catch(error => {
               console.error("전송 오류:", error);
@@ -211,6 +252,53 @@
 
     return isPasswordValid && isPasswordMatch && isEmailValid;
   }
+
+  // ✅ 전화번호 자동 하이픈
+  function formatPhoneNumber(input) {
+    let value = input.value.replace(/\D/g, ''); // 숫자만 남기기
+    let result = '';
+
+    if (value.length < 4) {
+      result = value;
+    } else if (value.length < 8) {
+      result = value.slice(0, 3) + '-' + value.slice(3);
+    } else {
+      result = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+    }
+
+    input.value = result;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // 드롭다운 선택 시 도메인 필드 자동 채우기
+    function handleEmailDomainChange(value) {
+      const domainInput = document.getElementById("emailDomain");
+      if (value === "직접입력") {
+        domainInput.value = "";
+        domainInput.disabled = false;
+        domainInput.focus();
+      } else {
+        domainInput.value = value;
+        domainInput.disabled = true;
+      }
+      updateFullEmail();
+    }
+
+    // 이메일 주소 조합해서 hidden 필드에 저장
+    function updateFullEmail() {
+      const local = document.getElementById("emailLocal").value.trim();
+      const domain = document.getElementById("emailDomain").value.trim();
+      const fullEmail = `${local}@${domain}`;
+      document.getElementById("email").value = fullEmail;
+    }
+
+    // 이벤트 리스너 연결
+    document.getElementById("emailLocal").addEventListener("input", updateFullEmail);
+    document.getElementById("emailDomain").addEventListener("input", updateFullEmail);
+
+    // 함수들을 전역으로 등록 (HTML에서 참조 가능하게)
+    window.handleEmailDomainChange = handleEmailDomainChange;
+  });
 </script>
 </body>
 </html>

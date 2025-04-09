@@ -2,6 +2,7 @@ package kroryi.bus2.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
@@ -17,9 +18,13 @@ import java.time.LocalDate;
 public class JoinRequestDTO {
 
     @NotBlank(message = "아이디를 입력하세요.")
-    private String userId;  // 로그인 ID
+    private String userId;
 
     @NotBlank(message = "비밀번호를 입력하세요.")
+    @Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&]).{8,}$",
+            message = "비밀번호는 8자 이상이며, 영문/숫자/특수문자를 모두 포함해야 합니다."
+    )
     private String password;
 
     @NotBlank(message = "비밀번호 확인을 입력하세요.")
@@ -32,16 +37,19 @@ public class JoinRequestDTO {
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
-    private String emailVerificationCode; // 사용자가 입력한 이메일 인증 코드
+    // 인증 여부 (폼에선 hidden으로 true/false 값 전달)
+    private boolean emailVerified = false;
 
-    private boolean emailVerified = false; // 인증 완료 여부 (기본 false)
+    // 사용자가 입력한 인증 코드 (백엔드 인증 처리용)
+    private String emailVerificationCode;
 
     private String phoneNumber;
 
-    private SignupType signupType = SignupType.GENERAL; // 소셜/일반 회원가입 구분
+    // 일반/소셜 회원가입 구분
+    private SignupType signupType = SignupType.GENERAL;
 
     /**
-     * 비밀번호 암호화 이후, 엔티티로 변환
+     * 비밀번호 암호화 후 엔티티로 변환
      */
     public User toEntity(String encodedPassword) {
         return User.builder()
@@ -49,21 +57,26 @@ public class JoinRequestDTO {
                 .password(encodedPassword)
                 .username(this.username)
                 .email(this.email)
-                .phoneNumber(this.phoneNumber)
+                .phoneNumber(normalizePhoneNumber(this.phoneNumber))
                 .signupType(this.signupType)
-                .role(Role.USER)  // 일반 사용자 권한
+                .role(Role.USER)
                 .signupDate(LocalDate.now())
                 .build();
     }
 
-    // emailVerified 값을 반환하는 getter 메서드
-    public Boolean getEmailVerified() {
-        return emailVerified;  // emailVerified 값을 반환
+    // 전화번호 하이픈(-) 제거
+    private String normalizePhoneNumber(String phone) {
+        return (phone != null) ? phone.replaceAll("-", "") : null;
     }
 
-    // emailVerified 값을 설정하는 setter 메서드
-    public void setEmailVerified(Boolean emailVerified) {
-        this.emailVerified = emailVerified;  // emailVerified 값을 설정
+    // Boolean 타입 강제 Getter/Setter (Thymeleaf와의 호환을 위해)
+    public Boolean getEmailVerified() {
+        return emailVerified;
     }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = (emailVerified != null) && emailVerified;
+    }
+
 
 }

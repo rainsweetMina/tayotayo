@@ -12,6 +12,33 @@
 
 <hr>
 
+<!-- ✅ 노선 정보 표시 영역 -->
+<h2>노선 정보</h2>
+<div id="routeInfoBox">
+    <p><strong>노선 ID:</strong> <span id="routeId">-</span></p>
+    <p><strong>노선 번호:</strong> <span id="routeNo">-</span></p>
+    <p><strong>출발 정류소:</strong> <span id="stNm">-</span> (<span id="stBsId">-</span>)</p>
+    <p><strong>도착 정류소:</strong> <span id="edNm">-</span> (<span id="edBsId">-</span>)</p>
+    <p><strong>노선 설명:</strong> <span id="routeNote">-</span></p>
+    <p><strong>데이터 연결 여부:</strong> <span id="dataconnareacd">-</span></p>
+    <p><strong>정방향 설명:</strong> <span id="dirRouteNote">-</span></p>
+    <p><strong>역방향 설명:</strong> <span id="ndirRouteNote">-</span></p>
+    <p><strong>노선 타입 코드:</strong> <span id="routeTCd">-</span></p>
+</div>
+
+<div style="margin-top: 15px;">
+    <button id="deleteRouteBtn" style="background-color:red; color:white; font-weight:bold;">
+        🚫 노선 삭제
+    </button>
+
+    <button id="editRouteBtn" style="background-color:orange; color:white; font-weight:bold; margin-left: 10px;">
+        ✏️ 노선 수정
+    </button>
+</div>
+
+<hr>
+
+<!-- ✅ 정류소 목록 테이블 -->
 <table border="1" id="resultTable">
     <thead>
     <tr>
@@ -20,6 +47,7 @@
         <th>정류소 ID</th>
         <th>정류소 이름</th>
         <th>좌표 (x, y)</th>
+        <th>관리</th>
     </tr>
     </thead>
     <tbody id="tableBody">
@@ -27,6 +55,8 @@
     </tbody>
 </table>
 
+
+<!-- ✅ 스크립트 -->
 <script>
     async function loadBusStops() {
         const routeId = document.getElementById('routeIdInput').value.trim();
@@ -38,9 +68,32 @@
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
 
+        // 노선 기본 정보 조회 (route + customRoute)
+        try {
+            const res = await fetch(`/api/bus/getRouteInfo?routeId=${routeId}`);
+            if (res.ok) {
+                const route = await res.json();
+                document.getElementById("routeId").textContent = route.routeId || "-";
+                document.getElementById("routeNo").textContent = route.routeNo || "-";
+                document.getElementById("stBsId").textContent = route.stBsId || "-";
+                document.getElementById("edBsId").textContent = route.edBsId || "-";
+                document.getElementById("stNm").textContent = route.stNm || "-";
+                document.getElementById("edNm").textContent = route.edNm || "-";
+                document.getElementById("routeNote").textContent = route.routeNote || "-";
+                document.getElementById("dataconnareacd").textContent = route.dataconnareacd || "-";
+                document.getElementById("dirRouteNote").textContent = route.dirRouteNote || "-";
+                document.getElementById("ndirRouteNote").textContent = route.ndirRouteNote || "-";
+                document.getElementById("routeTCd").textContent = route.routeTCd || "-";
+            } else {
+                console.warn("노선 정보 없음");
+            }
+        } catch (err) {
+            console.error("노선 정보 조회 실패:", err);
+        }
+
         let data = null;
 
-        // 1차 시도: 일반 노선
+        //  1차 시도: 일반 노선
         try {
             const res = await fetch(`/api/bus/bus-route?routeId=${routeId}`);
             if (res.ok) {
@@ -50,7 +103,7 @@
             console.warn("일반 노선 조회 실패, 커스텀으로 시도");
         }
 
-        // 2차 시도: 커스텀 노선
+        //  2차 시도: 커스텀 노선
         if (!data) {
             try {
                 const res = await fetch(`/api/bus/bus-route-Custom?routeId=${routeId}`);
@@ -62,17 +115,38 @@
             }
         }
 
-        // 결과 처리
+        // 정류소 목록 테이블 출력
         if (data && data.length > 0) {
+            const routeId = document.getElementById('routeIdInput').value.trim();
+
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+
+            // moveDir 별 최대 seq 계산
+            const maxSeq = {
+                "0": Math.max(...data.filter(s => s.moveDir === "0").map(s => s.seq)),
+                "1": Math.max(...data.filter(s => s.moveDir === "1").map(s => s.seq))
+            };
+
             data.forEach(stop => {
+                const isStart = stop.moveDir === "1" && stop.seq === 1;
+                const isEnd = stop.seq === maxSeq[stop.moveDir];
+                const isProtected = isStart || isEnd;
+
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                <td>${stop.seq}</td>
-                <td>${stop.moveDir}</td>
-                <td>${stop.bsId}</td>
-                <td>${stop.bsNm ?? '-'}</td>
-                <td>${stop.xPos}, ${stop.yPos}</td>
-            `;
+            <td>${stop.seq}</td>
+            <td>${stop.moveDir}</td>
+            <td>${stop.bsId}</td>
+            <td>${stop.bsNm ?? '-'}</td>
+            <td>${stop.xPos}, ${stop.yPos}</td>
+            <td>
+                ${isProtected
+                    ? `<span style="color: gray;">🔒 보호됨</span>`
+                    : `<button onclick="deleteStop('${routeId}', '${stop.moveDir}', ${stop.seq})">삭제</button>`
+                }
+            </td>
+        `;
                 tbody.appendChild(row);
             });
         } else {
@@ -81,7 +155,57 @@
             tbody.appendChild(row);
         }
     }
+</script>
+<script>
+    async function deleteStop(routeId, moveDir, seq) {
+        if (!confirm(`정류소 seq ${seq} (${moveDir === "1" ? "정방향" : "역방향"}) 을 삭제할까요?`)) return;
 
+        try {
+            const res = await fetch(`/api/bus/delete-stop?routeId=${routeId}&moveDir=${moveDir}&seq=${seq}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert("삭제 성공!");
+                loadBusStops(); // 새로고침
+            } else {
+                const err = await res.text();
+                alert("삭제 실패: " + err);
+            }
+        } catch (e) {
+            alert("에러 발생: " + e.message);
+        }
+    }
+</script>
+<script>
+    document.getElementById("deleteRouteBtn").addEventListener("click", async () => {
+        const routeId = document.getElementById('routeIdInput').value.trim();
+        if (!routeId) {
+            alert("노선 ID를 먼저 입력하세요.");
+            return;
+        }
+
+        if (!confirm(`❗정말로 노선 [${routeId}] 을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
+
+        try {
+            const res = await fetch(`/api/bus/deleteCustomRoute?routeId=${routeId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert("✅ 노선이 성공적으로 삭제되었습니다.");
+                document.getElementById("tableBody").innerHTML = "";
+                document.getElementById("routeInfoBox").querySelectorAll("span").forEach(span => span.textContent = "-");
+                document.getElementById("routeIdInput").value = "";
+            } else {
+                const err = await res.json();
+                alert("❌ 삭제 실패: " + err.message);
+            }
+        } catch (err) {
+            console.error("삭제 중 에러:", err);
+            alert("서버 오류 발생");
+        }
+    });
 </script>
 </body>
 </html>

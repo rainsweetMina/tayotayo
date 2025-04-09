@@ -1,7 +1,8 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.ad;
 
 import kroryi.bus2.dto.ad.AdCompanyDropdownDTO;
 import kroryi.bus2.dto.ad.AdCompanyRequestDTO;
+import kroryi.bus2.dto.ad.AdCompanyResponseDTO;
 import kroryi.bus2.dto.ad.AdCompanyUpdateRequestDTO;
 import kroryi.bus2.entity.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
@@ -40,14 +41,30 @@ public class AdCompanyController {
 
     // 광고회사 드롭다운용 목록 조회 (id, name만 반환)
     @GetMapping
-    public List<AdCompanyDropdownDTO> getAllCompanies() {
-        return adCompanyRepository.findAll().stream()
-                .map(company -> new AdCompanyDropdownDTO(company.getId(), company.getName()))
-                .collect(Collectors.toList());
+    public List<AdCompanyResponseDTO> getAllCompanies() {
+        return adCompanyRepository.findByDeletedFalse()
+                .stream()
+                .map(company -> AdCompanyResponseDTO.builder()
+                        .id(company.getId())
+                        .name(company.getName())
+                        .managerName(company.getManagerName())
+                        .contactNumber(company.getContactNumber())
+                        .email(company.getEmail())
+                        .build())
+                .toList();
     }
+
     @GetMapping("/dropdown")
     public ResponseEntity<List<AdCompanyDropdownDTO>> getDropdownCompanies() {
         return ResponseEntity.ok(adCompanyService.getCompanyDropdownList());
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAdCompany(@PathVariable Long id) {
+        adCompanyService.softDeleteCompany(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 
 }

@@ -1,4 +1,4 @@
-package kroryi.bus2.config;
+package kroryi.bus2.config.web;
 
 import kroryi.bus2.handler.DashboardWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;

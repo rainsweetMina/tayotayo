@@ -14,11 +14,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.io.IOException;
 
 @Configuration
 public class SecurityConfig {
+
+    @Autowired
+    private OAuth2UserService<?, ?> customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -30,7 +35,13 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus").permitAll()
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**",
+                                "/swagger-ui/**",         // ✅ Swagger UI 경로
+                                "/swagger-ui.html",         // ✅ Swagger UI 경로
+                                "/v3/api-docs/**",        // ✅ Swagger 문서 JSON
+                                "/swagger-resources/**",  // ✅ Swagger 리소스
+                                "/webjars/**"             // ✅ Swagger 스타일 등 정적 리소스
+                                        ).permitAll()
                         .requestMatchers("/mypage/**").authenticated()
                         .anyRequest().permitAll()
                 )
@@ -55,9 +66,16 @@ public class SecurityConfig {
                         })
                         .permitAll()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/mypage", true)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService((OAuth2UserService) customOAuth2UserService)
+                        )
+                )
                 .rememberMe(remember -> remember
                         .key("remember-me-key")
-                        .tokenValiditySeconds(7 * 24 * 60 * 60) // 7일간 자동 로그인 유지
+                        .tokenValiditySeconds(7 * 24 * 60 * 60) // 7일
                         .rememberMeParameter("remember-me")
                         .userDetailsService(userDetailsService)
                 )

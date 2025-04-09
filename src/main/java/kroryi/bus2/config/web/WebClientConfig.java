@@ -1,4 +1,4 @@
-package kroryi.bus2.config;
+package kroryi.bus2.config.web;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

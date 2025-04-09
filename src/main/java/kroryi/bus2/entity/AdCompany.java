@@ -19,5 +19,9 @@ public class AdCompany {
     private String managerName;     // 담당자명
     private String contactNumber;   // 연락처
     private String email;           // 이메일 주소
+
+    @Builder.Default
+    private boolean deleted = false;
+
 }
 

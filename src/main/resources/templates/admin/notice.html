@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항 관리</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f7f9fc; margin: 0; padding: 20px; }
+        h1 { font-size: 24px; margin-bottom: 10px; }
+        .notice { background-color: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .notice-title { font-size: 20px; font-weight: bold; }
+        .notice-content { margin: 5px 0; }
+        .notice-author { font-size: 14px; color: #666; }
+        .form-control { margin-bottom: 10px; padding: 5px; width: 100%; max-width: 300px; }
+        .button { padding: 8px 12px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .button:hover { background-color: #357ae8; }
+    </style>
+</head>
+<body>
+<h1>공지사항 관리</h1>
+<div>
+    <input id="title" class="form-control" placeholder="제목" /> <br>
+    <input id="author" class="form-control" placeholder="작성자" /> <br>
+    <textarea id="content" class="form-control" placeholder="내용"></textarea><br>
+    <button class="button" onclick="addNotice()">공지 추가</button>
+</div>
+
+<div id="notice-list">
+    <div th:each="notice : ${notices}" class="notice">
+        <div class="notice-title" th:text="${notice.title}">제목</div>
+        <div class="notice-content" th:text="${notice.content}">내용</div>
+        <div class="notice-author" th:text="${notice.author}">작성자</div>
+        <button class="button" th:onclick="'deleteNotice(' + ${notice.id} + ')'">삭제</button>
+    </div>
+</div>
+
+<script src="/js/notice.js"></script>
+</body>
+</html>

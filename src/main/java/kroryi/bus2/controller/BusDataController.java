@@ -7,21 +7,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.BusRealtimeDTO;
+import kroryi.bus2.dto.Route.CustomRouteDTO;
+import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
+import kroryi.bus2.dto.Route.RouteDTO;
+import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.CustomRoute;
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
+import kroryi.bus2.repository.jpa.route.CustomRouteRepository;
 import kroryi.bus2.service.BusInfoInitService;
 import kroryi.bus2.service.BusStopDataService;
-import kroryi.bus2.service.CustomeRoute.GetCustomRouteService;
-import kroryi.bus2.service.RouteDataService;
+import kroryi.bus2.service.Route.*;
+import kroryi.bus2.service.Route.RouteDataService;
 import kroryi.bus2.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +43,7 @@ import java.util.*;
 @RequestMapping("/api/bus")
 @RequiredArgsConstructor
 @Log4j2
-// 버스 관련 데이터를 클라이언트에 제공하는 REST API 컨트롤러
+// 버스,노선 관련 데이터를 클라이언트에 제공하는 REST API 컨트롤러
 // 이 컨트롤러는 JSON 형식으로 데이터를 반환하며, 클라이언트(웹/앱)에서 실시간 정보 조회 및 검색에 활용
 public class BusDataController {
     private final BusInfoInitService busInfoInitService;
@@ -45,9 +52,15 @@ public class BusDataController {
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
     private final BusRouteRealTimeDataService busRouteRealTimeDataService;
-    private final GetCustomRouteService getCoordinatesByRouteIdGrouped;
     private final GetCustomRouteService getCustomRouteService;
     private final BusStopRepository busStopRepository;
+    private final CustomRouteRepository customRouteRepository;
+    private final AddCustomRouteService addCustomRouteService;
+    private final AddRouteStopLinkService addRouteStopLinkService;
+    private final RouteStopLinkRepository routeStopLinkRepository;
+    private final InsertStopIntoRouteService insertStopIntoRouteService;
+    private final DeleteStopFromRouteService deleteStopFromRouteService;
+    private final DeleteCustomRouteService deleteCustomRouteService;
 
     @Value("${api.service-key-decoding}")
     private String serviceKey;
@@ -102,7 +115,7 @@ public class BusDataController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "노선Id로 정류장 불러오기", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌")
+    @Operation(summary = "정류장 불러오기", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌")
     @GetMapping(value = "/bus-route", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Map<String, Object>> getBusRoute(@RequestParam String routeId) throws IOException {
 //        JsonNode result = routeDataService.getBusRoute(routeId);
@@ -112,7 +125,7 @@ public class BusDataController {
     }
 
     //     ORS 활용한 api 지도에 노선 그리는거
-    @Operation(summary = "노선Id로 경로 불러오기", description = "노선Id로 해당하는 노선의 경로의 좌표 값을 뿌려줌 (ORS 활용)")
+    @Operation(summary = "경로 불러오기", description = "노선Id로 해당하는 노선의 경로의 좌표 값을 뿌려줌 (ORS 활용)")
     @GetMapping("/bus-route-link")
     public ResponseEntity<Map<String, List<CoordinateDTO>>> getBusRouteLinkWithCoordsORS(@RequestParam String routeId) throws IOException, InterruptedException {
         String redisKey = "bus:route:ors:" + routeId;
@@ -128,7 +141,7 @@ public class BusDataController {
         return ResponseEntity.ok(resultMap);
     }
 
-    @Operation(summary = "노선Id로 Custom 정류장 불러오기 ", description = "노선Id로 해당하는 Custom 정류장 정보(좌표,이름 등)을 뿌려줌")
+    @Operation(summary = "Custom 정류장 불러오기 ", description = "노선Id로 해당하는 Custom 정류장 정보(좌표,이름 등)을 뿌려줌 (참고로 기존에 있는 노선도 불러와짐)")
     @GetMapping(value = "/bus-route-Custom", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Map<String, Object>> getCustomBusRoute(@RequestParam String routeId) throws IOException {
 
@@ -138,7 +151,7 @@ public class BusDataController {
         return ResponseEntity.ok(result).getBody();
     }
 
-    @Operation(summary = "노선Id로 Custom 경로 불러오기", description = "노선Id로 해당하는 Custom 노선의 경로의 좌표 값을 뿌려줌 (ORS 활용)")
+    @Operation(summary = "Custom 경로 불러오기", description = "노선Id로 해당하는 Custom 노선의 경로의 좌표 값을 뿌려줌 (ORS 활용)")
     @GetMapping("/bus-route-link-Custom")
     public ResponseEntity<Map<String, List<CoordinateDTO>>> getCustomBusRouteLinkWithCoordsORS(@RequestParam String routeId) throws IOException, InterruptedException {
         String redisKey = "BUS_ROUTE_POLYLINE::" + routeId;
@@ -153,12 +166,12 @@ public class BusDataController {
         }
 
         // 2. DB에서 좌표 가져오기
-        Map<String, List<CoordinateDTO>> rawMap = getCoordinatesByRouteIdGrouped.getCoordinatesByRouteIdGrouped(routeId);
+        Map<String, List<CoordinateDTO>> rawMap = getCustomRouteService.getCoordinatesByRouteIdGrouped(routeId);
         System.out.println("rawMap : " + rawMap);
 
         // 3. ORS 경로 처리
-        List<CoordinateDTO> forwardPath = getCoordinatesByRouteIdGrouped.getChunkedOrsCustom(rawMap.getOrDefault("forward", List.of()));
-        List<CoordinateDTO> reversePath = getCoordinatesByRouteIdGrouped.getChunkedOrsCustom(rawMap.getOrDefault("reverse", List.of()));
+        List<CoordinateDTO> forwardPath = getCustomRouteService.getChunkedOrsCustom(rawMap.getOrDefault("forward", List.of()));
+        List<CoordinateDTO> reversePath = getCustomRouteService.getChunkedOrsCustom(rawMap.getOrDefault("reverse", List.of()));
 
         Map<String, List<CoordinateDTO>> resultMap = new HashMap<>();
         resultMap.put("forward", forwardPath);
@@ -173,7 +186,7 @@ public class BusDataController {
         return ResponseEntity.ok(resultMap);
     }
 
-    @Operation(summary = "노선Id로 버스 실시간 위치", description = "노선Id로 해당하는 노선에 다니고 있는 버스의 실시간 위치를 뿌려줌")
+    @Operation(summary = "버스 실시간 위치", description = "노선Id로 해당하는 노선에 다니고 있는 버스의 실시간 위치를 뿌려줌")
     @GetMapping("/bus-route-Bus")
     public ResponseEntity<List<BusRealtimeDTO>> getBusRouteRealTimeBus(@RequestParam String routeId) throws Exception {
 
@@ -183,7 +196,7 @@ public class BusDataController {
         return ResponseEntity.ok(list);
     }
 
-
+    @Operation(summary = "정류소이름 찾기", description = "정류소ID로 정류소 이름 찾아줌")
     @GetMapping("/stop-name")
     public ResponseEntity<String> getBusStopName(@RequestParam String bsId) {
         return busStopRepository.findByBsId(bsId)
@@ -191,6 +204,114 @@ public class BusDataController {
                 .orElse(ResponseEntity.notFound().build());
 
     }
+
+    // 경유 정류소만 추가 거의 쓸일없을듯?
+    @Operation(summary = "Custom 경유지 추가", description = "새로운 Custom 경유 정류소만 추가 거의 쓸일없을듯?")
+    @PostMapping("/AddRouteStopLink")
+    public void addRouteStopLink(@RequestBody List<RouteStopLinkDTO> dtoList) {
+        System.out.println("받아온 데이터 : " + dtoList);
+        addRouteStopLinkService.saveAll(dtoList);
+    }
+
+    // 노선만들기 + 경유 정류소 추가
+    @Operation(summary = "Custom 노선 + 경유지 추가", description = "새로운 Custom 노선 + 경유지를 추가합니다.")
+    @PostMapping("/AddBusRoute")
+    public ResponseEntity<?> addRoute(@RequestBody CustomRouteRegisterRequestDTO request) {
+        try {
+            addCustomRouteService.saveFullRoute(request);
+            return ResponseEntity.ok(Map.of("success", true, "routeId", request.getRoute().getRouteId()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "노선정보 찾기", description = "노선ID로 노선정보 찾아줌")
+    @GetMapping("/getRouteInfo")
+    public ResponseEntity<RouteDTO> getRouteByRouteId(@RequestParam String routeId) {
+        RouteDTO route = routeDataService.getRouteByRouteId(routeId);
+        return ResponseEntity.ok(route);
+    }
+
+    @Operation(summary = "노선정보 수정", description = "노선ID로 노선정보 수정해줌")
+    @PutMapping("/UpdateCustomRoute/{routeId}")
+    public ResponseEntity<?> updateCustomRoute(@PathVariable String routeId,
+                                               @RequestBody CustomRouteDTO updatedDto) {
+        CustomRoute route = customRouteRepository.findByRouteId(routeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 노선 ID가 존재하지 않습니다: " + routeId));
+
+        // 업데이트할 항목들만 선택적으로 덮어쓰기
+        route.setRouteNo(updatedDto.getRouteNo());
+        route.setRouteNote(updatedDto.getRouteNote());
+        route.setDataconnareacd(updatedDto.getDataconnareacd());
+        route.setDirRouteNote(updatedDto.getDirRouteNote());
+        route.setNdirRouteNote(updatedDto.getNdirRouteNote());
+        route.setRouteTCd(updatedDto.getRouteTCd());
+
+        customRouteRepository.save(route);
+        return ResponseEntity.ok(Map.of("success", true, "message", "노선 정보가 수정되었습니다."));
+    }
+
+    @Operation(summary = "노선링크 순서 수정", description = "노선ID로 노선링크의 순서를 수정해줌 *기존 노선엔 절대 사용금지!!!")
+    @PutMapping("/UpdateRouteLink")
+    public ResponseEntity<?> updateRouteSeq(@RequestBody List<RouteStopLinkDTO> dtoList) {
+        if (dtoList.isEmpty()) {
+            return ResponseEntity.badRequest().body("수정할 데이터가 없습니다.");
+        }
+
+        for (RouteStopLinkDTO dto : dtoList) {
+            routeStopLinkRepository.findByRouteIdAndBsIdAndMoveDir(
+                    dto.getRouteId(), dto.getBsId(), dto.getMoveDir()
+            ).ifPresent(entity -> {
+                entity.setSeq(dto.getSeq());
+                routeStopLinkRepository.save(entity);
+            });
+        }
+
+        return ResponseEntity.ok(Map.of("success", true, "message", "노선 순서(seq)가 성공적으로 수정되었습니다."));
+    }
+
+    @Operation(summary = "노선링크 정류소 추가", description = "노선ID로 노선링크의 정류소를 추가해줌 *기존의 노선에 새로운 정류소가 추가 될수도있으니 주의!")
+    @PostMapping("/InsertStop")
+    public ResponseEntity<?> insertStop(@RequestBody RouteStopLinkDTO dto) {
+        try {
+            insertStopIntoRouteService.insertStopIntoRoute(dto);
+            return ResponseEntity.ok(Map.of("success", true, "message", "정류장 삽입 완료"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "노선링크 정류소 삭제", description = "노선링크의 정류소를 삭제해줌 *기존의 노선의 정류소도 삭제 가능하니 조심!")
+    @DeleteMapping("/delete-stop")
+    public ResponseEntity<?> deleteStop(@RequestParam String routeId,
+                                        @RequestParam String moveDir,
+                                        @RequestParam int seq) {
+        try {
+            deleteStopFromRouteService.deleteStopFromRoute(routeId, moveDir, seq);
+            return ResponseEntity.ok("정류소 삭제 완료");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/deleteCustomRoute")
+    public ResponseEntity<?> deleteCustomRoute(@RequestParam String routeId) {
+        try {
+            deleteCustomRouteService.deleteCustomRoute(routeId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "노선 삭제 완료"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "삭제 실패: " + e.getMessage()));
+        }
+    }
+
+
+
+
+
+
+
 
 
 

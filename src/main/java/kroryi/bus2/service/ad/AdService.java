@@ -1,9 +1,6 @@
 package kroryi.bus2.service.ad;
 
-import kroryi.bus2.dto.ad.AdRequestDTO;
-import kroryi.bus2.dto.ad.AdResponseDTO;
-import kroryi.bus2.dto.ad.AdStatsDTO;
-import kroryi.bus2.dto.ad.AdUpdateRequestDTO;
+import kroryi.bus2.dto.ad.*;
 import kroryi.bus2.entity.Ad;
 import kroryi.bus2.entity.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
@@ -11,6 +8,7 @@ import kroryi.bus2.repository.jpa.AdRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,29 +42,16 @@ public class AdService {
     public List<AdResponseDTO> getAllAds() {
         return adRepository.findAll().stream()
                 .filter(ad -> !ad.isDeleted())
-                .map(ad -> AdResponseDTO.builder()
-                        .id(ad.getId())
-                        .title(ad.getTitle())
-                        .imageUrl(ad.getImageUrl())
-                        .linkUrl(ad.getLinkUrl())
-                        .startDateTime(ad.getStartDateTime())
-                        .endDateTime(ad.getEndDateTime())
-                        .status(ad.getStatus())
-                        .build())
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     public List<AdResponseDTO> getActiveAds() {
+        LocalDateTime now = LocalDateTime.now();
         return adRepository.findAll().stream()
-                .filter(ad -> !ad.isDeleted() && ad.getStatus().equals("ONGOING"))
-                .map(ad -> AdResponseDTO.builder()
-                        .id(ad.getId())
-                        .title(ad.getTitle())
-                        .imageUrl(ad.getImageUrl())
-                        .linkUrl(ad.getLinkUrl())
-                        .startDateTime(ad.getStartDateTime())
-                        .endDateTime(ad.getEndDateTime())
-                        .status(ad.getStatus())
-                        .build())
+                .filter(ad -> !ad.isDeleted() &&
+                        ad.getStartDateTime().isBefore(now) &&
+                        ad.getEndDateTime().isAfter(now))
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     public AdStatsDTO getAdStats() {
@@ -87,31 +72,16 @@ public class AdService {
         adRepository.save(ad);
     }
     public List<AdResponseDTO> getEndedAds() {
+        LocalDateTime now = LocalDateTime.now();
         return adRepository.findAll().stream()
-                .filter(ad -> !ad.isDeleted() && ad.getStatus().equals("ENDED"))
-                .map(ad -> AdResponseDTO.builder()
-                        .id(ad.getId())
-                        .title(ad.getTitle())
-                        .imageUrl(ad.getImageUrl())
-                        .linkUrl(ad.getLinkUrl())
-                        .startDateTime(ad.getStartDateTime())
-                        .endDateTime(ad.getEndDateTime())
-                        .status(ad.getStatus())
-                        .build())
+                .filter(ad -> !ad.isDeleted() && ad.getEndDateTime().isBefore(now))
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     public List<AdResponseDTO> getDeletedAds() {
         return adRepository.findAll().stream()
                 .filter(Ad::isDeleted)
-                .map(ad -> AdResponseDTO.builder()
-                        .id(ad.getId())
-                        .title(ad.getTitle())
-                        .imageUrl(ad.getImageUrl())
-                        .linkUrl(ad.getLinkUrl())
-                        .startDateTime(ad.getStartDateTime())
-                        .endDateTime(ad.getEndDateTime())
-                        .status(ad.getStatus())
-                        .build())
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     public Ad updateAd(Long id, AdUpdateRequestDTO dto) {
@@ -133,6 +103,37 @@ public class AdService {
 
         return adRepository.save(ad);
     }
+    public AdResponseDTO getAdById(Long id) {
+        Ad ad = adRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 광고가 존재하지 않습니다."));
+        return convertToDTO(ad);
+    }
+
+    private AdResponseDTO convertToDTO(Ad ad) {
+        AdCompany company = ad.getCompany();
+
+        return AdResponseDTO.builder()
+                .id(ad.getId())
+                .title(ad.getTitle())
+                .imageUrl(ad.getImageUrl())
+                .linkUrl(ad.getLinkUrl())
+                .startDateTime(ad.getStartDateTime())
+                .endDateTime(ad.getEndDateTime())
+                .status(ad.getStatus())
+                .company(company != null ? AdCompanyDTO.builder()
+                        .id(company.getId())
+                        .name(company.getName())
+                        .managerName(company.getManagerName())
+                        .contactNumber(company.getContactNumber())
+                        .email(company.getEmail())
+                        .build() : null)
+                .companyName(company != null ? company.getName() : null)
+                .managerName(company != null ? company.getManagerName() : null)
+                .contactNumber(company != null ? company.getContactNumber() : null)
+                .email(company != null ? company.getEmail() : null)
+                .build();
+    }
+
 
 
 

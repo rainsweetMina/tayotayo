@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>커스텀 노선 정보 수정</title>
+</head>
+<body>
+<h1>커스텀 노선 정보 수정</h1>
+
+<!-- 검색 영역 -->
+<label>노선 ID: <input type="text" id="routeIdInput" placeholder="예: 36008429002"></label>
+<button onclick="fetchRouteInfo()">불러오기</button>
+
+<hr>
+
+<form id="editForm" style="display: none;">
+    <p><strong>※ 노선 ID / 출발·도착 정류소는 수정 불가</strong></p>
+
+    <input type="hidden" id="routeId">
+
+    노선 번호: <input type="text" id="routeNo"><br>
+    노선 설명: <input type="text" id="routeNote"><br>
+    데이터 연결 여부: <input type="text" id="dataconnareacd"><br>
+    정방향 설명: <input type="text" id="dirRouteNote"><br>
+    역방향 설명: <input type="text" id="ndirRouteNote"><br>
+    노선 타입 코드: <input type="text" id="routeTCd"><br><br>
+
+    <button type="submit">수정하기</button>
+</form>
+
+<script>
+    async function fetchRouteInfo() {
+        const routeId = document.getElementById("routeIdInput").value.trim();
+        if (!routeId) {
+            alert("노선 ID를 입력하세요.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/bus/getRouteInfo?routeId=${routeId}`);
+            if (!res.ok) {
+                alert("해당 노선 ID의 정보를 찾을 수 없습니다.");
+                return;
+            }
+
+            const data = await res.json();
+            document.getElementById("editForm").style.display = "block";
+
+            document.getElementById("routeId").value = data.routeId;
+            document.getElementById("routeNo").value = data.routeNo || "";
+            document.getElementById("routeNote").value = data.routeNote || "";
+            document.getElementById("dataconnareacd").value = data.dataconnareacd || "";
+            document.getElementById("dirRouteNote").value = data.dirRouteNote || "";
+            document.getElementById("ndirRouteNote").value = data.ndirRouteNote || "";
+            document.getElementById("routeTCd").value = data.routeTCd || "";
+
+        } catch (err) {
+            console.error("조회 실패:", err);
+            alert("조회 중 오류가 발생했습니다.");
+        }
+    }
+
+    document.getElementById("editForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const routeId = document.getElementById("routeId").value;
+
+        const payload = {
+            routeNo: document.getElementById("routeNo").value,
+            routeNote: document.getElementById("routeNote").value,
+            dataconnareacd: document.getElementById("dataconnareacd").value,
+            dirRouteNote: document.getElementById("dirRouteNote").value,
+            ndirRouteNote: document.getElementById("ndirRouteNote").value,
+            routeTCd: document.getElementById("routeTCd").value
+        };
+
+        try {
+            const res = await fetch(`/api/bus/UpdateCustomRoute/${routeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("노선 정보가 성공적으로 수정되었습니다!");
+            } else {
+                const error = await res.json();
+                alert("수정 실패: " + (error.message || "오류 발생"));
+            }
+        } catch (err) {
+            console.error("수정 요청 중 오류:", err);
+            alert("수정 요청 중 오류가 발생했습니다.");
+        }
+    });
+</script>
+</body>
+</html>
