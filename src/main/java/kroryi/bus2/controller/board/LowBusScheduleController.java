@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.board;
 
+import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.entity.BusSchedule;
 import kroryi.bus2.repository.jpa.board.BusScheduleRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
@@ -26,6 +27,8 @@ public class LowBusScheduleController {
         return "/board/lowBusSchedule";
     }
 
+    // 저상버스 스케줄 조회
+    @Operation(summary = "저상버스 시간표 조회", description = "해당 노선 저상버스 스케줄 조회")
     @GetMapping("/api/lowbus-scheduls")
     @ResponseBody
     public List<BusSchedule> getLowBusSchedules(@RequestParam String routeId,

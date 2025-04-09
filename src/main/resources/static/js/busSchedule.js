@@ -211,36 +211,48 @@ function loadMoveDirSelector(routeNo) {
     routeNoteWrapper.style.display = "none";
     document.getElementById("moveDirWrapper")?.remove();
 
-    const wrapper = document.createElement("div");
-    wrapper.id = "moveDirWrapper";
-    wrapper.innerHTML = `
-        <label for="moveDirSelect">방향 선택:</label>
-        <select id="moveDirSelect">
-            <option value="" disabled selected>방향 선택</option>
-            <option value="0">정방향</option>
-            <option value="1">역방향</option>
-        </select>
-    `;
-    document.getElementById("routeNo").parentElement.after(wrapper);
 
-    document.getElementById("moveDirSelect").addEventListener("change", () => {
-        moveDir = document.getElementById("moveDirSelect").value;
-        fetch(`/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${moveDir}`)
-            .then(res => res.text())
-            .then(routeId => {
-                isEditing = false;
-                table.style.display = "none";
-                tbody.innerHTML = "";
+    fetch(`/api/route-id/movedirs?routeNo=${routeNo}`)
+        .then(res => res.json())
+        .then(dirs => {
+            if (!dirs || dirs.length === 0) return;
 
-                if (!routeId || routeId.includes("html")) {
-                    alert("해당 방향의 노선이 없습니다");
-                    return;
-                }
-                currentRouteId = routeId;
-                loadSchedule(routeNo, "", moveDir);
-                loadRouteMap(routeId, moveDir);
+            const wrapper = document.createElement("div");
+            wrapper.id = "moveDirWrapper";
+
+            let options = `<label for="moveDirSelect">방향 선택:</label>
+                           <select id="moveDirSelect">
+                           <option value="" disabled selected>방향 선택</option>`;
+
+            dirs.forEach(dir => {
+                const label = dir === "0" ? "정방향" : dir === "1" ? "역방향" : dir;
+                options += `<option value="${dir}">${label}</option>`;
             });
-    });
+
+            options += "</select>";
+            wrapper.innerHTML = options;
+            document.getElementById("routeNo").parentElement.after(wrapper);
+
+            document.getElementById("moveDirSelect").addEventListener("change", () => {
+                moveDir = document.getElementById("moveDirSelect").value;
+                isEditing = false;
+
+                fetch(`/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${moveDir}`)
+                    .then(res => res.text())
+                    .then(routeId => {
+                        table.style.display = "none";
+                        tbody.innerHTML = "";
+
+                        if (!routeId || routeId.includes("html")) {
+                            alert("해당 방향의 노선이 없습니다");
+                            return;
+                        }
+                        currentRouteId = routeId;
+                        loadSchedule(routeNo, "", moveDir);
+                        loadRouteMap(routeId, moveDir);
+                    });
+            });
+        });
 }
 
 // 시간표 로딩

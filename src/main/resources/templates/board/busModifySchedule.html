@@ -4,7 +4,7 @@
       layout:decorate="~{layout/layout.html}" lang="ko">
 <head>
     <link rel="stylesheet" th:href="@{/css/routeMap.css}">
-    <title>버스 시간표 페이지</title>
+    <title>버스 시간표 수정 페이지</title>
 </head>
 
 <th:block layout:fragment="sidebar"></th:block>
@@ -72,6 +72,12 @@
             </tr>
             </tbody>
         </table>
+        <div class="text-end" style="margin-top: 10px;">    <!-- 권한 설정 필요 -->
+            <button class="btn btn-outline-danger" id="deleteRowBtn" style="display: none; margin-top: 10px;">-</button>
+            <button class="btn btn-outline-success" id="addRowBtn" style="display: none; margin-top: 10px;">+</button>
+            <button class="btn btn-outline-primary" id="editBtn">수정</button>
+            <button class="btn btn-outline-primary" id="saveBtn" style="display: none;">저장</button>
+        </div>
     </section>
     <script src="/js/busSchedule.js"></script>
 </div>

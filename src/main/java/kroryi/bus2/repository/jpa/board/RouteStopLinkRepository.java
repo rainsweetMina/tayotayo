@@ -27,12 +27,12 @@ public interface RouteStopLinkRepository extends JpaRepository<RouteStopLink,Lon
     List<Object[]> findRawStopDataByRouteId(@Param("routeId") String routeId);
 
     @Query("""
-    SELECT r.seq, b.bsNm, r.bsId, r.xPos, r.yPos
-    FROM RouteStopLink r
-    JOIN BusStop b ON r.bsId = b.bsId
-    WHERE r.routeId = :routeId AND r.moveDir = :moveDir
-    ORDER BY r.seq ASC
-""")
+                SELECT r.seq, b.bsNm, r.bsId, r.xPos, r.yPos
+                FROM RouteStopLink r
+                JOIN BusStop b ON r.bsId = b.bsId
+                WHERE r.routeId = :routeId AND r.moveDir = :moveDir
+                ORDER BY r.seq ASC
+            """)
     List<Object[]> findRawStopDataByRouteIdAndMoveDir(@Param("routeId") String routeId,
                                                       @Param("moveDir") String moveDir);
 
