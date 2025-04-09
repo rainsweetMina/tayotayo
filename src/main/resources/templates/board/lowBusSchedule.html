@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>저상버스 시간표 페이지</title>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+
+    <section>
+        <h2>저상버스 시간표</h2>
+        <div style="display: flex; gap: 10px">
+            <div>
+                <label for="routeNo">노선 선택 : </label>
+                <select name="routeNo" id="routeNo">
+                    <option value="" disabled selected>노선 선택</option>
+                    <option th:each="no : ${routeNos}" th:value="${no}" th:text="${no}"></option>
+                </select>
+            </div>
+            <!-- 방면 선택 (기본값은 숨김 처리 -> 해당 노선이 방면이 있는 경우 True) -->
+        </div>
+        <br>
+        <!--스케줄 테이블-->
+        <div id="schedule-container" class="schedule-table"></div>
+    </section>
+    <script src="/js/lowBusSchedule.js"></script>
+</div>
+</html>

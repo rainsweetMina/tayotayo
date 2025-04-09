@@ -22,10 +22,11 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
     List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
 
-
+    // 버스 스케줄 노선 조회 쿼리
     @Query("SELECT DISTINCT TRIM(r.routeNo) FROM Route r ORDER BY TRIM(r.routeNo)")
     List<String> findDistinctRouteNos();
 
+    // 버스 스케줄 노선 방면 조회 쿼리
     @Query("SELECT DISTINCT r.routeNote FROM Route r WHERE r.routeNo = :routeNo AND r.routeNote IS NOT NULL")
     List<String> findDistinctRouteNoteByRouteNo(@Param("routeNo") String routeNo);
 
