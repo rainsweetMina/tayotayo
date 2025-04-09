@@ -3,6 +3,7 @@ package kroryi.bus2.controller;
 import jakarta.validation.Valid;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
+import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
+
 // ... 생략된 import는 그대로 두고 ...
 
 @Log4j2
@@ -27,18 +30,28 @@ public class MypageController {
 
     // 마이페이지
     @GetMapping("/mypage")
-    public String myPage(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+    public String myPage(Model model, Principal principal) {
+        // 로그인 여부 확인
+        if (principal == null || principal.getName() == null) {
+            return "redirect:/login"; // 로그인하지 않은 경우 로그인 페이지로 이동
+        }
 
-        if (userId == null) return "redirect:/login";
+        String userId = principal.getName();
 
-        User user = userService.findByUserId(userId);
-        if (user == null) return "redirect:/login";
+        try {
+            User user = userService.findByUserId(userId);
+            if (user == null) {
+                return "redirect:/login"; // 사용자가 존재하지 않으면 로그인 페이지로
+            }
 
-        model.addAttribute("user", user);
-        return "mypage/mypage";
+            model.addAttribute("user", user);
+            return "mypage/main"; // 뷰 이름
+        } catch (Exception e) {
+            // 예외 발생 시 로그인 페이지 또는 에러 페이지로 이동
+            return "redirect:/login";
+        }
     }
+
 
     // 비밀번호 변경 폼
     @GetMapping("/mypage/password")
@@ -53,6 +66,16 @@ public class MypageController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
 
+        // 👉 여기서 유저 정보 조회
+        User user = userService.findByUserId(userId);
+
+        // ✅ 카카오 또는 구글 소셜 로그인 사용자일 경우 비밀번호 변경 막기
+        if (user.getSignupType() == SignupType.KAKAO || user.getSignupType() == SignupType.GOOGLE) {
+            model.addAttribute("error", "소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
+            return "mypage/password";
+        }
+
+        // 비밀번호 일치 확인
         if (!dto.getModifyPassword().equals(dto.getModifyPasswordCheck())) {
             model.addAttribute("error", "새 비밀번호가 일치하지 않습니다.");
             return "mypage/password";
@@ -72,6 +95,7 @@ public class MypageController {
             return "mypage/password";
         }
     }
+
 
     // 회원정보 수정 폼
     @GetMapping("/mypage/modify")
