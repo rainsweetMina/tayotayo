@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>공지사항 관리</title>
@@ -23,16 +23,10 @@
     <textarea id="content" class="form-control" placeholder="내용"></textarea><br>
     <button class="button" onclick="addNotice()">공지 추가</button>
 </div>
-
 <div id="notice-list">
-    <div th:each="notice : ${notices}" class="notice">
-        <div class="notice-title" th:text="${notice.title}">제목</div>
-        <div class="notice-content" th:text="${notice.content}">내용</div>
-        <div class="notice-author" th:text="${notice.author}">작성자</div>
-        <button class="button" th:onclick="'deleteNotice(' + ${notice.id} + ')'">삭제</button>
-    </div>
-</div>
+   </div>
 
 <script src="/js/notice.js"></script>
+
 </body>
 </html>

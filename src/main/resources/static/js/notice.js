@@ -1,3 +1,4 @@
+﻿
 function loadNotices() {
     fetch('https://localhost:8081/ds/api/notices')
         .then(response => {
@@ -27,20 +28,20 @@ function addNotice() {
     const author = document.getElementById('author').value;
     const content = document.getElementById('content').value;
 
-    fetch('https://localhost:8081/ds/notices', {
+    fetch('https://localhost:8081/ds/api/notices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, author, content })
     }).then(() => {
-        location.reload();
+        loadNotices(); // 또는 location.reload();
     }).catch(error => console.error("Error adding notice:", error));
 }
 
 function deleteNotice(id) {
-    fetch(`https://localhost:8081/ds/notices/${id}`, {
+    fetch(`https://localhost:8081/ds/api/notices/${id}`, {
         method: 'DELETE'
     }).then(() => {
-        location.reload();
+        loadNotices(); // 또는 location.reload();
     }).catch(error => console.error("Error deleting notice:", error));
 }
 

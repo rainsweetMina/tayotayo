@@ -9,12 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/ds/api")
 @RequiredArgsConstructor
 @Log4j2
@@ -22,19 +19,14 @@ public class NoticeController {
 
     public final NoticeService noticeService;
 
-    // 공지사항 목록 조회
     @GetMapping("/notices")
-    public String getNotices(Model model) {
-        List<Notice> notices = noticeService.getAllNotices();
-        model.addAttribute("notices", notices);
-        return "admin/notice";
+    public List<Notice> getAllNotices() {
+        return noticeService.getAllNotices();
     }
-
 
     @PostMapping("/notices")
     public ResponseEntity<Notice> addNotice(@RequestBody Notice notice) {
-        Notice savedNotice = noticeService.addNotice(notice);
-        return ResponseEntity.ok(savedNotice);
+        return ResponseEntity.ok(noticeService.addNotice(notice));
     }
 
     @DeleteMapping("/notices/{id}")
