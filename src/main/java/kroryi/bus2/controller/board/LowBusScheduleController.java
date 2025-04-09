@@ -20,7 +20,8 @@ public class LowBusScheduleController {
 
     @GetMapping("/low-schedule")
     public String showLowFloorSchedule(Model model) {
-        List<String> routeNos = routeRepository.findDistinctRouteNos();
+//        List<String> routeNos = routeRepository.findDistinctRouteNos();                   // 전체 노선 검색
+        List<String> routeNos = busScheduleRepository.getRouteNosWithLowBus("D");   // 스케줄 데이터가 있는 노선만 검색
         model.addAttribute("routeNos", routeNos);
         return "/board/lowBusSchedule";
     }
