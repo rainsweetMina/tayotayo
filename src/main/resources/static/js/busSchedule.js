@@ -20,6 +20,7 @@ let routeMapData = [];      // 전체 노선 정보
 let deletedRowIds = [];     // 행 삭제
 let currentRouteId = "";   // 선택된 routeId
 let moveDir = null;          // 노선 방향
+let isEditing = false;    // TCd 수정때 필요
 
 // 노선 선택 시 방면 조회
 document.getElementById("routeNo").addEventListener("change", () => {
@@ -60,6 +61,7 @@ document.getElementById("routeNote").addEventListener("change", () => {
     const routeNo = document.getElementById("routeNo").value;
     const routeNote = document.getElementById("routeNote").value || "";
 
+    isEditing = false;
     table.style.display = "none";
     tbody.innerHTML = "";
 
@@ -83,6 +85,127 @@ document.getElementById("routeNote").addEventListener("change", () => {
         });
 });
 
+// 스케줄 데이터 조회
+function renderScheduleTable(schedules) {
+    // DB에 스케줄 데이터가 없을 시 숨김처리
+    if (!schedules || schedules.length === 0) {
+        table.style.display = "none";
+        return;
+    }
+
+    table.style.display = "table";
+    tbody.innerHTML = "";
+
+    schedules.forEach(s => {
+        const row = document.createElement("tr");
+        row.setAttribute("data-id", s.id);
+        row.dataset.busTCd = s.busTCd ?? "D";
+        if (isEditing) row.style.backgroundColor = row.dataset.busTCd === "D" ? "#cce5ff" : "#fff8b3";
+
+        row.innerHTML = `
+                <td class="clickable" title="클릭 시 버스 종류 전환">${s.scheduleNo}</td>
+                <td contenteditable="false">${s.schedule_A ?? ""}</td>
+                <td contenteditable="false">${s.schedule_B ?? ""}</td>
+                <td contenteditable="false">${s.schedule_C ?? ""}</td>
+                <td contenteditable="false">${s.schedule_D ?? ""}</td>
+                <td contenteditable="false">${s.schedule_E ?? ""}</td>
+                <td contenteditable="false">${s.schedule_F ?? ""}</td>
+                <td contenteditable="false">${s.schedule_G ?? ""}</td>
+                <td contenteditable="false">${s.schedule_H ?? ""}</td>`;
+
+        // 버스 유형 전환
+        const firstCell = row.querySelector("td:first-child");
+        firstCell.style.cursor = "pointer";
+        firstCell.addEventListener("click", () => toggleBusTCd(row))
+
+        tbody.appendChild(row);
+    });
+}
+
+
+// 수정버튼
+editBtn.addEventListener("click", () => {
+    isEditing = true;
+    // 스케줄 데이터가 없을 경우 숨김표시 상태에서 수정버튼 누르면 노출
+    table.style.display = "inline-block";
+
+    const rows = table.querySelectorAll("tbody tr");
+    rows.forEach(row => {
+        const busTCd = row.dataset.busTCd || "D"; // 기본값 D
+        row.style.backgroundColor = busTCd === "D" ? "#cce5ff" : "#fff8b3";
+    });
+
+    table.querySelectorAll("td[contenteditable]").forEach(td => {
+        td.setAttribute("contenteditable", "true");
+        td.style.backgroundColor = "#fff8dc";
+    });
+    highlightSelectedCircles();
+    highlightSelectableCircles();
+    editBtn.style.display = "none";
+    saveBtn.style.display = "inline-block";
+    // 행 추가&제거 버튼
+    addRowBtn.style.display = "inline-block";
+    deleteRowBtn.style.display = "inline-block";
+});
+
+// 행 추가 버튼
+addRowBtn.addEventListener("click", () => {
+    // 현재 있는 scheduleNo들 중 최대값 찾기
+    const maxNo = Math.max(
+        0,
+        ...Array.from(tbody.querySelectorAll("tr")).map(tr =>
+            parseInt(tr.querySelector("td")?.innerText || "0")
+        )
+    );
+
+    const newRow = document.createElement("tr");
+    newRow.setAttribute("data-new", "true");
+    newRow.setAttribute("data-id", "");
+    newRow.dataset.busTCd = "D";
+
+    newRow.innerHTML = `
+         <td class="clickable" title="클릭 시 버스 종류 전환">${maxNo + 1}</td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+    `;
+
+    const firstCell = newRow.querySelector("td:first-child");
+    firstCell.style.cursor = "pointer";
+    firstCell.addEventListener("click", () => toggleBusTCd(newRow));
+
+    // 수정 상태일 경우 배경색 지정
+    if (isEditing) {
+        newRow.style.backgroundColor = "#cce5ff"; // 기본값 D
+    }
+
+    tbody.appendChild(newRow);
+});
+
+// 행 삭제 버튼
+document.getElementById("deleteRowBtn").addEventListener("click", () => {
+    const rows = document.querySelectorAll("#schedule-tbody tr");
+    if (rows.length === 0) {
+        alert("삭제할 행이 없습니다.");
+        return;
+    }
+    const lastRow = rows[rows.length - 1]
+    const isNewRow = lastRow.getAttribute("data-new") === "true";
+    const rowId = lastRow.getAttribute("data-id");
+
+    if (isNewRow || confirm("정말 삭제하시겠습니까?")) {
+        if (!isNewRow && rowId) {
+            deletedRowIds.push(parseInt(rowId));
+        }
+        lastRow.remove();
+    }
+})
+
 // 방향 선택 생성
 function loadMoveDirSelector(routeNo) {
     routeNoteWrapper.style.display = "none";
@@ -105,6 +228,7 @@ function loadMoveDirSelector(routeNo) {
         fetch(`/api/route-id/by-movedir?routeNo=${routeNo}&moveDir=${moveDir}`)
             .then(res => res.text())
             .then(routeId => {
+                isEditing = false;
                 table.style.display = "none";
                 tbody.innerHTML = "";
 
@@ -130,34 +254,6 @@ function loadSchedule(routeNo, routeNote = "", moveDir = "") {
     fetch(`/api/schedules?${params.toString()}`)
         .then(res => res.json())
         .then(renderScheduleTable);
-}
-
-// 스케줄 데이터 조회
-function renderScheduleTable(schedules) {
-    // DB에 스케줄 데이터가 없을 시 숨김처리
-    if (!schedules || schedules.length === 0) {
-        table.style.display = "none";
-        return;
-    }
-
-    table.style.display = "table";
-    tbody.innerHTML = "";
-
-    schedules.forEach(s => {
-        const row = document.createElement("tr");
-        row.setAttribute("data-id", s.id);
-        row.innerHTML = `
-                <td>${s.scheduleNo}</td>
-                <td contenteditable="false">${s.schedule_A ?? ""}</td>
-                <td contenteditable="false">${s.schedule_B ?? ""}</td>
-                <td contenteditable="false">${s.schedule_C ?? ""}</td>
-                <td contenteditable="false">${s.schedule_D ?? ""}</td>
-                <td contenteditable="false">${s.schedule_E ?? ""}</td>
-                <td contenteditable="false">${s.schedule_F ?? ""}</td>
-                <td contenteditable="false">${s.schedule_G ?? ""}</td>
-                <td contenteditable="false">${s.schedule_H ?? ""}</td>`;
-        tbody.appendChild(row);
-    });
 }
 
 // 노선도 로딩
@@ -271,8 +367,6 @@ function highlightSelectableCircles() {
     const allCircles = document.querySelectorAll(".circle");
     let minSeq = Infinity;
     let maxSeq = -Infinity;
-    // let startCircle = null;
-    // let endCircle = null;
 
     // 시작 / 끝 seq 탐색
     allCircles.forEach(circle => {
@@ -360,6 +454,7 @@ saveBtn.addEventListener("click", () => {
             schedule_H: cells[8].innerText.trim(),
             routeId: currentRouteId,
             moveDir: moveDir || "",
+            busTCd: row.dataset.busTCd || "D"
         };
         data.push(rowData);
     });
@@ -413,68 +508,12 @@ saveBtn.addEventListener("click", () => {
     }
 });
 
-// 수정버튼
-editBtn.addEventListener("click", () => {
-    // 스케줄 데이터가 없을 경우 숨김표시 상태에서 수정버튼 누르면 노출
-    table.style.display = "inline-block";
-
-    table.querySelectorAll("td[contenteditable]").forEach(td => {
-        td.setAttribute("contenteditable", "true");
-        td.style.backgroundColor = "#fff8dc";
-    });
-    highlightSelectedCircles();
-    highlightSelectableCircles();
-    editBtn.style.display = "none";
-    saveBtn.style.display = "inline-block";
-    // 행 추가&제거 버튼
-    addRowBtn.style.display = "inline-block";
-    deleteRowBtn.style.display = "inline-block";
-});
-
-// 행 추가 버튼
-document.getElementById("addRowBtn").addEventListener("click", () => {
-    const tbody = document.getElementById("schedule-tbody");
-
-    // 현재 있는 scheduleNo들 중 최대값 찾기
-    const maxNo = Math.max(
-        0,
-        ...Array.from(tbody.querySelectorAll("tr")).map(tr =>
-            parseInt(tr.querySelector("td")?.innerText || "0")
-        )
-    );
-
-    const newRow = document.createElement("tr");
-    newRow.innerHTML = `
-        <td>${maxNo + 1}</td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-    `;
-    newRow.setAttribute("data-new", "true");
-    newRow.setAttribute("data-id", "");
-    tbody.appendChild(newRow);
-});
-
-// 행 삭제 버튼
-document.getElementById("deleteRowBtn").addEventListener("click", () => {
-    const rows = document.querySelectorAll("#schedule-tbody tr");
-    if (rows.length === 0) {
-        alert("삭제할 행이 없습니다.");
-        return;
+// TCd 전환에 필요한 로직
+function toggleBusTCd(row) {
+    const current = row.dataset.busTCd;
+    const next = current === "D" ? "N" : "D";
+    row.dataset.busTCd = next;
+    if (isEditing) {
+        row.style.backgroundColor = next === "D" ? "#cce5ff" : "#fff8b3";
     }
-    const lastRow = rows[rows.length - 1]
-    const isNewRow = lastRow.getAttribute("data-new") === "true";
-    const rowId = lastRow.getAttribute("data-id");
-
-    if (isNewRow || confirm("정말 삭제하시겠습니까?")) {
-        if (!isNewRow && rowId) {
-            deletedRowIds.push(parseInt(rowId));
-        }
-            lastRow.remove();
-    }
-})
+}

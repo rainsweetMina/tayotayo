@@ -28,8 +28,7 @@ public class BusScheduleController {
     // 스케줄 데이터 조회
     @GetMapping("/schedule")
     public String showSchedule(Model model) {
-//        List<String> routeNos = routeRepository.findDistinctRouteNos();       // 전체 노선 검색
-        List<String> routeNos = busScheduleRepository.findDistinctRouteNos();   // 스케줄 데이터가 있는 노선만 검색
+        List<String> routeNos = routeRepository.findDistinctRouteNos();
         model.addAttribute("routeNos", routeNos);
         return "/board/busSchedule";
     }
@@ -49,7 +48,7 @@ public class BusScheduleController {
                         BusSchedule newSchedule = new BusSchedule();
                         newSchedule.setRouteId(schedule.getRouteId());
                         newSchedule.setMoveDir(schedule.getMoveDir());
-                        newSchedule.setBusTCd(schedule.getBusTCd() != null ? schedule.getBusTCd() : "");
+                        newSchedule.setBusTCd(schedule.getBusTCd() != null ? schedule.getBusTCd() : "D");
                         newSchedule.setScheduleNo(schedule.getScheduleNo());
                         newSchedule.setSchedule_A(schedule.getSchedule_A());
                         newSchedule.setSchedule_B(schedule.getSchedule_B());
@@ -75,6 +74,7 @@ public class BusScheduleController {
                         existing.setSchedule_G(schedule.getSchedule_G());
                         existing.setSchedule_H(schedule.getSchedule_H());
 
+                        existing.setBusTCd(schedule.getBusTCd() != null ? schedule.getBusTCd() : existing.getBusTCd());
                         busScheduleRepository.save(existing);
                     }
                 }
@@ -94,8 +94,7 @@ public class BusScheduleController {
     @GetMapping("/api/route-notes")
     @ResponseBody
     public List<String> getRouteNotesByRouteNo(@RequestParam String routeNo) {
-//        return routeRepository.findDistinctRouteNoteByRouteNo(routeNo);
-        return busScheduleRepository.findDistinctRouteNoteByRouteNo(routeNo);
+        return routeRepository.findDistinctRouteNoteByRouteNo(routeNo);
     }
 
     // 해당 데이터 테이블 가져오기
