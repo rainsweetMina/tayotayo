@@ -1,6 +1,5 @@
-<th:block th:fragment="headerFragment">
+<th:block th:fragment="headerFragment" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <style>
-
         ul {
             padding-left: 10px;
         }
@@ -22,21 +21,42 @@
             margin-top: 14px;
         }
     </style>
+    <!-- 관리자 출력 -->
+    <span sec:authorize="hasAuthority('ROLE_ADMIN')">🙆‍♂️ 관리자 계정입니다</span>
+    <!-- 일반 USER 출력 -->
+    <span sec:authorize="hasAuthority('ROLE_USER')">🙆‍♂️ 일반 계정입니다</span>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-
             <a class="navbar-brand" href="#">뻐어스</a>
 
-
-
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="/login" th:href="@{/login}">회원가입(로그인)</a>
-                </li>
-            </ul>
 
+                <!-- 비로그인 사용자: 로그인/회원가입 -->
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a class="nav-link" th:href="@{/login}">회원가입(로그인)</a>
+                </li>
+
+                <!-- 일반 사용자 메뉴 -->
+                <li class="nav-item" sec:authorize="hasAuthority('ROLE_USER')">
+                    <a class="nav-link" th:href="@{/mypage}">마이페이지</a>
+                </li>
+
+                <!-- 관리자 전용 메뉴 -->
+                <li class="nav-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                    <a class="nav-link" th:href="@{/admin}">관리자 페이지</a>
+                </li>
+
+                <!-- 공통 로그아웃 -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <a class="nav-link" href="#" onclick="this.closest('form').submit(); return false;">
+                            로그아웃
+                        </a>
+                    </form>
+                </li>
+
+            </ul>
         </div>
     </nav>
-
-
 </th:block>
