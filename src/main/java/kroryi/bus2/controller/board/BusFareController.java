@@ -20,5 +20,4 @@ public class BusFareController {
         model.addAttribute("fares", fareList);
         return "/board/busFare";
     }
-
 }

@@ -75,13 +75,15 @@ section{
     flex-shrink: 0;
 }
 
-
-#schedule-table {
+.schedule-section{
+    margin-bottom: 2rem;
+}
+.schedule-table {
     border-collapse: collapse;
     width: 100%;
 }
 
-#schedule-table th, td {
+.schedule-table th, td {
     border: 1px solid #ddd;
     padding: 5px;
     min-width: 100px;
@@ -89,10 +91,22 @@ section{
     text-align: center;
 }
 
-#schedule-table th:first-child {
+.schedule-table th:first-child {
     width: 30px;
 }
 
-#schedule-table th {
+.schedule-table th {
     background-color: #f2f2f2;
+}
+
+.fare-table tr {
+    border: 1px solid black;
+}
+
+.fare-table th {
+    text-align: center;
+}
+
+.fare-table td {
+    border: 1px solid black;
 }
