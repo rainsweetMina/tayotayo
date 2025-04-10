@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>정류장 순서 수정 - 방향 분리</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        table {
+            width: 45%;
+            margin-bottom: 30px;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #aaa;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .dragging {
+            background-color: #e0ffff;
+        }
+
+        .table-group {
+            display: flex;
+            flex-direction: column; /* ✅ 위아래로 정렬 */
+            gap: 2rem;
+        }
+
+        .non-draggable {
+            background-color: #fdf3c1; /* 강조용 */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🚌 노선 정류장 순서 수정 (정/역방향 분리)</h1>
+
+<label>노선 ID: <input type="text" id="routeIdInput"></label>
+<button onclick="loadStops()">불러오기</button>
+
+<hr>
+
+<div class="table-group">
+    <!-- 정방향 -->
+    <form id="formForward">
+        <h2>정방향</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>정류소 ID</th>
+                <th>정류소 이름</th>
+                <th>순서</th>
+            </tr>
+            </thead>
+            <tbody id="forwardBody"></tbody>
+        </table>
+    </form>
+
+    <!-- 역방향 -->
+    <form id="formBackward">
+        <h2>역방향</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>정류소 ID</th>
+                <th>정류소 이름</th>
+                <th>순서</th>
+            </tr>
+            </thead>
+            <tbody id="backwardBody"></tbody>
+        </table>
+    </form>
+</div>
+
+<button onclick="submitAll()">💾 순서 저장</button>
+
+<script>let forwardSortable, backwardSortable;
+
+async function loadStops() {
+    const routeId = document.getElementById('routeIdInput').value.trim();
+    if (!routeId) {
+        alert('노선 ID를 입력하세요.');
+        return;
+    }
+
+    const res = await fetch(`/api/bus/bus-route?routeId=${routeId}`);
+    if (!res.ok) {
+        alert('노선 정보를 불러올 수 없습니다.');
+        return;
+    }
+
+    const data = await res.json();
+
+    const forwardBody = document.getElementById('forwardBody');
+    const backwardBody = document.getElementById('backwardBody');
+    forwardBody.innerHTML = "";
+    backwardBody.innerHTML = "";
+
+    // 분리 출력
+    data.forEach((stop, idx) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><input type="text" name="bsId" value="${stop.bsId}" readonly></td>
+            <td>${stop.bsNm || '-'}</td>
+            <td class="seq-cell">${stop.seq}</td>
+            <input type="hidden" name="moveDir" value="${stop.moveDir}">
+        `;
+
+        if (stop.moveDir === "1") forwardBody.appendChild(row);
+        else backwardBody.appendChild(row);
+    });
+
+    // 출도착지에 드래그 막는 클래스 추가
+    const applyNonDraggable = (tbody) => {
+        const rows = tbody.querySelectorAll("tr");
+        if (rows.length > 0) {
+            rows[0].classList.add("non-draggable"); // 출발지
+            rows[rows.length - 1].classList.add("non-draggable"); // 도착지
+        }
+    };
+    applyNonDraggable(forwardBody);
+    applyNonDraggable(backwardBody);
+
+    // 공통 드래그 옵션
+    const createSortable = (tbody) => Sortable.create(tbody, {
+        animation: 150,
+        ghostClass: 'dragging',
+        filter: ".non-draggable",
+        preventOnFilter: false,
+        onMove: function (evt) {
+            const dragged = evt.dragged;
+            const target = evt.related;
+
+            // 드래그 자체가 출도착지 → 막음
+            if (dragged.classList.contains("non-draggable")) return false;
+
+            // 타겟 위치가 출도착지 → 막음
+            if (target.classList.contains("non-draggable")) return false;
+
+            return true;
+        },
+        onEnd: updateSeqs
+    });
+
+    // Sortable 초기화
+    if (forwardSortable) forwardSortable.destroy();
+    forwardSortable = createSortable(forwardBody);
+
+    if (backwardSortable) backwardSortable.destroy();
+    backwardSortable = createSortable(backwardBody);
+
+    updateSeqs();
+}
+
+function updateSeqs() {
+    const update = (rows) => {
+        rows.forEach((row, idx) => {
+            row.querySelector(".seq-cell").textContent = idx + 1;
+        });
+    };
+    update(document.querySelectorAll("#forwardBody tr"));
+    update(document.querySelectorAll("#backwardBody tr"));
+}
+
+async function submitAll() {
+    const routeId = document.getElementById('routeIdInput').value.trim();
+    if (!routeId) return alert("노선 ID가 없습니다.");
+
+    const collectData = (tbody) =>
+        Array.from(tbody.querySelectorAll("tr")).map((row, idx) => ({
+            routeId,
+            bsId: row.querySelector('[name="bsId"]').value,
+            moveDir: row.querySelector('[name="moveDir"]').value,
+            seq: idx + 1
+        }));
+
+    const payload = [
+        ...collectData(document.getElementById("forwardBody")),
+        ...collectData(document.getElementById("backwardBody"))
+    ];
+
+    const res = await fetch('/api/bus/UpdateRouteLink', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        alert("✅ 순서가 성공적으로 저장되었습니다!");
+    } else {
+        alert("❌ 순서 저장 실패");
+    }
+}
+
+</script>
+
+</body>
+</html>

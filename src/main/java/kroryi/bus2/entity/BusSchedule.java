@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 @Table(name = "schedule")
 public class BusSchedule {
     @Id

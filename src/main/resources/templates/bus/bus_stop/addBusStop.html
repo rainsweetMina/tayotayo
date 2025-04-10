@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>정류장 추가하기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <style>
+        #map {
+            height: 400px;
+            width: 600px;
+        }
+
+        .custom-emoji-icon {
+            font-size: 28px;
+            line-height: 1;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<h2>🚌 정류장 추가</h2>
+<div id="map"></div>
+
+<form id="busStopForm">
+    정류장 ID: <input type="text" id="bsId" required><br>
+    정류장 이름: <input type="text" id="bsNm" required><br>
+    위도 (Y): <input type="text" id="ypos" readonly><br>
+    경도 (X): <input type="text" id="xpos" readonly><br>
+    <button type="submit">정류장 등록</button>
+</form>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="/js/busStop/busStopMarkerLoader.js"></script>
+
+<script>
+
+    // 지도 초기화, L.map('map'): id="map"인 HTML 요소에 Leaflet 지도를 생성
+    // 초기 위치는 대구 중심(35.8714, 128.6014)
+    const map = L.map('map').setView([35.8714, 128.6014], 16);
+
+    // 타일 레이어 설정
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // maxZoom: 19: 최대 확대 레벨 설정
+        maxZoom: 19,
+        //  지도에 타일 레이어 추가 (실제 지도가 보이게 하는 역할)
+    }).addTo(map);
+
+    // 마커 저장용 배열, 정류장 마커들을 저장하는 배열
+    // 나중에 지도 이동/줌할 때 이 배열의 마커들을 지우고 새로 표시함
+    const markers = [];
+
+
+    // 지도 이벤트 핸들링
+    // moveend: 지도를 드래그해서 이동이 끝났을 때
+    // zoomend: 줌 레벨 조절이 끝났을 때
+    // loadBusStopsInView() : 정류장 마커 불러오는 외부 함수
+    map.on("moveend", () => loadBusStopsInView(map, markers));
+    map.on("zoomend", () => loadBusStopsInView(map, markers));
+
+    // 지도가 처음 로드됐을 때 초기 화면 범위에 있는 정류장들을 불러오기 위해 즉시 1회 실행
+    loadBusStopsInView(map, markers);
+</script>
+<script>
+    let selectedMarker = null; // 이전에 찍은 마커 저장용
+
+    // 클릭한 위치의 좌표를 input에 넣기
+    map.on("click", (e) => {
+        const {lat, lng} = e.latlng;
+        document.getElementById("ypos").value = lat;
+        document.getElementById("xpos").value = lng;
+
+
+        // 기존 마커 제거
+        if (selectedMarker) {
+            map.removeLayer(selectedMarker);
+        }
+
+        // 새로운 마커 추가
+        selectedMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'custom-emoji-icon',
+                iconSize: [30, 40],      // 이모지 영역 크기
+                iconAnchor: [15, 40]     // 마커 기준점 (이모지 하단 중앙)
+            })
+        }).addTo(map)
+        .bindPopup("🆕 새 정류장 위치").openPopup();
+    });
+    // 폼 전송 처리
+    document.getElementById("busStopForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const bsId = document.getElementById("bsId").value;
+        const bsNm = document.getElementById("bsNm").value;
+        const xpos = parseFloat(document.getElementById("xpos").value);
+        const ypos = parseFloat(document.getElementById("ypos").value);
+
+        const payload = {bsId, bsNm, xpos, ypos};
+
+        try {
+            const res = await fetch("/api/bus/addBusStop", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("정류장이 성공적으로 추가되었습니다!");
+                document.getElementById("busStopForm").reset();
+                loadBusStopsInView(map, markers); // 새로고침
+            } else {
+                const error = await res.json();
+                alert("추가 실패: " + (error.message || "오류 발생"));
+            }
+        } catch (err) {
+            console.error("추가 오류:", err);
+            alert("추가 요청 중 오류가 발생했습니다.");
+        }
+    });
+</script>
+
+</body>
+</html>

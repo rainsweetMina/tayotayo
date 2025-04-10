@@ -1,6 +1,7 @@
 package kroryi.bus2.entity.user;
 
 import jakarta.persistence.*;
+import kroryi.bus2.converter.RoleConverter;
 import kroryi.bus2.entity.lost.FoundItem;
 import kroryi.bus2.entity.lost.LostFoundMatch;
 import kroryi.bus2.entity.lost.LostItem;
@@ -38,7 +39,7 @@ public class User {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = RoleConverter.class)
     @Column(nullable = false)
     private Role role;  // 권한 (예: USER, ADMIN 등)
 

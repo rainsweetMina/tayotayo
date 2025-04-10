@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class SchedulePayload {
+public class SchedulePayloadDTO {
     private List<BusSchedule> schedules;
     private List<Long> deletedIds;
 }

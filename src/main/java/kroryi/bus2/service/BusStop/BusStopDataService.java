@@ -1,11 +1,11 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.BusStop;
 
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.service.BusArrivalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +26,9 @@ public class BusStopDataService {
 
     public List<BusStopDTO> getAllBusStops() {
         System.out.print("서비스 응답");
-        PageRequest pageRequest = PageRequest.of(0, 5);
+//        PageRequest pageRequest = PageRequest.of(0, 5);
 //        System.out.printf(busStopRepository.findBusStops(pageRequest).toString());
-        return busStopRepository.findBusStops(pageRequest).stream()
+        return busStopRepository.findBusStops().stream()
                 .map(busStop -> BusStopDTO.builder()
                         .bsId(busStop.getBsId())
                         .bsNm(busStop.getBsNm())
@@ -63,20 +63,9 @@ public class BusStopDataService {
     }
 
     public List<BusStop> getBusStopsByNm(String nm) {
-        String cacheKey = "busstop:nm:" + nm;
         System.out.println("🔍 검색 요청: " + nm);
-        System.out.println("🔑 Redis 캐시 키: " + cacheKey);
 
-        // 1. Redis 캐시 먼저 확인
-        List<BusStop> cached = (List<BusStop>) redisTemplate.opsForValue().get(cacheKey);
-        if (cached != null) {
-            System.out.println("✅ 캐시 히트! Redis에서 결과 가져옴 (결과 수: " + cached.size() + ")");
-            return cached;
-        } else {
-            System.out.println("❌ 캐시 미스. Redis에 없음 → DB 조회로 진행");
-        }
-
-        // 2. DB에서 검색
+        // 1. DB에서 부분 일치 검색
         List<BusStop> result = busStopRepository.findByBsNmContaining(nm);
         if (result.isEmpty()) {
             System.out.println("🔎 부분 일치 결과 없음 → 공백 무시 검색 시도");
@@ -85,17 +74,13 @@ public class BusStopDataService {
             System.out.println("✅ 부분 일치 검색 성공 (결과 수: " + result.size() + ")");
         }
 
-        // 3. 결과를 이름 기반 키로 캐싱
-        if (!result.isEmpty()) {
-            redisTemplate.opsForValue().set(cacheKey, result, 60, TimeUnit.MINUTES);
-            System.out.println("🧊 결과 Redis에 캐싱 완료 (TTL: 1시간)");
-        } else {
-            System.out.println("⚠️ DB 검색 결과 없음. 캐싱 생략");
-        }
-
         return result;
     }
 
+    public BusStop getBusStopById(String bsId) {
+        return busStopRepository.findByBsId(bsId)
+                .orElseThrow(() -> new IllegalArgumentException("정류장을 찾을 수 없습니다: " + bsId));
+    }
 
 
 }

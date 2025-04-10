@@ -7,11 +7,9 @@ import kroryi.bus2.dto.Route.RouteDTO;
 import kroryi.bus2.dto.busStop.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 
-import kroryi.bus2.entity.CustomRoute;
 import kroryi.bus2.entity.Route;
 
 import kroryi.bus2.repository.jpa.NodeRepository;
-import kroryi.bus2.repository.jpa.route.CustomRouteRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -28,7 +26,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,7 +39,6 @@ public class RouteDataService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final NodeRepository nodeRepository;
-    private final CustomRouteRepository customRouteRepository;
 
 
     @Value("${api.bus.base-url}")
@@ -57,33 +53,17 @@ public class RouteDataService {
     @Value("${ors.api.key}")
     private String orsApiKey;
 
-    // 버스 노선명으로 검색
+    // 버스 노선명으로 검색 (일반 노선)
     public List<Route> getBusByNm(String routeNo) {
-        String redisKey = "bus:routeNo" + routeNo;
-
-        // Redis에서 먼저 조회
-        Object cache = redisTemplate.opsForValue().get(redisKey);
-        if (cache != null) {
-            System.out.println("[Redis Cache Hit] key: " + redisKey);
-            return (List<Route>) cache;
-        }
-
-        // 레디스에 없으면 db에서 조회
-        System.out.println("[Cache Miss] DB에서 조회 - routeNo: " + routeNo);
+        System.out.println("[DB 조회] 일반 노선 - routeNo: " + routeNo);
         List<Route> result = routeRepository.searchByRouteNumberFull(routeNo);
         System.out.printf("노선 result: %s\n", result);
-
-        long CACHE_EXPIRATION = 3600L;
-
-        // 조회 결과 Redis에 저장 (15초 TTL)
-        redisTemplate.opsForValue().set(redisKey, result, CACHE_EXPIRATION, TimeUnit.SECONDS);
-        System.out.println("[Cache Store] Redis에 저장됨, TTL: " + CACHE_EXPIRATION + "초 (1시간)");
-
         return result;
     }
-    public List<CustomRoute> getCustomBusByNm(String keyword) {
-        return customRouteRepository.searchByRouteNumberFull(keyword);
-    }
+
+//    public List<CustomRoute> getCustomBusByNm(String keyword) {
+//        return customRouteRepository.searchByRouteNumberFull(keyword);
+//    }
 
 
 
@@ -262,11 +242,10 @@ public class RouteDataService {
 // 진짜진짜 요약 : 노선ID로 노선불러와서 정방향, 역방향 구분 후 각각 ORS에 넣어 버스 노선도의 좌표를 받아서 인코딩 후 합쳐서 반환
 
 
-    // 그냥노선 + Custom노선의 정보를 가져오는거
+    // 일반 노선 정보만 가져오는 메서드로 수정
     public RouteDTO getRouteByRouteId(String routeId) {
         return routeRepository.findByRouteId(routeId)
                 .map(this::convertToDTO)
-                .or(() -> customRouteRepository.findByRouteId(routeId).map(this::convertToDTO))
                 .orElseThrow(() -> new IllegalArgumentException("노선이 존재하지 않습니다: " + routeId));
     }
 
@@ -285,22 +264,5 @@ public class RouteDataService {
                 .routeTCd(route.getRouteTCd())
                 .build();
     }
-
-    private RouteDTO convertToDTO(CustomRoute route) {
-        return RouteDTO.builder()
-                .routeId(route.getRouteId())
-                .routeNo(route.getRouteNo())
-                .stBsId(route.getStBsId())
-                .edBsId(route.getEdBsId())
-                .stNm(route.getStNm())
-                .edNm(route.getEdNm())
-                .routeNote(route.getRouteNote())
-                .dataconnareacd(route.getDataconnareacd())
-                .dirRouteNote(route.getDirRouteNote())
-                .ndirRouteNote(route.getNdirRouteNote())
-                .routeTCd(route.getRouteTCd())
-                .build();
-    }
-
 
 }

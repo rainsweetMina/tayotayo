@@ -30,4 +30,13 @@ public interface BusScheduleRepository extends JpaRepository<BusSchedule, Long> 
     @Query("SELECT DISTINCT r.routeNote FROM BusSchedule s JOIN Route r ON s.routeId = r.routeId " +
             "WHERE r.routeNo = :routeNo AND r.routeNote IS NOT NULL AND s.routeId is not null")
     List<String> findDistinctRouteNoteByRouteNo(@Param("routeNo") String routeNo);
+
+    @Query("SELECT DISTINCT s.moveDir FROM BusSchedule s JOIN Route r ON s.routeId = r.routeId WHERE r.routeNo = :routeNo AND s.moveDir IS NOT NULL")
+    List<String> findDistinctMoveDirsByRouteNo(@Param("routeNo") String routeNo);
+
+    void deleteByRouteId(String routeId);
+    void deleteByRouteIdAndScheduleNo(String routeId, Integer scheduleNo);
+    void deleteByRouteIdAndMoveDir(String routeId, String moveDir);
+    void deleteByRouteIdAndMoveDirAndScheduleNo(String routeId, String moveDir, Integer scheduleNo);
+
 }

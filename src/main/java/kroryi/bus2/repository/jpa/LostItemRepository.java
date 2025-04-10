@@ -16,5 +16,8 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
     List<LostItem> findAllIncludingHidden();
 
     List<LostItem> findByVisibleTrueAndLostTimeBefore(LocalDateTime cutoff);
+
+    List<LostItem> findAllByOrderByCreatedAtDesc();
+
 }
 

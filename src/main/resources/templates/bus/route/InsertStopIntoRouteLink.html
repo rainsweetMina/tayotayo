@@ -89,7 +89,7 @@
         tbody.innerHTML = "";
 
         try {
-            const res = await fetch(`/api/bus/bus-route-Custom?routeId=${routeId}`);
+            const res = await fetch(`/api/bus/bus-route?routeId=${routeId}`);
             if (!res.ok) throw new Error("데이터 없음");
 
             const data = await res.json();
