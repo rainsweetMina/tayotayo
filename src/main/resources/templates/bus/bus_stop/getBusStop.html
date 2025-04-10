@@ -45,6 +45,7 @@
   <p><strong>이름:</strong> <span id="bsNm"></span></p>
   <p><strong>위도(Y):</strong> <span id="ypos"></span></p>
   <p><strong>경도(X):</strong> <span id="xpos"></span></p>
+  <button onclick="deleteBusStop()">🗑️ 정류장 삭제</button> <!-- ✅ 삭제 버튼 -->
 </div>
 
 <div id="map"></div>
@@ -101,6 +102,32 @@
     map.setView([data.ypos, data.xpos], 17);
   }
 </script>
+<script>
+  async function deleteBusStop() {
+    const bsId = document.getElementById("bsId").textContent;
 
+    if (!confirm(`정말로 정류장 [${bsId}]을 삭제하시겠습니까?`)) return;
+
+    try {
+      const res = await fetch(`/api/bus/deleteBusStop?bsId=${bsId}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        alert("✅ 정류장이 성공적으로 삭제되었습니다.");
+        document.getElementById("detail").style.display = "none";
+        document.getElementById("resultList").innerHTML = "";
+        if (marker) map.removeLayer(marker);
+      } else {
+        const err = await res.text();
+        alert("❌ 삭제 실패: " + err);
+      }
+    } catch (e) {
+      console.error("삭제 오류:", e);
+      alert("❌ 삭제 요청 중 오류가 발생했습니다.");
+    }
+  }
+
+</script>
 </body>
 </html>

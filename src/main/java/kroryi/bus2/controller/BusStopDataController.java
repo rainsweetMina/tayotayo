@@ -1,14 +1,12 @@
 package kroryi.bus2.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.busStop.BusStopUpdateDTO;
 import kroryi.bus2.entity.BusStop;
-import kroryi.bus2.entity.CustomRoute;
-import kroryi.bus2.entity.Route;
 import kroryi.bus2.service.BusStop.AddBusStopService;
 import kroryi.bus2.service.BusStop.BusStopDataService;
+import kroryi.bus2.service.BusStop.DeleteBusStopService;
 import kroryi.bus2.service.BusStop.UpdateBusStopService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -16,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,14 +26,17 @@ public class BusStopDataController {
     private final AddBusStopService addBusStopService;
     private final UpdateBusStopService updateBusStopService;
     private final BusStopDataService busStopDataService;
+    private final DeleteBusStopService deleteBusStopService;
 
+    @Operation(summary = "정류장 추가", description = "새로운 정류장(BusStop)을 추가합니다. 좌표(xpos, ypos), 정류장 ID(bsId), 이름(bsNm)를 포함합니다.")
     @PostMapping("/addBusStop")
     public ResponseEntity<BusStop> addStop(@RequestBody BusStopDTO dto) {
         BusStop created = addBusStopService.createBusStop(dto);
         return ResponseEntity.ok(created);
     }
 
-    // ✅ 정류장 ID로 조회 (RequestParam 버전)
+    // 정류장 ID로 조회
+    @Operation(summary = "정류장 단건 조회", description = "정류장 ID(bsId)를 기준으로 해당 정류장의 상세 정보를 조회합니다.")
     @GetMapping("/busStop")
     public ResponseEntity<BusStop> getBusStopById(@RequestParam String bsId) {
         log.info("[GET] /busStop?keyword={} 호출", bsId);
@@ -44,6 +44,7 @@ public class BusStopDataController {
         return ResponseEntity.ok(stop);
     }
 
+    @Operation(summary = "정류장 정보 수정", description = "정류장 ID(bsId)에 해당하는 정류장의 이름, 좌표 등을 수정합니다.")
     @PutMapping("/updateStop/{bsId}")
     public ResponseEntity<String> updateBusStop(
             @PathVariable String bsId,
@@ -58,4 +59,16 @@ public class BusStopDataController {
         List<BusStop> busStop = busStopDataService.getBusStopsByNm(keyword);
         return ResponseEntity.ok(busStop);
     }
+
+    @Operation(summary = "정류장 삭제", description = "정류장 ID(bsId)로 해당 정류장을 삭제합니다. (만약 해당 정류장이 노선에 이어져 있는 경우 삭제는 불가합니다.)")
+    @DeleteMapping("/deleteBusStop")
+    public ResponseEntity<?> deleteBusStop(@RequestParam String bsId) {
+        try {
+            deleteBusStopService.deleteBusStopIfNotLinked(bsId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "정류장이 삭제되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
 }

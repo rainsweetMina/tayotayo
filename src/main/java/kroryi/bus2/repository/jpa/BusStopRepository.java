@@ -37,4 +37,8 @@ public interface BusStopRepository extends JpaRepository<BusStop,Long> {
                                   @Param("minY") double minY,
                                   @Param("maxY") double maxY);
 
+    @Query("SELECT COUNT(r) FROM RouteStopLink r WHERE r.bsId = :bsId")
+    int countByBsId(@Param("bsId") String bsId);
+
+    void deleteByBsId(String bsId);
 }

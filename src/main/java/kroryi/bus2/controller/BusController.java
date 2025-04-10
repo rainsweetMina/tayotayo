@@ -37,9 +37,9 @@ public class BusController {
     }
 
     // 커스텀 노선 정보 불러오는 페이지
-    @GetMapping("/UpdateCustomRouteInfo")
-    public String UpdateCustomRoute() {
-        return "bus/route/updateCustomRouteInfo";
+    @GetMapping("/UpdateRouteInfo")
+    public String UpdateRoute() {
+        return "bus/route/updateRouteInfo";
     }
 
     // 커스텀 노선의 순서 변경하는 페이지
@@ -70,6 +70,12 @@ public class BusController {
     @GetMapping("/UpdateBusStop")
     public String updateStop() {
         return "bus/bus_stop/updateBusStop";
+    }
+
+    // 정류장의 정보를 수정하는 페이지
+    @GetMapping("/ApiTest")
+    public String apitest() {
+        return "bus/apiSampleTest";
     }
 
 
