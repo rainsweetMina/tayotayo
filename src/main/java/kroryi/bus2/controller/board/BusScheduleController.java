@@ -1,7 +1,7 @@
 package kroryi.bus2.controller.board;
 
 import io.swagger.v3.oas.annotations.Operation;
-import kroryi.bus2.dto.BusScheduleDto;
+import kroryi.bus2.dto.board.BusScheduleDTO;
 import kroryi.bus2.dto.SchedulePayloadDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.entity.BusSchedule;
@@ -118,7 +118,7 @@ public class BusScheduleController {
     }
 
     // 해당 데이터 테이블 가져오기
-    @Operation(summary = "해당 노선의 모든 시간표 조회", description = "routeNo & (routeNote or moveDir)로 해당 노선 스케줄 전체 조회")
+    @Operation(summary = "스케줄 조회", description = "routeNo & (routeNote or moveDir)로 해당 노선 스케줄 전체 조회")
     @GetMapping("/api/schedules")
     @ResponseBody
     public List<BusSchedule> getSchedulesByRouteInfo(@RequestParam String routeNo,
@@ -173,7 +173,7 @@ public class BusScheduleController {
     @Operation(summary = "스케줄 추가", description = "moveDir(정방향 : 0, 역방향 : 1) / busTCd(일반 : N, 저상 : D)")
     @PostMapping("/api/schedule/add")
     @ResponseBody
-    public ResponseEntity<?>  createSchedule(@RequestBody BusScheduleDto dto) {
+    public ResponseEntity<?>  createSchedule(@RequestBody BusScheduleDTO dto) {
         BusSchedule saved = busScheduleService.saveSchedule(dto);
         return ResponseEntity.ok(saved);
     }
@@ -182,7 +182,7 @@ public class BusScheduleController {
     @PutMapping("/api/schedule/modify")
     @ResponseBody
     @Operation(summary = "스케줄 수정", description = "moveDir(정방향 : 0, 역방향 : 1) / busTCd(일반 : N, 저상 : D)")
-    public ResponseEntity<?> update(@RequestBody BusScheduleDto dto,
+    public ResponseEntity<?> update(@RequestBody BusScheduleDTO dto,
                                     @RequestParam Long id) {
         if (!busScheduleRepository.existsById(id)) {
             return ResponseEntity.badRequest().body("존재하지 않는 스케줄입니다: " + id);

@@ -1,10 +1,10 @@
-package kroryi.bus2.dto;
+package kroryi.bus2.dto.board;
 
 import kroryi.bus2.entity.BusSchedule;
 import lombok.Data;
 
 @Data
-public class BusScheduleDto {
+public class BusScheduleDTO {
     private String routeId;
     private Integer scheduleNo;
     private String moveDir;
