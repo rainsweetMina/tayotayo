@@ -1,13 +1,16 @@
 package kroryi.bus2.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "notice")
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class Notice {
 
     @Id
@@ -20,6 +23,14 @@ public class Notice {
     private Timestamp createdDate;
     private Timestamp updatedDate;
 
+
+    // ✅ 커스텀 생성자 추가
+    public Notice(String title, String author, String content) {
+        this.title = title;
+        this.author = author;
+        this.content = content;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdDate = new Timestamp(System.currentTimeMillis());
@@ -29,5 +40,7 @@ public class Notice {
     protected void onUpdate() {
         this.updatedDate = new Timestamp(System.currentTimeMillis());
     }
+
+
 
 }
