@@ -7,12 +7,6 @@
 <body>
 <h1>커스텀 노선 정보 수정</h1>
 
-<!-- 검색 영역 -->
-<label>노선 ID: <input type="text" id="routeIdInput" placeholder="예: 36008429002"></label>
-<button onclick="fetchRouteInfo()">불러오기</button>
-
-<hr>
-
 <form id="editForm" style="display: none;">
     <p><strong>※ 노선 ID / 출발·도착 정류소는 수정 불가</strong></p>
 
@@ -29,13 +23,14 @@
 </form>
 
 <script>
-    async function fetchRouteInfo() {
-        const routeId = document.getElementById("routeIdInput").value.trim();
-        if (!routeId) {
-            alert("노선 ID를 입력하세요.");
-            return;
-        }
+    // ✨ 쿼리스트링에서 routeId 가져오기
+    function getRouteIdFromQuery() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('routeId');
 
+    }
+
+    async function fetchRouteInfo(routeId) {
         try {
             const res = await fetch(`/api/bus/getRouteInfo?routeId=${routeId}`);
             if (!res.ok) {
@@ -60,6 +55,17 @@
         }
     }
 
+    // ✨ 페이지 로딩 시 자동 호출
+    window.addEventListener("DOMContentLoaded", () => {
+        const routeId = getRouteIdFromQuery();
+        if (!routeId) {
+            alert("노선 ID가 제공되지 않았습니다.");
+            return;
+        }
+        fetchRouteInfo(routeId);
+    });
+
+    // ✨ 수정 요청 처리
     document.getElementById("editForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -75,7 +81,7 @@
         };
 
         try {
-            const res = await fetch(`/api/bus/UpdateCustomRoute/${routeId}`, {
+            const res = await fetch(`/api/bus/UpdateRouteUnified/${routeId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -83,6 +89,7 @@
 
             if (res.ok) {
                 alert("노선 정보가 성공적으로 수정되었습니다!");
+                window.location.href = `/GetRouteStopLink?routeId=${routeId}`;
             } else {
                 const error = await res.json();
                 alert("수정 실패: " + (error.message || "오류 발생"));

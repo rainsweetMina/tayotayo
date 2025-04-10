@@ -28,11 +28,13 @@ function drawBusStopMarkers(map, stopData) {
 
         const marker = L.marker([lat, lng], {
             icon: L.icon({
+                className: 'result-busStop-icon',
                 iconUrl: '/img/bus-stop-icon.png',
-                iconSize: [44, 44],
-                iconAnchor: [12, 24]
+                iconSize: [40, 54],
+                iconAnchor: [20, 54]
             }),
-            title: stop.bsNm
+            title: stop.bsNm,
+            zIndexOffset: 1000  // 🔼 이걸 추가하면 위로 올라감
         }).addTo(map);
 
         marker.on('click', () => {

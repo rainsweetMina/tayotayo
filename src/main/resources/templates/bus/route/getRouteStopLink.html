@@ -5,7 +5,7 @@
     <title>노선 정류소 리스트</title>
 </head>
 <body>
-<h1>노선 정류소 출력 (Custom + 기존 Route)</h1>
+<h1>노선 정류소 출력</h1>
 
 <label>노선 ID 입력: <input type="text" id="routeIdInput" placeholder="예: 36008429002"></label>
 <button onclick="loadBusStops()">불러오기</button>
@@ -31,9 +31,11 @@
         🚫 노선 삭제
     </button>
 
-    <button id="editRouteBtn" style="background-color:orange; color:white; font-weight:bold; margin-left: 10px;">
-        ✏️ 노선 수정
+    <button id="editRouteBtn" style="background-color:orange; color:white; font-weight:bold; margin-left: 10px;"
+            onclick="editRoute()">
+        ✏️ 노선 정보 수정
     </button>
+
 </div>
 
 <hr>
@@ -68,7 +70,7 @@
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
 
-        // 노선 기본 정보 조회 (route + customRoute)
+        // 노선 기본 정보 조회
         try {
             const res = await fetch(`/api/bus/getRouteInfo?routeId=${routeId}`);
             if (res.ok) {
@@ -106,7 +108,7 @@
         //  2차 시도: 커스텀 노선
         if (!data) {
             try {
-                const res = await fetch(`/api/bus/bus-route-Custom?routeId=${routeId}`);
+                const res = await fetch(`/api/bus/bus-route?routeId=${routeId}`);
                 if (res.ok) {
                     data = await res.json();
                 }
@@ -188,7 +190,7 @@
         if (!confirm(`❗정말로 노선 [${routeId}] 을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
 
         try {
-            const res = await fetch(`/api/bus/deleteCustomRoute?routeId=${routeId}`, {
+            const res = await fetch(`/api/bus/deleteRoute?routeId=${routeId}`, {
                 method: 'DELETE'
             });
 
@@ -204,6 +206,27 @@
         } catch (err) {
             console.error("삭제 중 에러:", err);
             alert("서버 오류 발생");
+        }
+    });
+</script>
+<script>
+    function editRoute() {
+        const routeId = document.getElementById("routeId").textContent;
+        if (!routeId || routeId === "-") {
+            alert("노선 ID가 유효하지 않습니다.");
+            return;
+        }
+        window.location.href = `/UpdateRouteInfo?routeId=${routeId}`;
+    }
+</script>
+<script>
+    window.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const routeId = params.get("routeId");
+
+        if (routeId) {
+            document.getElementById("routeIdInput").value = routeId;
+            loadBusStops();
         }
     });
 </script>

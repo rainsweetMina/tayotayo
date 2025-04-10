@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class GetCustomRouteService {
+public class GetRouteLinkService {
 
     private final AddRouteStopLinkRepository routeStopLinkRepository;
     private final RouteDataService routeDataService;
@@ -68,7 +68,7 @@ public class GetCustomRouteService {
         grouped.put("reverse", reverse);
         return grouped;
     }
-    public List<CoordinateDTO> getChunkedOrsCustom(List<CoordinateDTO> points) throws InterruptedException {
+    public List<CoordinateDTO> getChunkedOrs(List<CoordinateDTO> points) throws InterruptedException {
         List<CoordinateDTO> coordinates = points.stream()
                 .map(p -> new CoordinateDTO(p.getXPos(), p.getYPos()))
                 .collect(Collectors.toList());

@@ -21,6 +21,7 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
 
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
     List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
+    void deleteByRouteId(String routeId);
 
 
     @Query("SELECT DISTINCT TRIM(r.routeNo) FROM Route r ORDER BY TRIM(r.routeNo)")

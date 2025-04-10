@@ -77,8 +77,8 @@ function drawBusStopMarkers(map, stopData) {
         const marker = L.marker([lat, lng], {
             icon: L.icon({
                 iconUrl: '/img/bus-stop-icon.png',
-                iconSize: [20, 20],
-                iconAnchor: [10, 20]
+                iconSize: [30, 40],
+                iconAnchor: [15, 40]
             }),
             title: stop.bsNm
         });

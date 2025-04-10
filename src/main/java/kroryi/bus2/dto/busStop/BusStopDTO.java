@@ -7,7 +7,6 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class BusStopDTO implements Serializable {
 
@@ -17,4 +16,12 @@ public class BusStopDTO implements Serializable {
    private Double xPos;
    private Double yPos;
 
+   public BusStopDTO() {}
+
+   public BusStopDTO(String bsId, String bsNm, Double xPos, Double yPos) {
+      this.bsId = bsId;
+      this.bsNm = bsNm;
+      this.xPos = xPos;
+      this.yPos = yPos;
+   }
 }

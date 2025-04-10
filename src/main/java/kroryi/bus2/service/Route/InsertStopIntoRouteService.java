@@ -6,7 +6,7 @@ import kroryi.bus2.entity.BusStop;
 import kroryi.bus2.entity.RouteStopLink;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
-import kroryi.bus2.repository.jpa.route.CustomRouteRepository;
+import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public class InsertStopIntoRouteService {
 
     private final RouteStopLinkRepository routeStopLinkRepository;
     private final BusStopRepository busStopRepository;
-    private final CustomRouteRepository customRouteRepository;
+    private final RouteRepository RouteRepository;
 
 
     @Transactional
@@ -64,10 +64,10 @@ public class InsertStopIntoRouteService {
 
             // 새로 넣은 seq가 가장 크다면 → 도착지 변경
             if (insertSeq >= maxSeq) {
-                customRouteRepository.findByRouteId(routeId).ifPresent(route -> {
+                RouteRepository.findByRouteId(routeId).ifPresent(route -> {
                     route.setEdBsId(stop.getBsId());
                     route.setEdNm(stop.getBsNm());
-                    customRouteRepository.save(route);
+                    RouteRepository.save(route);
                 });
             }
         }
