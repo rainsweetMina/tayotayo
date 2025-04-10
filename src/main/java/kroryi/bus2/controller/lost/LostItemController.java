@@ -1,8 +1,10 @@
 package kroryi.bus2.controller.lost;
 
 
+import kroryi.bus2.dto.lost.LostItemAdminResponseDTO;
 import kroryi.bus2.dto.lost.LostItemListResponseDTO;
 import kroryi.bus2.dto.lost.LostItemRequestDTO;
+import kroryi.bus2.dto.lost.LostItemResponseDTO;
 import kroryi.bus2.entity.lost.LostItem;
 import kroryi.bus2.service.lost.LostItemService;
 import lombok.RequiredArgsConstructor;
@@ -57,9 +59,14 @@ public class LostItemController {
     }
     // 🔸 단건 조회
     @GetMapping("/{id}")
-    public ResponseEntity<LostItem> getLostItem(@PathVariable Long id) {
-        LostItem item = lostItemService.findById(id); // 서비스 메서드 필요
-        return ResponseEntity.ok(item);
+    public ResponseEntity<LostItemResponseDTO> getLostItemById(@PathVariable Long id) {
+        LostItemResponseDTO dto = lostItemService.getLostItemById(id);
+        return ResponseEntity.ok(dto);
+    }
+    @GetMapping
+    public ResponseEntity<List<LostItemListResponseDTO>> getAllLostItems() {
+        List<LostItemListResponseDTO> results = lostItemService.getAllLostItems();
+        return ResponseEntity.ok(results);
     }
 }
 

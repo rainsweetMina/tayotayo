@@ -10,4 +10,7 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
     List<FoundItem> findAllByVisibleTrue();
 
     List<FoundItem> findByVisibleTrueAndFoundTimeBefore(LocalDateTime cutoff);
+
+    List<FoundItem> findAllByOrderByCreatedAtDesc();
+
 }
