@@ -10,14 +10,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -29,10 +28,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        String registrationId = userRequest.getClientRegistration().getRegistrationId(); // ex: google, kakao
         Map<String, Object> originalAttributes = oAuth2User.getAttributes();
 
-        // ✅ 수정 가능한 맵으로 복사
+        // 수정 가능한 Map으로 복사
         Map<String, Object> attributes = new HashMap<>(originalAttributes);
 
         String email = null;
@@ -47,43 +46,46 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             nickname = (String) profile.get("nickname");
             signupType = SignupType.KAKAO;
 
-            attributes.put("id", attributes.get("id")); // 보장
-
+            // "id" 값이 Long으로 반환되므로 이를 String으로 변환
+            Long kakaoId = (Long) attributes.get("id");
+            attributes.put("id", String.valueOf(kakaoId)); // Long을 String으로 변환
         } else if ("google".equals(registrationId)) {
             email = (String) attributes.get("email");
             nickname = (String) attributes.get("name");
             signupType = SignupType.GOOGLE;
 
+            // "sub"이 구글의 고유 ID이므로 이를 "id"로 맵핑
+            String googleId = (String) attributes.get("sub");
+            attributes.put("id", googleId); // null 방지
         } else {
             throw new OAuth2AuthenticationException("지원하지 않는 소셜 로그인입니다: " + registrationId);
         }
 
-        final String finalEmail = email;
-        final String finalNickname = nickname;
-        final SignupType finalSignupType = signupType;
-        final String finalUserId = registrationId + "_" + email;
+        // 사용자 저장 또는 조회
+        String oauthId = (String) attributes.get("id");
+        String userId = registrationId + "_" + oauthId;
+        User user = userRepository.findByEmail(email).orElse(null);
 
-        User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
-            User newUser = new User();
-            newUser.setEmail(finalEmail);
-            newUser.setUsername(finalNickname);
-            newUser.setUserId(finalUserId);
-            newUser.setPassword("SOCIAL_LOGIN_USER");
-            newUser.setRole(Role.USER);
-            newUser.setSignupType(finalSignupType);
-            newUser.setSignupDate(LocalDate.now());
-            return userRepository.save(newUser);
-        });
+        if (user == null) {
+            // 소셜 로그인 사용자는 비밀번호가 필요 없으므로 password를 null로 설정
+            user = new User();
+            user.setEmail(email);
+            user.setUsername(nickname);
+            user.setUserId(userId);
+            user.setPassword("SOCIAL_LOGIN"); // 소셜 로그인 사용자에게 비밀번호 기본값 사용
+            user.setRole(Role.USER);
+            user.setSignupType(signupType);
+            user.setSignupDate(LocalDate.now());
+            user = userRepository.save(user);
+        }
 
+        // OAuth2User 반환 (ROLE, 속성 포함)
         return new CustomOAuth2User(
-                new DefaultOAuth2User(
-                        Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
-                        attributes,
-                        "id"
-                ),
-                finalEmail,
-                finalNickname,
-                finalUserId // ✅ 여기 추가
+                user.getUserId(),
+                user.getEmail(),
+                user.getUsername(), // 닉네임을 대신 사용
+                user.getRole().name(), // 권한 정보만 포함
+                attributes // 소셜 로그인 사용자 속성 포함
         );
     }
 }

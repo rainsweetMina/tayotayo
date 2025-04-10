@@ -1,6 +1,7 @@
 package kroryi.bus2.controller;
 
 import jakarta.validation.Valid;
+import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
 import kroryi.bus2.entity.user.SignupType;
@@ -10,72 +11,90 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.Principal;
-
-// ... 생략된 import는 그대로 두고 ...
+import java.util.Map;
 
 @Log4j2
 @Controller
 @RequiredArgsConstructor
-public class MypageController {
+@RequestMapping("/mypage")
+public class MyPageController {
 
     private final UserService userService;
 
-    // 마이페이지
-    @GetMapping("/mypage")
-    public String myPage(Model model, Principal principal) {
-        // 로그인 여부 확인
-        if (principal == null || principal.getName() == null) {
-            return "redirect:/login"; // 로그인하지 않은 경우 로그인 페이지로 이동
+    private String extractUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = auth.getPrincipal();
+
+        if (principal instanceof CustomOAuth2User customUser) {
+            return customUser.getUserId();
+        } else if (principal instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        } else if (principal instanceof OAuth2User oAuth2User) {
+            // 혹시 다른 OAuth2User 타입으로 들어왔을 경우 보완
+            Map<String, Object> attributes = oAuth2User.getAttributes();
+            Object userId = attributes.get("id"); // 또는 CustomOAuth2User에서 넣어준 키
+            if (userId != null) {
+                return userId.toString(); // fallback
+            }
         }
 
-        String userId = principal.getName();
+        return null;
+    }
 
-        try {
-            User user = userService.findByUserId(userId);
-            if (user == null) {
-                return "redirect:/login"; // 사용자가 존재하지 않으면 로그인 페이지로
-            }
 
-            model.addAttribute("user", user);
-            return "mypage/main"; // 뷰 이름
-        } catch (Exception e) {
-            // 예외 발생 시 로그인 페이지 또는 에러 페이지로 이동
+    // 마이페이지 메인
+    @GetMapping("")
+    public String myPage(Model model) {
+        String userId = extractUserId(); // 이미 만들어둔 메서드 사용!
+
+        if (userId == null) {
             return "redirect:/login";
         }
+
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        log.info("✅ 현재 로그인된 사용자 ID: {}", userId);
+        model.addAttribute("user", user); // ✅ 사용자 정보 추가
+
+        return "mypage/index";
     }
 
 
     // 비밀번호 변경 폼
-    @GetMapping("/mypage/password")
+    @GetMapping("/password")
     public String showChangePasswordForm(Model model) {
         model.addAttribute("changePasswordDTO", new ChangePasswordDTO());
         return "mypage/password";
     }
 
     // 비밀번호 변경 처리
-    @PostMapping("/mypage/password")
+    @PostMapping("/password")
     public String changePassword(@Valid @ModelAttribute ChangePasswordDTO dto, Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
 
-        // 👉 여기서 유저 정보 조회
         User user = userService.findByUserId(userId);
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-        // ✅ 카카오 또는 구글 소셜 로그인 사용자일 경우 비밀번호 변경 막기
         if (user.getSignupType() == SignupType.KAKAO || user.getSignupType() == SignupType.GOOGLE) {
             model.addAttribute("error", "소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
             return "mypage/password";
         }
 
-        // 비밀번호 일치 확인
         if (!dto.getModifyPassword().equals(dto.getModifyPasswordCheck())) {
             model.addAttribute("error", "새 비밀번호가 일치하지 않습니다.");
             return "mypage/password";
@@ -96,12 +115,18 @@ public class MypageController {
         }
     }
 
-
-    // 회원정보 수정 폼
-    @GetMapping("/mypage/modify")
+    // 회원 정보 수정 폼
+    @GetMapping("/modify")
     public String showModifyForm(Model model) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         User user = userService.findByUserId(userId);
+        if (user == null) {
+            return "redirect:/login";
+        }
 
         ModifyUserDTO dto = new ModifyUserDTO();
         dto.setUserId(user.getUserId());
@@ -113,15 +138,19 @@ public class MypageController {
         dto.setRole(user.getRole());
 
         model.addAttribute("modifyUserDTO", dto);
+        model.addAttribute("socialUser", user.getSignupType() == SignupType.KAKAO || user.getSignupType() == SignupType.GOOGLE);
         return "mypage/modify";
     }
 
-    // 회원정보 수정 처리
-    @PostMapping("/mypage/modify")
+    // 회원 정보 수정 처리
+    @PostMapping("/modify")
     public String modifyUser(@Valid @ModelAttribute ModifyUserDTO dto,
                              Model model,
                              RedirectAttributes redirectAttributes) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
 
         try {
             boolean success = userService.modifyUserInfo(userId, dto);
@@ -138,27 +167,46 @@ public class MypageController {
         }
     }
 
-    // 즐겨찾기 페이지
+    // 즐겨찾기
     @GetMapping("/favorites")
     public String favorites() {
         return "mypage/favorites";
     }
 
-    // 분실물 신고 페이지
+    // 분실물 신고
     @GetMapping("/lost-report")
     public String lostReport() {
         return "mypage/lost-report";
     }
 
-    // 질문과 답변 페이지
+    // Q&A
     @GetMapping("/qna")
     public String qna() {
         return "mypage/qna";
     }
 
-    // 최근 검색 내역 페이지
+    // 최근 검색 내역
     @GetMapping("/recent-searches")
     public String recentSearches() {
         return "mypage/recent-searches";
+    }
+
+    // 회원 탈퇴
+    @PostMapping("/withdraw")
+    public String withdraw(RedirectAttributes redirectAttributes) {
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            userService.deleteByUserId(userId); // 탈퇴 처리
+            SecurityContextHolder.clearContext();
+            redirectAttributes.addFlashAttribute("success", "회원 탈퇴가 완료되었습니다.");
+            return "redirect:/login?withdraw";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "회원 탈퇴 중 오류가 발생했습니다.");
+            return "redirect:/mypage";
+        }
     }
 }

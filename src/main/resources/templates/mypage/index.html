@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+</head>
+<body>
+<h1>마이페이지</h1>
+
+<nav style="margin-bottom: 20px;">
+    <strong>메뉴</strong><br/>
+    <a href="/mypage/favorites">즐겨찾기</a> |
+    <a href="/mypage/lost-report">분실물 신고</a> |
+    <a href="/mypage/qna">질문/답변</a> |
+    <a href="/mypage/recent-searches">최근 검색 내역</a>
+</nav>
+
+<!-- 성공 메시지 -->
+<div th:if="${success}" style="color: green; font-weight: bold;" th:text="${success}"></div>
+
+<!-- 사용자 정보 -->
+<p th:if="${user != null}">안녕하세요, <span th:text="${user.username}">사용자</span>님!</p>
+<p th:if="${user != null}">아이디: <span th:text="${user.userId}"></span></p>
+<!--<p th:if="${user != null}"><strong>아이디:</strong> <span th:text="${user.userId}"></span></p>-->
+<p th:if="${user != null}"><strong>이메일:</strong> <span th:text="${user.email}"></span></p>
+<p th:if="${user != null}"><strong>이름:</strong> <span th:text="${user.username}"></span></p>
+<p th:if="${user != null}">전화번호: <span th:text="${user.phoneNumber}"></span></p>
+<!--<p th:if="${user != null}"><strong>전화번호:</strong> <span th:text="${user.phoneNumber}"></span></p>-->
+
+
+<hr/>
+
+<a href="/mypage/modify">정보 수정</a><br/>
+<a href="/mypage/password">비밀번호 변경</a><br/>
+<a href="/logout">로그아웃</a>
+
+<form th:action="@{/mypage/withdraw}" method="post" th:if="${_csrf != null}" style="margin-top: 10px;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <button type="submit" style="color: red;">회원 탈퇴</button>
+</form>
+</body>
+</html>
