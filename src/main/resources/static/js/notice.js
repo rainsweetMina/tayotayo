@@ -1,6 +1,6 @@
 ﻿
 function loadNotices() {
-    fetch('https://localhost:8081/ds/api/notices')
+    fetch('https://localhost:8081/api/admin/notices')
         .then(response => {
             console.log("Response status:", response.status);
             if (!response.ok) throw new Error("Network response was not ok");
@@ -29,7 +29,7 @@ function addNotice() {
     const author = document.getElementById('author').value;
     const content = document.getElementById('content').value;
 
-    fetch('https://localhost:8081/ds/api/notices', {
+    fetch('https://localhost:8081/api/admin/notices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, author, content })
@@ -39,7 +39,7 @@ function addNotice() {
 }
 
 function deleteNotice(id) {
-    fetch(`https://localhost:8081/ds/api/notices/${id}`, {
+    fetch(`https://localhost:8081/api/admin/notices${id}`, {
         method: 'DELETE'
     }).then(() => {
         loadNotices(); // 또는 location.reload();
@@ -55,7 +55,7 @@ function editNotice(id, title, author, content) {
     editButton.textContent = "확인";
     editButton.className = "button";
     editButton.onclick = function () {
-        fetch(`/ds/api/notices/${id}`, {
+        fetch(`/api/admin/notices/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

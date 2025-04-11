@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.api;
 
 import jakarta.validation.Valid;
 import kroryi.bus2.dto.qna.*;

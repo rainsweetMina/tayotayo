@@ -19,10 +19,17 @@ public class NoticeService {
     private NoticeRepository noticeRepository;
 
 
-    public Notice addNotice(NoticeDTO dto) {
-        Notice notice = new Notice(dto.getTitle(), dto.getAuthor(), dto.getContent());
-        return noticeRepository.save(notice);
+    public NoticeDTO addNotice(NoticeDTO dto) {
+        Notice entity = new Notice();
+        entity.setTitle(dto.getTitle());
+        entity.setContent(dto.getContent());
+        entity.setAuthor(dto.getAuthor());
+
+        noticeRepository.save(entity); // ← 이게 있어야 진짜 저장됨
+
+        return new NoticeDTO(entity); // 저장된 결과를 다시 DTO로 반환
     }
+
 
     public Notice updateNotice(Long id, NoticeDTO dto) {
         Notice notice = noticeRepository.findById(id)
@@ -44,9 +51,18 @@ public class NoticeService {
         return noticeRepository.findAllByOrderByCreatedDateDesc();
     }
 
+    public List<NoticeDTO> getAllNoticeDTOs() {
+        return noticeRepository.findAllByOrderByCreatedDateDesc()
+                .stream()
+                .map(notice -> new NoticeDTO(notice.getTitle(), notice.getAuthor(), notice.getContent()))
+                .toList();
+    }
+
     public Notice getNoticeById(Long id) {
         return noticeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("공지사항 없음"));
     }
+
+
 
 }

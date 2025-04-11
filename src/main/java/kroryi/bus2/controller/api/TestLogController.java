@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.api;
 
 import kroryi.bus2.entity.ApiLog;
 import kroryi.bus2.repository.redis.ApiLogRepository;
