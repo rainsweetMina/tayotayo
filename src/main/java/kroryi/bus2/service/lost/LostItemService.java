@@ -8,14 +8,13 @@ import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
 import kroryi.bus2.repository.jpa.LostItemRepository;
-import kroryi.bus2.repository.jpa.UserRepository;
+import kroryi.bus2.repository.jpa.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.service.UserService;
+import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationContext;

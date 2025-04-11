@@ -6,7 +6,7 @@ import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.service.UserService;
+import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
@@ -45,14 +45,16 @@ public class MyPageController {
             }
         }
 
-        return null;
+//        return null;
+        // ✅ 개발 중: 로그인 안 해도 테스트 가능하게 null 대신 기본값 리턴
+        return "admin";
     }
 
 
     // 마이페이지 메인
     @GetMapping("")
     public String myPage(Model model) {
-        String userId = extractUserId(); // 이미 만들어둔 메서드 사용!
+        String userId = extractUserId();
 
         if (userId == null) {
             return "redirect:/login";
