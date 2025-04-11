@@ -1,6 +1,6 @@
 package kroryi.bus2.BusDataInputTests;
 
-import kroryi.bus2.entity.BusStop;
+import kroryi.bus2.entity.bus_stop.BusStop;
 import kroryi.bus2.entity.Link;
 import kroryi.bus2.entity.Node;
 import kroryi.bus2.entity.Route;

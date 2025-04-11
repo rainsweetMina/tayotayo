@@ -63,4 +63,9 @@ public interface RouteStopLinkRepository extends JpaRepository<RouteStopLink,Lon
     Optional<RouteStopLink> findByRouteIdAndMoveDirAndSeq(String routeId, String moveDir, int seq);
 
 
+    RouteStopLink findByRouteId(String routeId);
+
+    @Query("SELECT DISTINCT r.routeId FROM RouteStopLink r WHERE r.bsId = :bsId")
+    List<String> findRouteIdsByBusStopId(@Param("bsId") String bsId);
+
 }

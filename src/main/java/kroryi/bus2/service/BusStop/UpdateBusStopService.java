@@ -1,7 +1,7 @@
 package kroryi.bus2.service.BusStop;
 
 import kroryi.bus2.dto.busStop.BusStopUpdateDTO;
-import kroryi.bus2.entity.BusStop;
+import kroryi.bus2.entity.bus_stop.BusStop;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

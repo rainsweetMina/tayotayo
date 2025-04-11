@@ -18,11 +18,24 @@ public class BusController {
         return "bus/busStops";
     }
 
-    // 이건 테스트용인듯
-    @GetMapping("/bus2")
-    public String getBusStops2() {
-        return "bus/busStops2";
+//    // 이건 테스트용인듯
+//    @GetMapping("/bus2")
+//    public String getBusStops2() {
+//        return "bus/busStops2";
+//    }
+
+    // 전체 노선 불러오는 페이지
+    @GetMapping("/GetAllRoute")
+    public String GetAllBusRoute() {
+        return "bus/route/getAllRoute";
     }
+
+    // 전체 정류장 불러오는 페이지
+    @GetMapping("/GetAllBusStop")
+    public String GetAllBusStop() {
+        return "bus/bus_stop/getAllBusStop";
+    }
+
 
     // 버스의 노선 추가 하는 페이지
     @GetMapping("/AddRouteStopLink")
@@ -75,7 +88,7 @@ public class BusController {
     // 정류장의 정보를 수정하는 페이지
     @GetMapping("/ApiTest")
     public String apitest() {
-        return "bus/apiSampleTest";
+        return "/apiSampleTest";
     }
 
 
@@ -86,6 +99,10 @@ public class BusController {
 //    }
 
 
-
+    // 통합 메뉴
+    @GetMapping("/TestMenu")
+    public String TestMenu() {
+        return "/TestMenu"; // templates/menu.html
+    }
 
 }
