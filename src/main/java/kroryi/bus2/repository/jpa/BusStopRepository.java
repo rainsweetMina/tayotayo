@@ -1,8 +1,9 @@
 package kroryi.bus2.repository.jpa;
 
 import kroryi.bus2.dto.busStop.BusStopDTO;
-import kroryi.bus2.entity.BusStop;
-import org.springframework.data.domain.PageRequest;
+import kroryi.bus2.entity.bus_stop.BusStop;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,4 +42,10 @@ public interface BusStopRepository extends JpaRepository<BusStop,Long> {
     int countByBsId(@Param("bsId") String bsId);
 
     void deleteByBsId(String bsId);
+
+    @Query("SELECT b FROM BusStop b " +
+            "WHERE LOWER(b.bsId) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(b.bsNm) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<BusStop> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
 }

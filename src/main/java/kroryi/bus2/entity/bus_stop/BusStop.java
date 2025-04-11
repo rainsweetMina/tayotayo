@@ -1,4 +1,4 @@
-package kroryi.bus2.entity;
+package kroryi.bus2.entity.bus_stop;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

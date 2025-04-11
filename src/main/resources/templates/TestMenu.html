@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>버스 시스템 메뉴</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+        }
+        h2 {
+            margin-top: 2rem;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🚌 버스 시스템 메뉴</h1>
+
+<h2>노선 관련</h2>
+<ul>
+    <li><a href="/GetAllRoute">전체 노선 리스트</a></li>
+    <li><a href="/AddRouteStopLink">노선 추가</a></li>
+    <li><a href="/GetRouteStopLink">노선 조회</a></li>
+    <li><a href="/UpdateRouteLink">노선 순서 수정</a></li>
+    <li><a href="/InsertStop">노선에 정류장 추가</a></li>
+</ul>
+
+<h2>정류장 관련</h2>
+<ul>
+    <li><a href="/GetAllBusStop">전체 정류장 리스트</a></li>
+    <li><a href="/AddBusStop">정류장 추가</a></li>
+    <li><a href="/GetBusStop">정류장 조회</a></li>
+</ul>
+
+<h2>기타</h2>
+<ul>
+    <li><a href="/bus">메인 지도 보기</a></li>
+    <li><a href="/ApiTest">API 테스트 (수리중)</a></li>
+</ul>
+
+</body>
+</html>

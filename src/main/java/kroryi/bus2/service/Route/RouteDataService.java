@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import kroryi.bus2.dto.Route.RouteDTO;
+import kroryi.bus2.dto.Route.RouteListDTO;
 import kroryi.bus2.dto.busStop.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 
@@ -14,9 +15,15 @@ import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
@@ -52,6 +59,29 @@ public class RouteDataService {
 
     @Value("${ors.api.key}")
     private String orsApiKey;
+
+    // 페이징 + 검색이 추가된 전체 노선 게시판 서비스
+    public Page<RouteListDTO> getRoutesWithPaging(String keyword, int page, int size, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                Sort.by("routeId").descending() :
+                Sort.by("routeId").ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Route> result = routeRepository.findByKeyword(keyword, pageable);
+
+        return result.map(route -> RouteListDTO.builder()
+                .id(route.getId())
+                .routeId(route.getRouteId())
+                .routeNo(route.getRouteNo())
+                .stNm(route.getStNm())
+                .edNm(route.getEdNm())
+                .routeNote(route.getRouteNote())
+                .dataconnareacd(route.getDataconnareacd())
+                .routeTCd(route.getRouteTCd())
+                .build());
+    }
+
+
 
     // 버스 노선명으로 검색 (일반 노선)
     public List<Route> getBusByNm(String routeNo) {
@@ -246,7 +276,8 @@ public class RouteDataService {
     public RouteDTO getRouteByRouteId(String routeId) {
         return routeRepository.findByRouteId(routeId)
                 .map(this::convertToDTO)
-                .orElseThrow(() -> new IllegalArgumentException("노선이 존재하지 않습니다: " + routeId));
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "노선이 존재하지 않습니다: " + routeId));
     }
 
     private RouteDTO convertToDTO(Route route) {

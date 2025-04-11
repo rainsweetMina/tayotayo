@@ -45,7 +45,9 @@
   <p><strong>이름:</strong> <span id="bsNm"></span></p>
   <p><strong>위도(Y):</strong> <span id="ypos"></span></p>
   <p><strong>경도(X):</strong> <span id="xpos"></span></p>
-  <button onclick="deleteBusStop()">🗑️ 정류장 삭제</button> <!-- ✅ 삭제 버튼 -->
+  <p><strong>도착 노선:</strong> <span id="routes"></span></p>
+  <button onclick="deleteBusStop()">🗑️ 정류장 삭제</button>
+  <button onclick="updateBusStop()">✏️ 정류장 수정</button>
 </div>
 
 <div id="map"></div>
@@ -86,7 +88,14 @@
       return;
     }
 
+    const res2 = await fetch(`/api/bus/RouteByBS?bsId=${bsId}`);
+    if (!res2.ok) {
+      alert("해당 정류장에 오는 노선 정보를 불러올 수 없습니다.");
+      return;
+    }
+
     const data = await res.json();
+    const data2 = await res2.json(); // data2 = 노선 목록
 
     // 상세 정보 표시
     document.getElementById("detail").style.display = "block";
@@ -95,12 +104,20 @@
     document.getElementById("xpos").textContent = data.xpos;
     document.getElementById("ypos").textContent = data.ypos;
 
-    // 지도 마커 갱신
+    // 노선 정보 렌더링
+    const routeNames = data2.map(r => r.routeNo).join(', ');
+    document.getElementById("routes").textContent = routeNames || "없음";
+
+    // ✅ 지도 마커 갱신
     if (marker) map.removeLayer(marker);
-    marker = L.marker([data.ypos, data.xpos]).addTo(map)
-            .bindPopup(`<strong>${data.bsNm}</strong>`).openPopup();
+    marker = L.marker([data.ypos, data.xpos])
+            .addTo(map)
+            .bindPopup(`<strong>${data.bsNm}</strong>`)
+            .openPopup();
     map.setView([data.ypos, data.xpos], 17);
   }
+
+
 </script>
 <script>
   async function deleteBusStop() {
@@ -129,5 +146,27 @@
   }
 
 </script>
+<script>
+  function updateBusStop() {
+    const bsId = document.getElementById("bsId").textContent; // 또는 value
+    if (!bsId) {
+      alert("정류장 ID가 없습니다.");
+      return;
+    }
+
+    // 쿼리 파라미터로 전달
+    window.location.href = `/UpdateBusStop?bsId=${encodeURIComponent(bsId)}`;
+  }
+</script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const bsId = params.get("bsId");
+    if (bsId) {
+      fetchBusStopDetail(bsId);
+    }
+  });
+</script>
+
 </body>
 </html>

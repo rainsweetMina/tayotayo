@@ -1,11 +1,13 @@
 package kroryi.bus2.entity;
 
 import jakarta.persistence.*;
+import kroryi.bus2.entity.bus_stop.BusStop;
 import lombok.*;
 
 @Entity
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

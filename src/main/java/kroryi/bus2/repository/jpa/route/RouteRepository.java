@@ -1,6 +1,10 @@
 package kroryi.bus2.repository.jpa.route;
 
+import kroryi.bus2.dto.Route.RouteDTO;
+import kroryi.bus2.dto.Route.RouteIdAndNoDTO;
 import kroryi.bus2.entity.Route;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,5 +45,16 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
     String findRouteIdByRouteNoOnly(@Param("routeNo") String routeNo);
 
     boolean existsByRouteId(String routeId);
+
+    @Query("SELECT new kroryi.bus2.dto.Route.RouteIdAndNoDTO(r.routeId, r.routeNo) FROM Route r WHERE r.routeId IN :routeIds")
+    List<RouteIdAndNoDTO> findRoutesByIds(@Param("routeIds") List<String> routeIds);
+
+    // 페이징 + 검색이 추가된 전체 노선 게시판 레파지토리들
+    Page<Route> findAll(Pageable pageable);
+
+    @Query("SELECT r FROM Route r WHERE " +
+            "LOWER(r.routeId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(r.routeNo) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Route> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
 }
