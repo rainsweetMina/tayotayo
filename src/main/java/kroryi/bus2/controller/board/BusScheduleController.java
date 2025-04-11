@@ -38,7 +38,7 @@ public class BusScheduleController {
     }
 
     // 수정 페이지 스케줄 데이터 조회
-    @GetMapping("/modify-schedule")
+    @GetMapping("/admin/schedule")
     public String showModifySchedule(Model model) {
         List<String> routeNos = routeRepository.findDistinctRouteNos();
         model.addAttribute("routeNos", routeNos);
@@ -72,7 +72,7 @@ public class BusScheduleController {
     public List<String> getRouteNotesByRouteNo(@RequestParam String routeNo,
                                                @RequestHeader(value = "Referer", required = false) String referer
     ) {
-        if (referer != null && referer.contains("/modify-schedule")) {
+        if (referer != null && referer.contains("/admin/schedule")) {
             // 수정 페이지에서 요청한 경우
             return routeRepository.findDistinctRouteNoteByRouteNo(routeNo);
         } else {
@@ -95,7 +95,7 @@ public class BusScheduleController {
 
         if (routeNo != null && !routeNo.isBlank()) {
             // 수정 페이지면 전체 방향 보여줌
-            if (referer != null && referer.contains("/modify-schedule")) {
+            if (referer != null && referer.contains("/admin/schedule")) {
                 return routeStopLinkRepository.findDistinctMoveDirsByRouteNo(routeNo);
             } else {
                 // 일반 페이지에서는 실제 스케줄 있는 방향만 보여줌
