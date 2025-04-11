@@ -17,11 +17,6 @@ public class BusFareService {
         return busFareRepository.findAll();
     }
 
-    public BusFare findById(int id) {
-        return busFareRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 ID: " + id));
-    }
-
     public BusFare save(BusFareDTO dto) {
         BusFare fare = new BusFare();
         fare.setBusType(dto.getBusType());

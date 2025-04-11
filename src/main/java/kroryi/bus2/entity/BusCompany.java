@@ -1,7 +1,10 @@
 package kroryi.bus2.entity;
 
 import jakarta.persistence.*;
+import kroryi.bus2.converter.StringListConverter;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,6 +27,7 @@ public class BusCompany {
     @Column(name = "company_phone")
     private String companyPhone;
 
-    @Column(name = "company_route_no")
-    private String companyRouteNo;
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "company_route_no", columnDefinition = "TEXT")
+    private List<String> companyRouteNo;
 }
