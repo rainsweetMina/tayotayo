@@ -21,52 +21,48 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 아이디 중복 확인
     public boolean checkUserIdDuplicate(String userId) {
         return userRepository.existsByUserId(userId);
     }
 
-    // 회원가입 처리
     public void join(JoinRequestDTO dto) {
-        // 이메일 인증 여부 확인
         if (dto.getEmailVerified() == null || !dto.getEmailVerified()) {
             throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
         }
 
-        // 아이디 중복 확인
         if (userRepository.existsByUserId(dto.getUserId())) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
 
-        // 이메일 중복 확인
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("이미 등록된 이메일입니다.");
         }
 
-        // 비밀번호 확인
         if (!dto.getPassword().equals(dto.getPasswordCheck())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 비밀번호 유효성 검사
         if (!isValidPassword(dto.getPassword())) {
             throw new IllegalArgumentException("비밀번호는 8자 이상이며, 문자, 숫자, 특수문자를 포함해야 합니다.");
         }
 
-        // 저장
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
         User user = dto.toEntity(encodedPassword);
         userRepository.save(user);
     }
 
-    // 로그인
     public User login(LoginRequestDTO ldto) {
         Optional<User> optionalUser = userRepository.findByUserId(ldto.getUserId());
 
-        if (optionalUser.isEmpty()) return null;
+        if (optionalUser.isEmpty()) {
+            log.info("해당 아이디로 사용자를 찾을 수 없습니다.");
+            return null;
+        }
 
         User user = optionalUser.get();
+
         if (!passwordEncoder.matches(ldto.getPassword(), user.getPassword())) {
+            log.warn("비밀번호 불일치.");
             return null;
         }
 
@@ -78,28 +74,27 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
     }
 
+    @Transactional
     public void deleteByUserId(String userId) {
-        userRepository.deleteByUserId(userId);
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        userRepository.delete(user);
     }
 
-    // 회원 정보 수정
     @Transactional
     public boolean modifyUserInfo(String userId, ModifyUserDTO dto) {
         User user = findByUserId(userId);
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
-        return true; // ← 성공적으로 수정되었음을 반환
+        return true;
     }
 
-    // 비밀번호 유효성 검사
     private boolean isValidPassword(String password) {
-        // 최소 8자, 대소문자, 숫자, 특수문자 하나 이상 포함
         String regex = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
         return password.matches(regex);
     }
 
-    // 비밀번호 변경
     @Transactional
     public boolean changePassword(String userId, String currentPassword, String newPassword) {
         User user = findByUserId(userId);

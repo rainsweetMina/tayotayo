@@ -1,5 +1,6 @@
 package kroryi.bus2.service;
 
+import kroryi.bus2.dto.NoticeDTO;
 import kroryi.bus2.entity.Notice;
 import kroryi.bus2.repository.jpa.NoticeRepository;
 import lombok.AllArgsConstructor;
@@ -17,20 +18,23 @@ public class NoticeService {
     @Autowired
     private NoticeRepository noticeRepository;
 
-    public Notice addNotice(Notice notice) {
+
+    public Notice addNotice(NoticeDTO dto) {
+        Notice notice = new Notice(dto.getTitle(), dto.getAuthor(), dto.getContent());
         return noticeRepository.save(notice);
     }
 
-    public Notice updateNotice(Long id, Notice newNotice) {
-        return noticeRepository.findById(id)
-                .map(notice -> {
-                    notice.setTitle(newNotice.getTitle());
-                    notice.setContent(newNotice.getContent());
-                    notice.setAuthor(newNotice.getAuthor());
-                    return noticeRepository.save(notice);
-                })
-                .orElseThrow(() -> new RuntimeException("공지사항 없음"));
+    public Notice updateNotice(Long id, NoticeDTO dto) {
+        Notice notice = noticeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지 없음"));
+
+        notice.setTitle(dto.getTitle());
+        notice.setAuthor(dto.getAuthor());
+        notice.setContent(dto.getContent());
+
+        return noticeRepository.save(notice);
     }
+
 
     public void deleteNotice(Long id) {
         noticeRepository.deleteById(id);

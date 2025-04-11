@@ -1,6 +1,5 @@
 package kroryi.bus2.dto.ad;
 
-import kroryi.bus2.entity.AdCompany;
 import lombok.Builder;
 import lombok.Getter;
 

@@ -1,6 +1,6 @@
 package kroryi.bus2.repository.jpa;
 
-import kroryi.bus2.entity.AdCompany;
+import kroryi.bus2.entity.ad.AdCompany;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

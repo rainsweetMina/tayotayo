@@ -5,12 +5,11 @@ import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
 import kroryi.bus2.dto.Route.CustomRouteDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.entity.BusStop;
-import kroryi.bus2.entity.CustomRoute;
 
+import kroryi.bus2.entity.Route;
 import kroryi.bus2.entity.RouteStopLink;
 import kroryi.bus2.repository.jpa.AddRouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.BusStopRepository;
-import kroryi.bus2.repository.jpa.route.CustomRouteRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,9 +21,8 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class AddCustomRouteService {
+public class AddRouteService {
 
-    private final CustomRouteRepository customRouteRepository;
     private final RouteRepository routeRepository;
     private final AddRouteStopLinkRepository routeStopLinkRepository;
     private final BusStopRepository busStopRepository;
@@ -39,7 +37,7 @@ public class AddCustomRouteService {
         if (routeId == null || routeId.trim().isEmpty()) {
             throw new IllegalArgumentException("노선 ID는 비어 있을 수 없습니다.");
         }
-        if (customRouteRepository.existsByRouteId(routeId) || routeRepository.existsByRouteId(routeId)) {
+        if (routeRepository.existsByRouteId(routeId)) {
             throw new IllegalArgumentException("이미 등록된 노선 ID입니다: " + routeId);
         }
         if (!busStopRepository.existsByBsId(stBsId)) {
@@ -69,7 +67,7 @@ public class AddCustomRouteService {
             }
         }
 
-        CustomRoute route = CustomRoute.builder()
+        Route route = Route.builder()
                 .routeId(routeId)
                 .routeNo(routeDto.getRouteNo())
                 .stBsId(stBsId)
@@ -83,7 +81,7 @@ public class AddCustomRouteService {
                 .routeTCd(routeDto.getRouteTCd())
                 .build();
 
-        customRouteRepository.save(route);
+        routeRepository.save(route);
 
         // 정방향 저장 (moveDir = "1")
         List<RouteStopLink> forwardLinks = new ArrayList<>();

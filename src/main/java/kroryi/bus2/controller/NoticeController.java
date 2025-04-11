@@ -1,5 +1,6 @@
 package kroryi.bus2.controller;
 
+import kroryi.bus2.dto.NoticeDTO;
 import kroryi.bus2.entity.Notice;
 import kroryi.bus2.service.NoticeService;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/ds/api")
 @RequiredArgsConstructor
 @Log4j2
@@ -22,25 +20,32 @@ public class NoticeController {
 
     public final NoticeService noticeService;
 
-    // 공지사항 목록 조회
+
+    // 공지 전체 목록
     @GetMapping("/notices")
-    public String getNotices(Model model) {
-        List<Notice> notices = noticeService.getAllNotices();
-        model.addAttribute("notices", notices);
-        return "admin/notice";
+    public ResponseEntity<List<Notice>> addAllNotice() {
+        return ResponseEntity.ok(noticeService.getAllNotices());
     }
 
-
+    // 공지 등록
     @PostMapping("/notices")
-    public ResponseEntity<Notice> addNotice(@RequestBody Notice notice) {
-        Notice savedNotice = noticeService.addNotice(notice);
-        return ResponseEntity.ok(savedNotice);
+    public ResponseEntity<Notice> addNotice(@RequestBody NoticeDTO dto) {
+        return ResponseEntity.ok(noticeService.addNotice(dto));
     }
 
+    // 공지 삭제
     @DeleteMapping("/notices/{id}")
     public ResponseEntity<Void> deleteNotice(@PathVariable Long id) {
         noticeService.deleteNotice(id);
         return ResponseEntity.noContent().build();
     }
+
+    // 공지 수정
+    @PutMapping("/notices/{id}")
+    public ResponseEntity<Notice> updateNotice(@PathVariable Long id, @RequestBody NoticeDTO dto) {
+        Notice updated = noticeService.updateNotice(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
 
 }
