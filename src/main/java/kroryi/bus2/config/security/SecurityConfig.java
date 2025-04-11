@@ -43,83 +43,93 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ 사용자 정보 서비스 설정
                 .userDetailsService(userDetailsService)
 
                 // ✅ CSRF 보호 비활성화 (개발 시 또는 API 서버에서는 보통 비활성화)
                 .csrf(csrf -> csrf.disable())
 
+                // ✅ 개발용 설정: 로그인 없이 전체 접근 허용
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                )
+                .formLogin(form -> form.disable())
+                .oauth2Login(oauth2 -> oauth2.disable())
+                .logout(logout -> logout.disable());
+
+                /* 권한설정(마지막에 넣으면됨)
+
                 // ✅ URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ 로그인, 회원가입, 정적 리소스 등은 모두 허용
-                        .requestMatchers(
-                                "/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**",
-                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                                "/swagger-resources/**", "/webjars/**"
-                        ).permitAll()
+                    // ✅ 로그인, 회원가입, 정적 리소스 등은 모두 허용
+                    .requestMatchers(
+                        "/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**",
+                        "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
+                        "/swagger-resources/**", "/webjars/**"
+                    ).permitAll()
 
-                        // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                    // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
+                    .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // ✅ 마이페이지는 USER 권한만 접근 가능
-                        .requestMatchers("/mypage/**").hasRole("USER")
+                    // ✅ 마이페이지는 USER 권한만 접근 가능
+                    .requestMatchers("/mypage/**").hasRole("USER")
 
-                        // ✅ 그 외는 모두 허용
-                        .anyRequest().permitAll()
+                    // ✅ 그 외는 모두 허용
+                    .anyRequest().permitAll()
                 )
 
                 // ✅ 폼 로그인 설정
                 .formLogin(form -> form
-                        .loginPage("/login")                     // 로그인 페이지 경로 지정
-                        .loginProcessingUrl("/login")            // 로그인 form 전송 처리 URL
-                        .successHandler(customLoginSuccessHandler) // ✅ 로그인 성공 시 사용자 역할에 따라 분기
-                        .failureHandler((request, response, exception) -> { // 로그인 실패 핸들러
-                            String errorCode = "error";
-                            if (exception instanceof BadCredentialsException) {
-                                errorCode = "bad_credentials";
-                            } else if (exception instanceof DisabledException) {
-                                errorCode = "disabled";
-                            } else if (exception instanceof LockedException) {
-                                errorCode = "locked";
-                            } else if (exception instanceof AccountExpiredException) {
-                                errorCode = "expired";
-                            }
-                            response.sendRedirect("/login?errorCode=" + errorCode);
-                        })
-                        .permitAll()
+                    .loginPage("/login")                     // 로그인 페이지 경로 지정
+                    .loginProcessingUrl("/login")            // 로그인 form 전송 처리 URL
+                    .successHandler(customLoginSuccessHandler) // ✅ 로그인 성공 시 사용자 역할에 따라 분기
+                    .failureHandler((request, response, exception) -> { // 로그인 실패 핸들러
+                        String errorCode = "error";
+                        if (exception instanceof BadCredentialsException) {
+                            errorCode = "bad_credentials";
+                        } else if (exception instanceof DisabledException) {
+                            errorCode = "disabled";
+                        } else if (exception instanceof LockedException) {
+                            errorCode = "locked";
+                        } else if (exception instanceof AccountExpiredException) {
+                            errorCode = "expired";
+                        }
+                        response.sendRedirect("/login?errorCode=" + errorCode);
+                    })
+                    .permitAll()
                 )
 
                 // ✅ OAuth2 (소셜 로그인) 설정
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login") // 로그인 페이지 경로
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService) // OAuth2 사용자 서비스 설정
-                        )
-                        .successHandler(customLoginSuccessHandler) // ✅ 소셜 로그인 성공 후 처리
-                        .failureHandler((request, response, exception) -> { // 실패 시 메시지 인코딩하여 전달
-                            exception.printStackTrace();
-                            String encodedMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("/login?error=" + encodedMessage);
-                        })
+                    .loginPage("/login") // 로그인 페이지 경로
+                    .userInfoEndpoint(userInfo -> userInfo
+                        .userService(customOAuth2UserService) // OAuth2 사용자 서비스 설정
+                    )
+                    .successHandler(customLoginSuccessHandler) // ✅ 소셜 로그인 성공 후 처리
+                    .failureHandler((request, response, exception) -> { // 실패 시 메시지 인코딩하여 전달
+                        exception.printStackTrace();
+                        String encodedMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
+                        response.sendRedirect("/login?error=" + encodedMessage);
+                    })
                 )
 
                 // ✅ 자동 로그인 (Remember-Me) 설정
                 .rememberMe(remember -> remember
-                        .key("remember-me-key")                     // 고유 키 설정
-                        .tokenValiditySeconds(7 * 24 * 60 * 60)     // 7일 유지
-                        .rememberMeParameter("remember-me")         // 파라미터 이름
-                        .userDetailsService(userDetailsService)     // 사용자 정보 서비스 설정
+                    .key("remember-me-key")                     // 고유 키 설정
+                    .tokenValiditySeconds(7 * 24 * 60 * 60)     // 7일 유지
+                    .rememberMeParameter("remember-me")         // 파라미터 이름
+                    .userDetailsService(userDetailsService)     // 사용자 정보 서비스 설정
                 )
 
                 // ✅ 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutUrl("/logout")                       // 로그아웃 URL
-                        .invalidateHttpSession(true)                // 세션 무효화
-                        .clearAuthentication(true)                  // 인증 정보 제거
-                        .deleteCookies("JSESSIONID")                // 쿠키 제거
-                        .logoutSuccessUrl("/login?logout")          // 로그아웃 후 이동 경로
-                        .permitAll()
+                    .logoutUrl("/logout")                       // 로그아웃 URL
+                    .invalidateHttpSession(true)                // 세션 무효화
+                    .clearAuthentication(true)                  // 인증 정보 제거
+                    .deleteCookies("JSESSIONID")                // 쿠키 제거
+                    .logoutSuccessUrl("/login?logout")          // 로그아웃 후 이동 경로
+                    .permitAll()
                 );
+                */
 
         return http.build();
     }

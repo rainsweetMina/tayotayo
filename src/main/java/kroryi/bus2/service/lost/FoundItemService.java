@@ -8,7 +8,7 @@ import kroryi.bus2.dto.lost.FoundItemResponseDTO;
 import kroryi.bus2.entity.lost.FoundItem;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
-import kroryi.bus2.repository.jpa.UserRepository;
+import kroryi.bus2.repository.jpa.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

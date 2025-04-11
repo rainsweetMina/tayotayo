@@ -2,7 +2,7 @@ package kroryi.bus2.controller;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-import kroryi.bus2.service.EmailService;
+import kroryi.bus2.service.user.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;

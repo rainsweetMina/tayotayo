@@ -1,11 +1,11 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.user;
 
 import jakarta.transaction.Transactional;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginRequestDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.repository.jpa.UserRepository;
+import kroryi.bus2.repository.jpa.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.crypto.password.PasswordEncoder;
