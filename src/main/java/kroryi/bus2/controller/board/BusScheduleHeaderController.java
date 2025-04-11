@@ -1,6 +1,7 @@
 package kroryi.bus2.controller.board;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.board.BusScheduleHeaderRequestDTO;
 import kroryi.bus2.entity.BusScheduleHeader;
@@ -30,6 +31,7 @@ public class BusScheduleHeaderController {
     }
 
     // 노선별 지정 정거장 저장
+    @Hidden
     @Operation(summary = "노선도 표시용 정류장 저장 (웹)", description = "시간표에 필요한 정거장 목록 저장(시작, 끝 종점을 제외한 정거장) ")
     @PostMapping("/schedule-header")
     public ResponseEntity<Void> saveHeader(@RequestBody Map<String, Object> body) throws JsonProcessingException {

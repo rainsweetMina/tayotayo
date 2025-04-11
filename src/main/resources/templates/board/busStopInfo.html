@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>정류소 번호조회 페이지</title>
+
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+        <h2>정류소 번호 조회</h2>
+        <div>
+            <button id="regionTab">지역 검색</button> |
+            <button id="routeTab">노선 검색</button>
+        </div>
+        <div>
+            <div id="regionSearchBox" style="display:none;">
+                <label>구 선택:
+                    <select id="districtSelect">
+                        <option value="" >-- 구 선택 --</option>
+                        <option th:each="d : ${district}" th:value="${d}" th:text="${d}"></option>
+                    </select>
+                </label>
+                <label>동 선택:
+                    <select id="neighborhoodSelect">
+                        <option value="" selected disabled>-- 동 선택 --</option>
+                    </select>
+                </label>
+                <label>정류소명 검색:
+                    <input type="text" class="stopNameInput" placeholder="정류소명 입력">
+                </label>
+            </div>
+
+            <div id="routeSearchBox" style="display: none;">
+                <label>노선 유형:
+                    <select id="routeTypeSelect">
+                        <option value="" selected disabled>-- 노선 유형 선택 --</option>
+                        <option value="순환">순환</option>
+                        <option value="급행">급행</option>
+                        <option value="간선">간선</option>
+                        <option value="지선">지선</option>
+                    </select>
+                </label>
+                <label>노선 선택:
+                    <select id="routeNoSelect">
+                        <option value="" selected disabled>-- 노선 선택 --</option>
+                    </select>
+                </label>
+                <label>정류소명 검색:
+                    <input type="text" class="stopNameInput" placeholder="정류소명 입력">
+                </label>
+            </div>
+        </div>
+
+
+        <table id="resultTable" style="display:none;">
+            <thead>
+            <tr>
+                <th>주소</th>
+                <th>정류소명</th>
+                <th>주소</th>
+                <th>정류소명</th>
+            </tr>
+            </thead>
+            <tbody id="resultBody">
+            </tbody>
+        </table>
+
+
+    </section>
+<script src="/js/busStopInfo.js"></script>
+</div>
+</html>

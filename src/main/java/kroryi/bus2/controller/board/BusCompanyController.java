@@ -2,9 +2,7 @@ package kroryi.bus2.controller.board;
 
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.board.BusCompanyDTO;
-import kroryi.bus2.dto.board.BusFareDTO;
 import kroryi.bus2.entity.BusCompany;
-import kroryi.bus2.entity.BusFare;
 import kroryi.bus2.repository.jpa.board.BusCompanyRepository;
 import kroryi.bus2.service.board.BusCompanyService;
 import lombok.RequiredArgsConstructor;

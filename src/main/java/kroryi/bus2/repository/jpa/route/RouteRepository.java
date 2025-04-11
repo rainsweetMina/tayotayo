@@ -14,17 +14,19 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RouteRepository extends JpaRepository<Route,Long> {
+public interface RouteRepository extends JpaRepository<Route, Long> {
 
     @Query("SELECT r.routeNo FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo%")
     List<String> searchByRouteNumber(@Param("routeNo") String routeNo);
 
     @Query("SELECT r FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo% ORDER BY r.routeNo ASC")
     List<Route> searchByRouteNumberFull(@Param("routeNo") String routeNo);
+
     Optional<Route> findByRouteId(String routeId);
 
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
     List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
+
     void deleteByRouteId(String routeId);
 
     // 버스 스케줄 노선 조회 쿼리
@@ -56,5 +58,4 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
             "LOWER(r.routeId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(r.routeNo) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Route> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
-
 }

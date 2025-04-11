@@ -5,7 +5,7 @@ import kroryi.bus2.dto.Route.RouteIdAndNoDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.busStop.BusStopListDTO;
 import kroryi.bus2.dto.busStop.BusStopUpdateDTO;
-import kroryi.bus2.entity.bus_stop.BusStop;
+import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.service.BusStop.AddBusStopService;
 import kroryi.bus2.service.BusStop.BusStopDataService;
 import kroryi.bus2.service.BusStop.DeleteBusStopService;

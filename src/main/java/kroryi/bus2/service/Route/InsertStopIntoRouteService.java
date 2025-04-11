@@ -2,7 +2,7 @@ package kroryi.bus2.service.Route;
 
 import jakarta.transaction.Transactional;
 import kroryi.bus2.dto.RouteStopLinkDTO;
-import kroryi.bus2.entity.bus_stop.BusStop;
+import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.RouteStopLink;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;

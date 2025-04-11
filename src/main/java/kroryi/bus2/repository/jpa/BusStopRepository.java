@@ -1,7 +1,7 @@
 package kroryi.bus2.repository.jpa;
 
 import kroryi.bus2.dto.busStop.BusStopDTO;
-import kroryi.bus2.entity.bus_stop.BusStop;
+import kroryi.bus2.entity.busStop.BusStop;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
