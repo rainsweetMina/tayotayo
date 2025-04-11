@@ -1,7 +1,6 @@
-package kroryi.bus2.entity;
+package kroryi.bus2.entity.busStop;
 
 import jakarta.persistence.*;
-import kroryi.bus2.entity.bus_stop.BusStop;
 import lombok.*;
 
 @Entity

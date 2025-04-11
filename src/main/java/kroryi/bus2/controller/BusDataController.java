@@ -14,7 +14,7 @@ import kroryi.bus2.dto.Route.RouteListDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
-import kroryi.bus2.entity.bus_stop.BusStop;
+import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;

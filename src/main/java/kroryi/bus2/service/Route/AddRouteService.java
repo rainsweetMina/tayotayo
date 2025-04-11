@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
 import kroryi.bus2.dto.Route.CustomRouteDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
-import kroryi.bus2.entity.bus_stop.BusStop;
+import kroryi.bus2.entity.busStop.BusStop;
 
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.entity.RouteStopLink;

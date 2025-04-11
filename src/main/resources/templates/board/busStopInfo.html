@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>정류소 번호조회 페이지</title>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+        <h2>정류소 번호 조회</h2>
+        <div>
+            <div>
+                <table class="data-table" style="font-size: 14px;">
+                    <thead>
+                    <tr>
+                        <th>정류소명</th>
+                        <th>정류소번호</th>
+                        <th>보기</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <div id="#" class="#"></div>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+</div>
+</html>
