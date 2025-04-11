@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>정류장 마커 보기 (줌 기반)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <style>
+        #map {
+            height: 400px;
+            width: 600px;
+        }
+    </style>
+</head>
+<body>
+<h2>🚌 정류장 추가</h2>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="/js/busStop/busStopMarkerLoader.js"></script>
+
+<script>
+
+    // 지도 초기화, L.map('map'): id="map"인 HTML 요소에 Leaflet 지도를 생성
+    // 초기 위치는 대구 중심(35.8714, 128.6014)
+    const map = L.map('map').setView([35.8714, 128.6014], 16);
+
+    // 타일 레이어 설정
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // maxZoom: 19: 최대 확대 레벨 설정
+        maxZoom: 19,
+        //  지도에 타일 레이어 추가 (실제 지도가 보이게 하는 역할)
+    }).addTo(map);
+
+    // 마커 저장용 배열, 정류장 마커들을 저장하는 배열
+    // 나중에 지도 이동/줌할 때 이 배열의 마커들을 지우고 새로 표시함
+    const markers = [];
+
+
+    // 지도 이벤트 핸들링
+    // moveend: 지도를 드래그해서 이동이 끝났을 때
+    // zoomend: 줌 레벨 조절이 끝났을 때
+    // loadBusStopsInView() : 정류장 마커 불러오는 외부 함수
+    map.on("moveend", () => loadBusStopsInView(map, markers));
+    map.on("zoomend", () => loadBusStopsInView(map, markers));
+
+    // 지도가 처음 로드됐을 때 초기 화면 범위에 있는 정류장들을 불러오기 위해 즉시 1회 실행
+    loadBusStopsInView(map, markers);
+</script>
+<script>
+    // 지도 클릭 시 좌표 출력
+    map.on("click", (e) => {
+        const { lat, lng } = e.latlng;
+        alert(`클릭한 위치의 좌표:\n위도: ${lat}\n경도: ${lng}`);
+    });
+</script>
+
+</body>
+</html>

@@ -29,6 +29,9 @@
     정류장 이름: <input type="text" id="bsNm" required><br>
     위도 (Y): <input type="text" id="ypos" required><br>
     경도 (X): <input type="text" id="xpos" required><br>
+    시/도: <input type="text" id="city" readonly><br>
+    구/군: <input type="text" id="district" readonly><br>
+    동: <input type="text" id="neighborhood" readonly><br>
     <button type="submit">정류장 수정</button>
 </form>
 
@@ -63,6 +66,11 @@
             document.getElementById("xpos").value = data.xpos;
             document.getElementById("ypos").value = data.ypos;
 
+            // ✅ 시/도, 구/군, 동 정보가 있다면 출력
+            document.getElementById("city").value = data.city || "";
+            document.getElementById("district").value = data.district || "";
+            document.getElementById("neighborhood").value = data.neighborhood || "";
+
             const lat = data.ypos;
             const lng = data.xpos;
 
@@ -81,6 +89,7 @@
             alert("불러오는 중 오류 발생");
         }
     }
+
 
     // 🖱️ 지도 클릭 시 좌표 갱신
     map.on("click", (e) => {

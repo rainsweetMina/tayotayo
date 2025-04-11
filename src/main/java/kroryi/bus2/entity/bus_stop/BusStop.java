@@ -1,6 +1,7 @@
 package kroryi.bus2.entity.bus_stop;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "bus_stop")
+@Builder
 public class BusStop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

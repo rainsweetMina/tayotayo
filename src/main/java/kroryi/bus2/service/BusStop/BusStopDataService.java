@@ -2,8 +2,12 @@ package kroryi.bus2.service.BusStop;
 
 import kroryi.bus2.dto.Route.RouteIdAndNoDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
+import kroryi.bus2.dto.busStop.BusStopDetailResponseDTO;
+import kroryi.bus2.dto.busStop.BusStopFullDetailDTO;
 import kroryi.bus2.dto.busStop.BusStopListDTO;
+import kroryi.bus2.entity.BusStopInfo;
 import kroryi.bus2.entity.bus_stop.BusStop;
+import kroryi.bus2.repository.jpa.BusStopInfoRepository;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
@@ -33,6 +37,7 @@ public class BusStopDataService {
     private final BusArrivalService busArrivalService;
     private final RouteStopLinkRepository routeStopLinkRepository;
     private final RouteRepository routeRepository;
+    private final BusStopInfoRepository busStopInfoRepository;
 
     // 페이징과 검색이 적용된 전체 정류장 리스트 서비스
     public Page<BusStopListDTO> getBusStopsWithPaging(String keyword, int page, int size) {
@@ -102,12 +107,30 @@ public class BusStopDataService {
         return result;
     }
 
-    public BusStop getBusStopById(String bsId) {
-
-        return busStopRepository.findByBsId(bsId)
+    // 정류장의 모든 정보 + 오는 노선조회 합친거
+    public BusStopFullDetailDTO getFullBusStopDetail(String bsId) {
+        BusStop busStop = busStopRepository.findByBsId(bsId)
                 .orElseThrow(() -> new IllegalArgumentException("정류장을 찾을 수 없습니다: " + bsId));
+
+        BusStopInfo info = busStopInfoRepository.findByBsId(bsId); // 시군동 정보
+
+        List<String> routeIds = routeStopLinkRepository.findRouteIdsByBusStopId(bsId);
+        List<RouteIdAndNoDTO> routes = routeIds.isEmpty() ?
+                Collections.emptyList() : routeRepository.findRoutesByIds(routeIds);
+
+        return BusStopFullDetailDTO.builder()
+                .bsId(busStop.getBsId())
+                .bsNm(busStop.getBsNm())
+                .xPos(busStop.getXPos())
+                .yPos(busStop.getYPos())
+                .city(info != null ? info.getCity() : null)
+                .district(info != null ? info.getDistrict() : null)
+                .neighborhood(info != null ? info.getNeighborhood() : null)
+                .routes(routes)
+                .build();
     }
 
+    // 정류장에 오는 노선만 조회하는거
     public List<RouteIdAndNoDTO> getRoutesByBusStop(String bsId) {
         List<String> routeIds = routeStopLinkRepository.findRouteIdsByBusStopId(bsId);
         if (routeIds.isEmpty()) {
@@ -115,6 +138,5 @@ public class BusStopDataService {
         }
         return routeRepository.findRoutesByIds(routeIds);
     }
-
 
 }

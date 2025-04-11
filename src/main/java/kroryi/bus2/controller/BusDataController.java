@@ -80,15 +80,15 @@ public class BusDataController {
     }
 
 
-    // 전체 버스정류장 불러오는거
-    @Operation(summary = "정류장 불러오기", description = "전체 버스정류장 불러오는거")
-    @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
-
-        List<BusStopDTO> list = busStopDataService.getAllBusStops();
-        log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(list));
-        return ResponseEntity.ok(list);
-    }
+//    // 전체 버스정류장 불러오는거
+//    @Operation(summary = "정류장 불러오기", description = "전체 버스정류장 불러오는거")
+//    @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
+//
+//        List<BusStopDTO> list = busStopDataService.getAllBusStops();
+//        log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(list));
+//        return ResponseEntity.ok(list);
+//    }
 
     @Operation(summary = "좌표기반 정류소 서칭", description = "전체 버스정류장을 좌표기반으로 불러오는거")
     @GetMapping("/busStopsInBounds")

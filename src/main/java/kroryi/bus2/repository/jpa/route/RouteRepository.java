@@ -46,7 +46,7 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
 
     boolean existsByRouteId(String routeId);
 
-    @Query("SELECT new kroryi.bus2.dto.Route.RouteIdAndNoDTO(r.routeId, r.routeNo) FROM Route r WHERE r.routeId IN :routeIds")
+    @Query("SELECT new kroryi.bus2.dto.Route.RouteIdAndNoDTO(r.routeId, r.routeNo, r.routeNote) FROM Route r WHERE r.routeId IN :routeIds")
     List<RouteIdAndNoDTO> findRoutesByIds(@Param("routeIds") List<String> routeIds);
 
     // 페이징 + 검색이 추가된 전체 노선 게시판 레파지토리들

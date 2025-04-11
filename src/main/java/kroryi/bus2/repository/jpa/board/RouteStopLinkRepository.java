@@ -68,4 +68,5 @@ public interface RouteStopLinkRepository extends JpaRepository<RouteStopLink,Lon
     @Query("SELECT DISTINCT r.routeId FROM RouteStopLink r WHERE r.bsId = :bsId")
     List<String> findRouteIdsByBusStopId(@Param("bsId") String bsId);
 
+    int countByBsId(String bsId);
 }

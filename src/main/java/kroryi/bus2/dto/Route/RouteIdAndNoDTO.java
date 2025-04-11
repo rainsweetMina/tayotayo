@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class RouteIdAndNoDTO {
     private String routeId;
     private String routeNo;
+    private String routeNote;
 }
