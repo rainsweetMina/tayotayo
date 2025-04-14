@@ -24,7 +24,7 @@ public class BusStopInfoApiController {
         return busStopInfoService.getAllDistricts();
     }
 
-    @Operation(summary = "동 목록 조회")
+    @Operation(summary = "동 목록 조회", description = "군, 구로 검색")
     @GetMapping("/neighborhoods")
     public List<String> getNeighborhoods(@RequestParam String district) {
         return busStopInfoService.getNeighborhoodsByDistrict(district);
@@ -42,7 +42,7 @@ public class BusStopInfoApiController {
         }
     }
 
-    @Operation(summary = "노선 유형에 해당하는 노선 번호 목록 반환")
+    @Operation(summary = "노선 유형에 해당하는 노선 번호 목록 반환", description = "Type : 급행, 순환, 간선, 지선")
     @GetMapping("/route-nos")
     public List<String> getRouteNosByType(@RequestParam String type) {
         return busStopInfoService.getRouteNosByType(type);

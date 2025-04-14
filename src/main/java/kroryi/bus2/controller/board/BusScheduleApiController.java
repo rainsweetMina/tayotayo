@@ -193,4 +193,16 @@ public class BusScheduleApiController {
         }
     }
 
+    // 저상버스 스케줄 조회
+    @Operation(summary = "저상버스 시간표 조회", description = "해당 노선 저상버스 스케줄 조회")
+    @GetMapping("/lowbus-scheduls")
+    @ResponseBody
+    public List<BusSchedule> getLowBusSchedules(@RequestParam String routeId,
+                                                @RequestParam(required = false) String moveDir) {
+        if (moveDir != null && !moveDir.isBlank()) {
+            return busScheduleRepository.findByRouteIdAndMoveDirAndBusTCd(routeId, moveDir, "D");
+        }
+        return busScheduleRepository.findByRouteIdAndBusTCd(routeId, "D");
+    }
+
 }

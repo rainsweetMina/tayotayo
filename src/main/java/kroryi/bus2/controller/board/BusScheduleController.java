@@ -32,4 +32,12 @@ public class BusScheduleController {
         return "/board/busModifySchedule";
     }
 
+    // 저상 버스 시간표 페이지
+    @GetMapping("/low-schedule")
+    public String showLowFloorSchedule(Model model) {
+        List<String> routeNos = busScheduleRepository.getRouteNosWithLowBus("D");   // 스케줄 데이터가 있는 노선만 검색
+        model.addAttribute("routeNos", routeNos);
+        return "/board/lowBusSchedule";
+    }
+
 }
