@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>공지사항 관리</title>
@@ -19,78 +19,17 @@
 <h1>공지사항 관리</h1>
 
 <div>
-    <form method="post">
-        <input type="text" name="title" class="form-control" placeholder="제목" /> <br>
-        <input type="text" name="author" class="form-control" placeholder="작성자" /> <br>
-        <textarea name="content" class="form-control" placeholder="내용"></textarea><br>
+    <form method="post" id="notice-form">
+        <input type="text" name="title" id="title" class="form-control" placeholder="제목" /> <br>
+        <input type="text" name="author" id="author" class="form-control" placeholder="작성자" /> <br>
+        <textarea name="content" id="content" class="form-control" placeholder="내용"></textarea><br>
         <button id="addNoticeBtn" type="button" class="button">공지 추가</button>
     </form>
 </div>
 
-<div id="notice-list">
+<div id="notice-list"></div>
 
-</div>
-</body>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
-
-
-    document.addEventListener('DOMContentLoaded', function () {
-        loadNotices(); // 새로고침 대신 목록 다시 불러오기
-
-        const addBtn = document.getElementById('addNoticeBtn');
-        addBtn.addEventListener('click', addNotice);
-    });
-
-    function addNotice() {
-        const title = document.querySelector('input[name="title"]').value;
-        const author = document.querySelector('input[name="author"]').value;
-        const content = document.querySelector('textarea[name="content"]').value;
-
-        axios.post('/api/admin/notices', {
-            title: title,
-            author: author,
-            content: content
-        })
-            .then(response => {
-                console.log("등록 성공:", response.data);
-                loadNotices(); // 새로고침 대신 목록 다시 불러오기
-
-                // window.location.href = '/admin/notice'; // 등록 후 목록으로 리다이렉트
-            })
-            .catch(error => {
-                console.error("등록 실패:", error);
-                alert("등록에 실패했습니다.");
-            });
-    }
-
-
-    function loadNotices() {
-        axios.get('/api/admin/notices')
-            .then(response => {
-                const noticeList = document.getElementById('notice-list');
-                noticeList.innerHTML = ''; // 기존 목록 비우기
-
-                response.data.forEach(notice => {
-                    const noticeDiv = document.createElement('div');
-                    noticeDiv.classList.add('notice');
-
-                    noticeDiv.innerHTML = `
-                    <div class="notice-title">${notice.title}</div>
-                    <div class="notice-content">${notice.content}</div>
-                    <div class="notice-author">작성자: ${notice.author}</div>
-                    <form action="/api/admin/notices/edit/${notice.id}" method="post" style="display:inline;">
-                        <button type="submit" class="button">수정</button>
-                    </form>
-                `;
-
-                    noticeList.appendChild(noticeDiv);
-                });
-            })
-            .catch(error => {
-                console.error("공지 불러오기 실패:", error);
-            });
-    }
-</script>
-
+<script src="/js/notice.js"></script>
+</body>
 </html>

@@ -1,7 +1,7 @@
 package kroryi.bus2.controller.notice;
 
 
-import kroryi.bus2.service.NoticeService;
+import kroryi.bus2.service.NoticeServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 // 관리자 외 유저 공지
 public class PublicNoticeController {
 
-    private final NoticeService noticeService;
+    private final NoticeServiceImpl noticeService;
 
     @GetMapping
     public String getNoticePage(Model model) {
