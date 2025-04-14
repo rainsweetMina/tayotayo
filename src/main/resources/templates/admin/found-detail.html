@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>습득물 상세보기</title>
+</head>
+<body>
+<h1>습득물 상세보기</h1>
+
+<div>
+    <p><strong>물품명:</strong> <span th:text="${selectedItem.itemName}"></span></p>
+    <p><strong>버스 회사:</strong> <span th:text="${selectedItem.busCompany}"></span></p>
+    <p><strong>버스 번호:</strong> <span th:text="${selectedItem.busNumber}"></span></p>
+    <p><strong>내용:</strong> <span th:text="${selectedItem.content}"></span></p>
+    <p><strong>습득일:</strong> <span th:text="${#temporals.format(selectedItem.foundTime, 'yyyy-MM-dd')}"></span></p>
+    <p><strong>습득 장소:</strong> <span th:text="${selectedItem.foundPlace}"></span></p>
+    <p><strong>보관 위치:</strong> <span th:text="${selectedItem.storageLocation}"></span></p>
+    <p><strong>상태:</strong> <span th:text="${selectedItem.statusName}"></span></p>
+    <p><strong>연락처:</strong> <span th:text="${selectedItem.handlerContact}"></span></p>
+    <p><strong>이메일:</strong> <span th:text="${selectedItem.handlerEmail}"></span></p>
+
+    <div th:if="${selectedItem.photoUrl != null}">
+        <p><strong>이미지:</strong></p>
+        <img th:src="@{${selectedItem.photoUrl}}" alt="습득물 이미지" width="200">
+    </div>
+</div>
+
+<hr>
+
+<h2>정보 수정</h2>
+<form th:action="@{'/admin/found/update/' + ${selectedItem.id}}" th:object="${foundItemForm}" method="post">
+    <label>물품명: <input type="text" th:field="*{itemName}" /></label><br>
+    <label>버스 회사: <input type="text" th:field="*{busCompany}" /></label><br>
+    <label>버스 번호: <input type="text" th:field="*{busNumber}" /></label><br>
+    <label>내용: <textarea th:field="*{content}"></textarea></label><br>
+    <label for="foundTime">습득일</label>
+    <input type="date" id="foundTime" name="foundTime" th:value="${formattedDate}" class="form-control" required /><br>
+    <label>습득 장소: <input type="text" th:field="*{foundPlace}" /></label><br>
+    <label>보관 위치: <input type="text" th:field="*{storageLocation}" /></label><br>
+    <label for="status">상태</label>
+    <select id="status" th:field="*{status}" class="form-control">
+        <option value="IN_STORAGE">보관중</option>
+        <option value="RETURNED" disabled>수령완료 (매칭 시 자동 처리)</option>
+    </select>
+    <br>
+    <label>연락처: <input type="text" th:field="*{handlerContact}" /></label><br>
+    <label>이메일: <input type="email" th:field="*{handlerEmail}" /></label><br>
+
+    <button type="submit">수정 완료</button>
+</form>
+
+<hr>
+<a th:href="@{/admin/found}"><button>목록으로</button></a>
+
+</body>
+</html>
