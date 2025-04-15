@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notice")
@@ -41,6 +42,15 @@ public class Notice {
         this.updatedDate = new Timestamp(System.currentTimeMillis());
     }
 
+    //팝업관련
+    @Column(name = "show_popup", nullable = false)
+    private boolean showPopup = false;
+
+    @Column(name = "popup_start")
+    private LocalDateTime popupStart;
+
+    @Column(name = "popup_end")
+    private LocalDateTime popupEnd;
 
 
 }
