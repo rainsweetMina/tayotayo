@@ -3,7 +3,7 @@ package kroryi.bus2.user;
 import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.repository.jpa.user.UserRepository;
+import kroryi.bus2.repository.jpa.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

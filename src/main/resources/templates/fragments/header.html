@@ -29,9 +29,13 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <a class="navbar-brand" href="#">뻐어스</a>
+            <!--날씨-->
 
             <ul class="navbar-nav">
 
+                <li class="weatherBox" style="align-content: center;">
+                    <span id="weatherData" class="visible" style="color: #a5a5a5;"></span>
+                </li>
                 <!-- 비로그인 사용자: 로그인/회원가입 -->
                 <li class="nav-item" sec:authorize="isAnonymous()">
                     <a class="nav-link" th:href="@{/login}">회원가입(로그인)</a>
@@ -59,4 +63,5 @@
             </ul>
         </div>
     </nav>
+    <script src="/js/weatherInfo.js"></script>
 </th:block>

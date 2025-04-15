@@ -1,7 +1,7 @@
 package kroryi.bus2.service.user;
 
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.repository.jpa.user.UserRepository;
+import kroryi.bus2.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;

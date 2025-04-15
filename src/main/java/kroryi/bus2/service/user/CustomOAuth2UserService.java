@@ -4,7 +4,7 @@ import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.repository.jpa.user.UserRepository;
+import kroryi.bus2.repository.jpa.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
