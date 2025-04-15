@@ -83,5 +83,9 @@ public class FoundItem extends BaseTimeEntity {
         this.status = dto.getStatus();
         this.storageLocation = dto.getStorageLocation();
         this.photoUrl = dto.getPhotoUrl();
+        // ✅ 수령완료 선택 시 matched true 처리
+        if (dto.getStatus() == FoundStatus.RETURNED && !this.matched) {
+            this.matched = true;
+        }
     }
 }

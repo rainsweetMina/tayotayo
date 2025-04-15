@@ -167,4 +167,10 @@ public class FoundItemServiceImpl implements FoundItemService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 습득물을 찾을 수 없습니다."));
         return FoundItemAdminResponseDTO.fromEntity(item);
     }
+    // ✅ 관리자용 매칭 통계(대시보드에 나중에 띄울용도)
+    public Long getMatchedCount() {
+        return foundItemRepository.countMatchedIncludingManual();
+    }
+
+
 }
