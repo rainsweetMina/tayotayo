@@ -86,7 +86,6 @@ public class SecurityConfig {
                             }
                             response.sendRedirect("/login?errorCode=" + errorCode);
                         })
-//                        .defaultSuccessUrl("/admin/ad-manage", true)
                         .permitAll()
                 )
 
