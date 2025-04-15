@@ -1,4 +1,4 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.user;
 
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.UserRepository;
