@@ -1,4 +1,4 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.admin.notice;
 
 import jakarta.persistence.EntityNotFoundException;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;
@@ -6,10 +6,7 @@ import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
 import kroryi.bus2.dto.notice.UpdateNoticeRequestDTO;
 import kroryi.bus2.entity.Notice;
 import kroryi.bus2.repository.jpa.NoticeRepository;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

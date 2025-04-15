@@ -1,7 +1,7 @@
 package kroryi.bus2.controller.notice;
 
 
-import kroryi.bus2.service.NoticeServiceImpl;
+import kroryi.bus2.service.admin.notice.NoticeServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -1,8 +1,11 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.admin;
 
 
 import kroryi.bus2.dto.lost.LostStatResponseDTO;
 import kroryi.bus2.service.*;
+import kroryi.bus2.service.admin.DashboardService;
+import kroryi.bus2.service.admin.RedisLogService;
+import kroryi.bus2.service.admin.notice.NoticeServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.admin.notice;
 
 import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;

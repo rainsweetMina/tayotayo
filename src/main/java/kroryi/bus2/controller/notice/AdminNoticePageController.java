@@ -4,8 +4,7 @@ package kroryi.bus2.controller.notice;
 import kroryi.bus2.dto.notice.UpdateNoticeRequestDTO;
 import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
 
-import kroryi.bus2.service.NoticeService;
-import kroryi.bus2.service.NoticeServiceImpl;
+import kroryi.bus2.service.admin.notice.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
