@@ -9,7 +9,9 @@ import kroryi.bus2.repository.jpa.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +21,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeRepository noticeRepository;
 
+
     // 공지 등록
     @Override
     public NoticeResponseDTO createNotice(CreateNoticeRequestDTO dto) {
@@ -26,6 +29,12 @@ public class NoticeServiceImpl implements NoticeService {
         entity.setTitle(dto.getTitle());
         entity.setContent(dto.getContent());
         entity.setAuthor(dto.getAuthor());
+
+        // ✅ 팝업 관련 필드 추가
+        entity.setShowPopup(dto.isShowPopup());
+        entity.setPopupStart(dto.getPopupStart());
+        entity.setPopupEnd(dto.getPopupEnd());
+
 
         noticeRepository.save(entity); // ← 이게 있어야 진짜 저장됨
         return new NoticeResponseDTO(entity); // 저장된 결과를 다시 DTO로 반환
@@ -40,6 +49,11 @@ public class NoticeServiceImpl implements NoticeService {
 
         notice.setTitle(dto.getTitle());
         notice.setContent(dto.getContent());
+
+        // ✅ 팝업 관련 필드 추가
+        notice.setShowPopup(dto.isShowPopup());
+        notice.setPopupStart(dto.getPopupStart());
+        notice.setPopupEnd(dto.getPopupEnd());
 
         Notice updated = noticeRepository.save(notice);
         return new NoticeResponseDTO(updated);
@@ -70,5 +84,13 @@ public class NoticeServiceImpl implements NoticeService {
                 .orElseThrow(() -> new EntityNotFoundException("공지사항 없음"));
         return new NoticeResponseDTO(notice);
     }
+
+    //팝업관련
+    @Override
+    public Optional<Notice> findValidPopup() {
+        LocalDateTime now = LocalDateTime.now();
+        return noticeRepository.findFirstByShowPopupTrueAndPopupStartBeforeAndPopupEndAfterOrderByPopupStartDesc(now, now);
+    }
+
 
 }

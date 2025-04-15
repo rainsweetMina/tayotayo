@@ -23,6 +23,22 @@
         <input type="text" name="title" id="title" class="form-control" placeholder="제목" /> <br>
         <input type="text" name="author" id="author" class="form-control" placeholder="작성자" /> <br>
         <textarea name="content" id="content" class="form-control" placeholder="내용"></textarea><br>
+        <!-- ✅ 팝업 관련 필드 추가 -->
+        <label>
+            팝업 표시:
+            <input type="checkbox" name="showPopup" id="showPopup" class="form-control" />
+        </label><br>
+
+        <label>
+            팝업 시작일:
+            <input type="datetime-local" name="popupStart" id="popupStart" class="form-control" />
+        </label><br>
+
+        <label>
+            팝업 종료일:
+            <input type="datetime-local" name="popupEnd" id="popupEnd" class="form-control" />
+        </label><br>
+
         <button id="addNoticeBtn" type="button" class="button">공지 추가</button>
     </form>
 </div>

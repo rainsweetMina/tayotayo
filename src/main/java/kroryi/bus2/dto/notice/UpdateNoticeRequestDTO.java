@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,4 +16,10 @@ public class UpdateNoticeRequestDTO {
 
     @NotBlank
     private String content;
+
+    //팝업관련
+    private boolean showPopup;
+    private LocalDateTime popupStart;
+    private LocalDateTime popupEnd;
+
 }

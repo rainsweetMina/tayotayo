@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<!-- 공지 팝업 영역 -->
+<div id="noticePopup" style="display:none; position:fixed; top:100px; left:50%; transform:translateX(-50%);
+     background:#fff; border:1px solid #ccc; padding:20px; box-shadow:0 0 10px rgba(0,0,0,0.2); z-index:9999;">
+  <h3 id="popupTitle"></h3>
+  <p id="popupContent"></p>
+  <button onclick="document.getElementById('noticePopup').style.display='none'">닫기</button>
+</div>
+
+<script src="/js/notice-popup.js"></script>
+
+</body>
+</html>

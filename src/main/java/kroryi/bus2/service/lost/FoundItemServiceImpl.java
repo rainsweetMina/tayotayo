@@ -87,9 +87,17 @@ public class FoundItemServiceImpl implements FoundItemService {
     public void updateFoundItem(Long id, FoundItemRequestDTO dto) {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("수정할 습득물이 존재하지 않습니다."));
+
         item.update(dto);
+
+        // ✅ 상태가 RETURNED로 바뀌었고 아직 matched가 false라면 true로 변경
+        if (dto.getStatus() == FoundStatus.RETURNED && !item.isMatched()) {
+            item.setMatched(true);
+        }
+
         foundItemRepository.save(item);
     }
+
 
     // ✅ 숨김 처리
     @Override
