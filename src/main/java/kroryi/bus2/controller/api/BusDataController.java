@@ -6,13 +6,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import kroryi.bus2.dto.BusRealtimeDTO;
 import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
 import kroryi.bus2.dto.Route.RouteDTO;
+import kroryi.bus2.dto.Route.RouteListDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
-import kroryi.bus2.entity.BusStop;
+import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.Route;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -25,6 +27,7 @@ import kroryi.bus2.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -62,6 +65,19 @@ public class BusDataController {
 
     @Value("${api.service-key-decoding}")
     private String serviceKey;
+
+    // 페이징 + 검색이 추가된 전체 노선 게시판
+    @Operation(summary = "전체 노선 불러오기", description = "페이징 + 검색이 추가된 전체 노선 게시판")
+    @GetMapping("/routes")
+    public ResponseEntity<Page<RouteListDTO>> getRoutes(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "asc") String sort // 🔽 asc 또는 desc
+    ) {
+        Page<RouteListDTO> result = routeDataService.getRoutesWithPaging(keyword, page, size, sort);
+        return ResponseEntity.ok(result);
+    }
 
 
     // 전체 버스정류장 불러오는거
@@ -114,8 +130,12 @@ public class BusDataController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "정류장 불러오기", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌")
-    @GetMapping(value = "/bus-route", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "정류장 불러오기", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공적으로 데이터 반환"),
+                    @ApiResponse(responseCode = "401", description = "JWT 인증 실패"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            })    @GetMapping(value = "/bus-route", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Map<String, Object>> getBusRoute(@RequestParam String routeId) throws IOException {
         List<Map<String, Object>> result = getRouteLinkService.getBusRoute(routeId);
 
@@ -139,15 +159,6 @@ public class BusDataController {
 //        return ResponseEntity.ok(resultMap);
 //    }
 
-//    @Operation(summary = "정류장 불러오기 ", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌 (참고로 기존에 있는 노선도 불러와짐)")
-//    @GetMapping(value = "/bus-route-Custom", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public List<Map<String, Object>> getBusRoute(@RequestParam String routeId) throws IOException {
-//
-//        List<Map<String, Object>> result = getRouteLinkService.getBusRoute(routeId);
-//        System.out.println("커스텀 버스 노선 : " + result);
-//
-//        return ResponseEntity.ok(result).getBody();
-//    }
 
     @Operation(summary = "노선 경로 불러오기", description = "노선Id로 해당하는 노선의 경로의 좌표 값을 뿌려줌 (ORS 활용)")
     @GetMapping("/bus-route-link")

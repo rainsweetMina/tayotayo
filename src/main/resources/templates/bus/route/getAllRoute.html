@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노선 목록</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            border: 1px solid #aaa;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .pagination button {
+            margin: 2px;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+<h2>🚌 전체 노선 목록</h2>
+
+<!-- 검색 -->
+<input type="text" id="searchInput" placeholder="노선ID 또는 노선번호로 검색" />
+<button onclick="fetchRoutes(0)">검색</button>
+
+<!-- 결과 테이블 -->
+<table>
+    <thead>
+    <tr>
+        <th class="sortable" onclick="toggleSort()">노선 ID ⬍</th>
+        <th>노선 번호</th>
+        <th>출발 정류장</th>
+        <th>도착 정류장</th>
+        <th>비고</th>
+    </tr>
+    </thead>
+    <tbody id="routeTableBody"></tbody>
+</table>
+
+<!-- 페이지네이션 -->
+<div class="pagination" id="pagination"></div>
+
+<script>
+    let sortDirection = "asc"; // 기본 오름차순
+    const size = 10;
+
+    function toggleSort() {
+        sortDirection = (sortDirection === "asc") ? "desc" : "asc";
+        fetchRoutes(0);
+    }
+
+    async function fetchRoutes(page = 0) {
+        const keyword = document.getElementById("searchInput").value;
+
+        const res = await fetch(`/api/bus/routes?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}&sort=${sortDirection}`);
+        const data = await res.json();
+
+        renderTable(data.content);
+        renderPagination(data.totalPages, data.number);
+    }
+
+    function renderTable(routes) {
+        const tbody = document.getElementById("routeTableBody");
+        tbody.innerHTML = "";
+
+        routes.forEach(route => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+            <td>${route.routeId}</td>
+            <td>${route.routeNo}</td>
+            <td>${route.stNm}</td>
+            <td>${route.edNm}</td>
+            <td>${route.routeNote || '-'}</td>
+        `;
+
+            // ✅ 클릭 시 상세 페이지 이동
+            row.addEventListener("click", () => {
+                const routeId = route.routeId;
+                window.location.href = `/GetRouteStopLink?routeId=${encodeURIComponent(routeId)}`;
+            });
+
+            tbody.appendChild(row);
+        });
+    }
+
+
+    function renderPagination(totalPages, currentPage) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        const pageGroupSize = 10;
+        const groupStart = Math.floor(currentPage / pageGroupSize) * pageGroupSize;
+        const groupEnd = Math.min(groupStart + pageGroupSize, totalPages);
+
+        if (groupStart > 0) {
+            const prevBtn = document.createElement("button");
+            prevBtn.textContent = "이전";
+            prevBtn.onclick = () => fetchRoutes(groupStart - 1);
+            pagination.appendChild(prevBtn);
+        }
+
+        for (let i = groupStart; i < groupEnd; i++) {
+            const btn = document.createElement("button");
+            btn.textContent = i + 1;
+            btn.disabled = (i === currentPage);
+            btn.onclick = () => fetchRoutes(i);
+            pagination.appendChild(btn);
+        }
+
+        if (groupEnd < totalPages) {
+            const nextBtn = document.createElement("button");
+            nextBtn.textContent = "다음";
+            nextBtn.onclick = () => fetchRoutes(groupEnd);
+            pagination.appendChild(nextBtn);
+        }
+    }
+
+    // 초기 호출
+    fetchRoutes();
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import jakarta.transaction.Transactional;
 import kroryi.bus2.entity.*;
 
+import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.repository.jpa.BusStopRepository;
 import kroryi.bus2.repository.jpa.LinkRepository;
 import kroryi.bus2.repository.jpa.NodeRepository;

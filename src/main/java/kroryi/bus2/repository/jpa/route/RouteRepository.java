@@ -1,6 +1,10 @@
 package kroryi.bus2.repository.jpa.route;
 
+import kroryi.bus2.dto.Route.RouteDTO;
+import kroryi.bus2.dto.Route.RouteIdAndNoDTO;
 import kroryi.bus2.entity.Route;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,17 +14,19 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RouteRepository extends JpaRepository<Route,Long> {
+public interface RouteRepository extends JpaRepository<Route, Long> {
 
     @Query("SELECT r.routeNo FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo%")
     List<String> searchByRouteNumber(@Param("routeNo") String routeNo);
 
     @Query("SELECT r FROM Route r WHERE r.routeNo LIKE %:routeNo% OR REPLACE(r.routeNo, ' ', '') LIKE %:routeNo% ORDER BY r.routeNo ASC")
     List<Route> searchByRouteNumberFull(@Param("routeNo") String routeNo);
+
     Optional<Route> findByRouteId(String routeId);
 
     @Query("SELECT r.routeId FROM Route r WHERE r.routeNo = :routeNo")
     List<String> findRouteIdsByRouteNo(@Param("routeNo") String routeNo);
+
     void deleteByRouteId(String routeId);
 
     // 버스 스케줄 노선 조회 쿼리
@@ -42,4 +48,14 @@ public interface RouteRepository extends JpaRepository<Route,Long> {
 
     boolean existsByRouteId(String routeId);
 
+    @Query("SELECT new kroryi.bus2.dto.Route.RouteIdAndNoDTO(r.routeId, r.routeNo) FROM Route r WHERE r.routeId IN :routeIds")
+    List<RouteIdAndNoDTO> findRoutesByIds(@Param("routeIds") List<String> routeIds);
+
+    // 페이징 + 검색이 추가된 전체 노선 게시판 레파지토리들
+    Page<Route> findAll(Pageable pageable);
+
+    @Query("SELECT r FROM Route r WHERE " +
+            "LOWER(r.routeId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(r.routeNo) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Route> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

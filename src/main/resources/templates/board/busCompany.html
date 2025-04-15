@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>버스 회사정보 페이지</title>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+        <h2>버스 회사 정보 조회</h2>
+        <div>
+            <div>
+                <table class="data-table" style="font-size: 14px;">
+                    <thead>
+                    <tr>
+                        <th style="width: 130px;">버스회사명</th>
+                        <th style="width: 500px;">주소</th>
+                        <th style="width: 150px;">전화번호</th>
+                        <th style="width: 70%;">운행노선</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c, stat : ${companies}">
+                        <!-- 버스 유형 셀 -->
+                        <td th:text="${c.getCompanyName()}"></td>
+                        <td th:text="${c.getCompanyAddress()}"></td>
+                        <td th:text="${c.getCompanyPhone()}"></td>
+                        <td th:text="${#strings.arrayJoin(c.companyRouteNo, ', ')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+</div>
+</html>

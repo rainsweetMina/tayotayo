@@ -1,15 +1,18 @@
 package kroryi.bus2.controller.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import kroryi.bus2.dto.Route.RouteIdAndNoDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
+import kroryi.bus2.dto.busStop.BusStopListDTO;
 import kroryi.bus2.dto.busStop.BusStopUpdateDTO;
-import kroryi.bus2.entity.BusStop;
+import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.service.BusStop.AddBusStopService;
 import kroryi.bus2.service.BusStop.BusStopDataService;
 import kroryi.bus2.service.BusStop.DeleteBusStopService;
 import kroryi.bus2.service.BusStop.UpdateBusStopService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,18 @@ public class BusStopDataController {
     private final UpdateBusStopService updateBusStopService;
     private final BusStopDataService busStopDataService;
     private final DeleteBusStopService deleteBusStopService;
+
+    // 페이징과 검색이 적용된 전체 정류장 리스트 컨트롤러
+    @GetMapping("/AllBusStop")
+    public ResponseEntity<Page<BusStopListDTO>> getBusStops(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<BusStopListDTO> result = busStopDataService.getBusStopsWithPaging(keyword, page, size);
+        return ResponseEntity.ok(result);
+    }
+
 
     @Operation(summary = "정류장 추가", description = "새로운 정류장(BusStop)을 추가합니다. 좌표(xpos, ypos), 정류장 ID(bsId), 이름(bsNm)를 포함합니다.")
     @PostMapping("/addBusStop")
@@ -69,6 +84,13 @@ public class BusStopDataController {
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
+    }
+
+    @GetMapping("/RouteByBS")
+    public ResponseEntity<List<RouteIdAndNoDTO>> getRoutesForBusStop(@RequestParam String bsId) {
+        List<RouteIdAndNoDTO> routes = busStopDataService.getRoutesByBusStop(bsId);
+        System.out.println("routes: " + routes);
+        return ResponseEntity.ok(routes);
     }
 
 }

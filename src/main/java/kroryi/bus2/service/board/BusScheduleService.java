@@ -1,6 +1,6 @@
 package kroryi.bus2.service.board;
 
-import kroryi.bus2.dto.BusScheduleDto;
+import kroryi.bus2.dto.board.BusScheduleDTO;
 import kroryi.bus2.entity.BusSchedule;
 import kroryi.bus2.repository.jpa.board.BusScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,14 +52,14 @@ public class BusScheduleService {
     }
 
     // 관리자용 추가
-    public BusSchedule saveSchedule(BusScheduleDto dto) {
+    public BusSchedule saveSchedule(BusScheduleDTO dto) {
         BusSchedule entity = dto.toEntity();
         return busScheduleRepository.save(entity);
     }
 
     // 관리자용 수정
     @Transactional
-    public BusSchedule updateSchedule(Long id, BusScheduleDto dto) {
+    public BusSchedule updateSchedule(Long id, BusScheduleDTO dto) {
         BusSchedule schedule = busScheduleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("스케줄 없음"));
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="UTF-8"/>
     <title>정류장 수정하기</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
@@ -19,14 +19,8 @@
     </style>
 </head>
 <body>
+
 <h2>🛠️ 정류장 정보 수정</h2>
-
-<div>
-    <label>정류장 ID 검색: <input type="text" id="searchBsId" placeholder="예: 101001" required></label>
-    <button id="fetchBtn">불러오기</button>
-</div>
-
-<hr>
 
 <div id="map"></div>
 
@@ -39,18 +33,24 @@
 </form>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
     const map = L.map('map').setView([35.8714, 128.6014], 16);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(map);
 
     let selectedMarker = null;
 
-    // 🔍 정류장 정보 불러오기
-    document.getElementById("fetchBtn").addEventListener("click", async () => {
-        const bsId = document.getElementById("searchBsId").value.trim();
-        if (!bsId) return alert("정류장 ID를 입력하세요");
+    // ✅ URL 파라미터에서 bsId 추출
+    const params = new URLSearchParams(window.location.search);
+    const bsIdFromUrl = params.get("bsId");
 
+    if (!bsIdFromUrl) {
+        alert("정류장 ID가 전달되지 않았습니다.");
+    } else {
+        loadBusStop(bsIdFromUrl);
+    }
+
+    // ✅ 정류장 정보 불러오기
+    async function loadBusStop(bsId) {
         try {
             const res = await fetch(`/api/bus/busStop?bsId=${bsId}`);
             if (!res.ok) return alert("정류장 정보를 찾을 수 없습니다.");
@@ -58,7 +58,6 @@
             const data = await res.json();
             document.getElementById("busStopUpdateForm").style.display = "block";
 
-            // 폼에 값 채우기
             document.getElementById("bsId").value = data.bsId;
             document.getElementById("bsNm").value = data.bsNm;
             document.getElementById("xpos").value = data.xpos;
@@ -81,7 +80,7 @@
             console.error(err);
             alert("불러오는 중 오류 발생");
         }
-    });
+    }
 
     // 🖱️ 지도 클릭 시 좌표 갱신
     map.on("click", (e) => {
@@ -99,7 +98,7 @@
         }).addTo(map).bindPopup("📍 수정 위치 선택").openPopup();
     });
 
-    // ✏️ 수정 제출
+    // ✏️ 정류장 수정
     document.getElementById("busStopUpdateForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const bsId = document.getElementById("bsId").value;
