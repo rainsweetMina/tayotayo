@@ -1,4 +1,4 @@
-package kroryi.bus2.service.Route;
+package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
 import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
@@ -6,10 +6,10 @@ import kroryi.bus2.dto.Route.CustomRouteDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.entity.bus_stop.BusStop;
 
-import kroryi.bus2.entity.Route;
-import kroryi.bus2.entity.RouteStopLink;
+import kroryi.bus2.entity.route.Route;
+import kroryi.bus2.entity.route.RouteStopLink;
 import kroryi.bus2.repository.jpa.AddRouteStopLinkRepository;
-import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

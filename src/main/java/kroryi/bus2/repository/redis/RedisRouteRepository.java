@@ -1,6 +1,6 @@
 package kroryi.bus2.repository.redis;
 
-import kroryi.bus2.entity.Route;
+import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.entity.RouteRedis;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

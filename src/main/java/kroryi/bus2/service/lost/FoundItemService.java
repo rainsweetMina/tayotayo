@@ -94,7 +94,7 @@ public class FoundItemService {
                         .handlerId(found.getHandler().getId())
                         .status(found.getStatus())
                         .visible(found.isVisible())
-                        .deleted(found.isDeleted())
+//                        .deleted(found.isDeleted())
                         .createdAt(found.getCreatedAt())
                         .updatedAt(found.getUpdatedAt())
                         .build())
@@ -112,7 +112,7 @@ public class FoundItemService {
                 .handlerId(item.getHandler().getId())
                 .status(item.getStatus())
                 .visible(item.isVisible())
-                .deleted(item.isDeleted())
+//                .deleted(item.isDeleted())
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
                 .build();
@@ -135,7 +135,7 @@ public class FoundItemService {
                 .photoUrl(dto.getPhotoUrl())
                 .handler(handler)
                 .visible(true) // 기본값
-                .deleted(false) // 기본값
+//                .deleted(false) // 기본값
                 .build();
 
         foundItemRepository.save(item);
@@ -150,7 +150,7 @@ public class FoundItemService {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("습득물이 존재하지 않습니다."));
 
-        item.setDeleted(true);
+//        item.setDeleted(true);
     }
 
 

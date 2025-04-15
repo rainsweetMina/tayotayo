@@ -11,18 +11,19 @@ import kroryi.bus2.dto.BusRealtimeDTO;
 import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
 import kroryi.bus2.dto.Route.RouteDTO;
 import kroryi.bus2.dto.Route.RouteListDTO;
+import kroryi.bus2.dto.Route.RouteResultDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.bus_stop.BusStop;
-import kroryi.bus2.entity.Route;
-import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.entity.route.Route;
+import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.service.BusInfoInitService;
-import kroryi.bus2.service.BusStop.BusStopDataService;
-import kroryi.bus2.service.Route.*;
-import kroryi.bus2.service.Route.RouteDataService;
+import kroryi.bus2.service.busStop.BusStopDataService;
+import kroryi.bus2.service.route.*;
+import kroryi.bus2.service.route.RouteDataService;
 import kroryi.bus2.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -62,6 +63,8 @@ public class BusDataController {
     private final InsertStopIntoRouteService insertStopIntoRouteService;
     private final DeleteStopFromRouteService deleteStopFromRouteService;
     private final DeleteRouteService deleteRouteService;
+    private final RouteFinderService routeFinderService;
+
 
     @Value("${api.service-key-decoding}")
     private String serviceKey;
@@ -322,6 +325,21 @@ public class BusDataController {
         }
     }
 
+
+    @GetMapping("/findRoutes")
+    public ResponseEntity<List<RouteResultDTO>> findRoutes(
+            @RequestParam String startBsId,
+            @RequestParam String endBsId) {
+
+        List<RouteResultDTO> directResults = routeFinderService.findRoutesWithNearbyStart(startBsId, endBsId);
+        List<RouteResultDTO> transferResults = routeFinderService.findRoutesWithNearbyStart2(startBsId, endBsId);
+
+        List<RouteResultDTO> combinedResults = new ArrayList<>();
+        combinedResults.addAll(directResults);
+        combinedResults.addAll(transferResults);
+
+        return ResponseEntity.ok(combinedResults);
+    }
 
 
 

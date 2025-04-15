@@ -15,7 +15,7 @@ public class FoundItem extends BaseTimeEntity{
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean deleted;
+//    private boolean deleted;
 
     private String itemName;
     private String busCompany;

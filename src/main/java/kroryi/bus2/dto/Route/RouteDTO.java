@@ -1,6 +1,6 @@
 package kroryi.bus2.dto.Route;
 
-import kroryi.bus2.entity.Route;
+import kroryi.bus2.entity.route.Route;
 import lombok.*;
 
 import java.io.Serializable;

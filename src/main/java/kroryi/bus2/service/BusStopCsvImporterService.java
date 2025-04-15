@@ -2,8 +2,8 @@ package kroryi.bus2.service;
 
 import jakarta.transaction.Transactional;
 import kroryi.bus2.entity.BusStopInfo;
-import kroryi.bus2.repository.jpa.BusStopDetailRepository;
-import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.repository.jpa.bus_stop.BusStopDetailRepository;
+import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

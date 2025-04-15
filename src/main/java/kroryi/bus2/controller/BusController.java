@@ -91,6 +91,12 @@ public class BusController {
         return "/apiSampleTest";
     }
 
+    // 정류장의 정보를 수정하는 페이지
+    @GetMapping("/Test22")
+    public String test22() {
+        return "bus/Test22";
+    }
+
 
 //    @GetMapping
 //    public String loadBusStopsToRedis(){

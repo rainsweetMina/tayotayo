@@ -1,4 +1,4 @@
-package kroryi.bus2.service.Route;
+package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
 import kroryi.bus2.repository.jpa.AddRouteStopLinkRepository;

@@ -1,7 +1,7 @@
 package kroryi.bus2.repository.jpa.board;
 
-import kroryi.bus2.entity.Route;
-import kroryi.bus2.entity.RouteStopLink;
+import kroryi.bus2.dto.busStop.BusStopDTO;
+import kroryi.bus2.entity.route.RouteStopLink;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -69,4 +69,95 @@ public interface RouteStopLinkRepository extends JpaRepository<RouteStopLink,Lon
     List<String> findRouteIdsByBusStopId(@Param("bsId") String bsId);
 
     int countByBsId(String bsId);
+
+
+
+    // 직통으로 찾아주는 쿼리들
+    @Query("""
+SELECT new kroryi.bus2.dto.busStop.BusStopDTO(
+    rsl.seq, bs.bsNm, bs.bsId, bs.xPos, bs.yPos)
+FROM RouteStopLink rsl
+JOIN BusStop bs ON rsl.bsId = bs.bsId
+WHERE rsl.routeId = :routeId
+  AND rsl.moveDir = :moveDir
+  AND rsl.seq BETWEEN 
+    (SELECT MIN(r1.seq) FROM RouteStopLink r1 
+     WHERE r1.routeId = :routeId AND r1.bsId = :startBsId AND r1.moveDir = :moveDir)
+    AND 
+    (SELECT MAX(r2.seq) FROM RouteStopLink r2 
+     WHERE r2.routeId = :routeId AND r2.bsId = :endBsId AND r2.moveDir = :moveDir)
+ORDER BY rsl.seq
+""")
+    List<BusStopDTO> findStationInfoBetweenWithDirection(
+            @Param("routeId") String routeId,
+            @Param("startBsId") String startBsId,
+            @Param("endBsId") String endBsId,
+            @Param("moveDir") String moveDir);
+
+    @Query("""
+SELECT rsl.moveDir 
+FROM RouteStopLink rsl
+WHERE rsl.routeId = :routeId
+  AND rsl.bsId = :bsId
+""")
+    List<String> findMoveDirByRouteIdAndBsId(@Param("routeId") String routeId,
+                                       @Param("bsId") String bsId);
+
+    @Query("""
+SELECT r1.routeId
+FROM RouteStopLink r1
+JOIN RouteStopLink r2 ON r1.routeId = r2.routeId AND r1.moveDir = r2.moveDir
+WHERE r1.bsId = :startBsId
+  AND r2.bsId = :endBsId
+  AND r1.seq < r2.seq
+""")
+    List<String> findDirectRouteIdsWithSeqAndDir(String startBsId, String endBsId);
+
+
+
+
+// 환승 쿼리들
+    // 출발 정류장에서 직통으로 갈 수 있는 중간 정류장들
+    @Query("""
+    SELECT DISTINCT rsl2.bsId
+    FROM RouteStopLink rsl1
+    JOIN RouteStopLink rsl2 ON rsl1.routeId = rsl2.routeId
+    WHERE rsl1.bsId = :startBsId
+      AND rsl1.moveDir = rsl2.moveDir
+      AND rsl1.seq < rsl2.seq
+""")
+    List<String> findReachableStopsFrom(@Param("startBsId") String startBsId);
+
+    // 도착 정류장으로 올 수 있는 중간 정류장들
+    @Query("""
+    SELECT DISTINCT rsl1.bsId FROM RouteStopLink rsl1
+    JOIN RouteStopLink rsl2 ON rsl1.routeId = rsl2.routeId AND rsl1.moveDir = rsl2.moveDir
+    WHERE rsl2.bsId = :endBsId AND rsl1.seq < rsl2.seq
+""")
+    List<String> findReachableStopsTo(@Param("endBsId") String endBsId);
+
+
+
+
+    @Query("""
+SELECT DISTINCT r2.bsId
+FROM RouteStopLink r1
+JOIN RouteStopLink r2 ON r1.routeId = r2.routeId
+WHERE r1.bsId = :startBsId
+  AND r1.moveDir = r2.moveDir
+  AND r1.seq < r2.seq
+""")
+    List<String> findReachableStopsFromWithDirection(@Param("startBsId") String startBsId);
+
+    @Query("""
+SELECT DISTINCT r1.bsId
+FROM RouteStopLink r1
+JOIN RouteStopLink r2 ON r1.routeId = r2.routeId
+WHERE r2.bsId = :endBsId
+  AND r1.moveDir = r2.moveDir
+  AND r1.seq < r2.seq
+""")
+    List<String> findReachableStopsToWithDirection(@Param("endBsId") String endBsId);
+
+
 }
