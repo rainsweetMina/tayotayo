@@ -1,4 +1,4 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.user;
 
 import kroryi.bus2.model.EmailVerificationCode;
 import lombok.RequiredArgsConstructor;

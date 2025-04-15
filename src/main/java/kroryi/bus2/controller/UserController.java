@@ -2,8 +2,8 @@ package kroryi.bus2.controller;
 
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginFormDTO;
-import kroryi.bus2.service.EmailService;
-import kroryi.bus2.service.UserService;
+import kroryi.bus2.service.user.EmailService;
+import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;

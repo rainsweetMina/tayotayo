@@ -1,12 +1,11 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.user;
 
 import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.repository.jpa.UserRepository;
+import kroryi.bus2.repository.jpa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
