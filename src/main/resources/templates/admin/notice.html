@@ -17,17 +17,19 @@
 </head>
 <body>
 <h1>공지사항 관리</h1>
+
 <div>
-    <input id="title" class="form-control" placeholder="제목" /> <br>
-    <input id="author" class="form-control" placeholder="작성자" /> <br>
-    <textarea id="content" class="form-control" placeholder="내용"></textarea><br>
-    <button class="button" onclick="addNotice()">공지 추가</button>
-    <button class="button" onclick="editNotice(${notice.id})">수정</button>
+    <form method="post" id="notice-form">
+        <input type="text" name="title" id="title" class="form-control" placeholder="제목" /> <br>
+        <input type="text" name="author" id="author" class="form-control" placeholder="작성자" /> <br>
+        <textarea name="content" id="content" class="form-control" placeholder="내용"></textarea><br>
+        <button id="addNoticeBtn" type="button" class="button">공지 추가</button>
+    </form>
 </div>
-<div id="notice-list">
-   </div>
 
+<div id="notice-list"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="/js/notice.js"></script>
-
 </body>
 </html>

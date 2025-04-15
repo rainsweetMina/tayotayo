@@ -1,0 +1,21 @@
+package kroryi.bus2.dto.notice;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateNoticeRequestDTO {
+    // 제목, 작성자, 내용
+    @NotBlank
+    private String title;
+
+    @NotBlank
+    private String author;
+
+    @NotBlank
+    private String content;
+}

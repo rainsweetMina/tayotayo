@@ -14,4 +14,10 @@ public class AdminPageController {
     }
 
     // 추후에 더 추가 가능
+
+    @GetMapping("/notice")
+    public String noticePage() {
+        return "admin/notice"; // templates/admin/notice.h
+    }
+
 }

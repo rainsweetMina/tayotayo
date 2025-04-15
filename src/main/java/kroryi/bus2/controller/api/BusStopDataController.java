@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.Route.RouteIdAndNoDTO;

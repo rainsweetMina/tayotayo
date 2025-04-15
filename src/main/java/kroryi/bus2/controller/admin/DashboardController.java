@@ -1,17 +1,16 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.admin;
 
 
 import kroryi.bus2.dto.lost.LostStatResponseDTO;
-import kroryi.bus2.entity.Notice;
 import kroryi.bus2.service.*;
+import kroryi.bus2.service.admin.DashboardService;
+import kroryi.bus2.service.admin.RedisLogService;
+import kroryi.bus2.service.admin.notice.NoticeServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/ds")
@@ -23,7 +22,7 @@ public class DashboardController {
     private final RedisLogService redisLogService;
     private final RouteLogService routeLogService;
     @Autowired
-    private NoticeService noticeService;
+    private NoticeServiceImpl noticeService;
 
     // dashboard.html 페이지를 반환하는 메서드
     @GetMapping

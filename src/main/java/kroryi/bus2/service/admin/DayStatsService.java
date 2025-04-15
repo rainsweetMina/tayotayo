@@ -1,4 +1,4 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

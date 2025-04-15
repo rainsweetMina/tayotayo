@@ -1,8 +1,7 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.admin;
 
 
 import kroryi.bus2.dto.lost.LostStatResponseDTO;
-import kroryi.bus2.entity.ApiLog;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
 import kroryi.bus2.repository.jpa.LostItemRepository;
@@ -13,11 +12,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
+        h1 { font-size: 24px; margin-bottom: 20px; }
+        .notice { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .notice-title { font-weight: bold; font-size: 18px; }
+        .notice-content { margin: 10px 0; }
+        .notice-author { color: #555; font-size: 14px; }
+    </style>
+</head>
+<body>
+<h1>공지사항</h1>
+
+<div th:each="notice : ${notices}" class="notice">
+    <div class="notice-title" th:text="${notice.title}">제목</div>
+    <div class="notice-content" th:text="${notice.content}">내용</div>
+    <div class="notice-author" th:text="'작성자: ' + ${notice.author}">작성자</div>
+</div>
+<script src="/js/notice.js"></script>
+</body>
+</html>

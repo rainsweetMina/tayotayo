@@ -1,6 +1,6 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.api;
 
-import kroryi.bus2.service.DayStatsService;
+import kroryi.bus2.service.admin.DayStatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
