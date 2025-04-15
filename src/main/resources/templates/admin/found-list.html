@@ -6,16 +6,26 @@
 </head>
 <body>
 <h1>습득물 등록</h1>
-<form th:action="@{/admin/found}" method="post">
-  <input type="hidden" name="handlerId" value="3" />
-  <label>물품명: <input type="text" th:field="*{foundItemForm.itemName}" required/></label><br>
-  <label>버스회사: <input type="text" th:field="*{foundItemForm.busCompany}" required/></label><br>
-  <label>버스번호: <input type="text" th:field="*{foundItemForm.busNumber}" required/></label><br>
-  <label>습득 장소: <input type="text" th:field="*{foundItemForm.foundPlace}" required/></label><br>
-  <label>내용: <textarea th:field="*{foundItemForm.content}" required></textarea></label><br>
-  <label>보관 위치: <input type="text" th:field="*{foundItemForm.storageLocation}" required/></label><br>
-  <label>연락처: <input type="text" th:field="*{foundItemForm.handlerContact}" required/></label><br>
-  <label>이메일: <input type="email" th:field="*{foundItemForm.handlerEmail}" required/></label><br>
+<form th:action="@{/admin/found}" th:object="${foundItemForm}" method="post">
+  <input type="hidden" th:field="*{handlerId}" value="3" />
+
+  <label>물품명: <input type="text" th:field="*{itemName}" /></label><br>
+  <label>버스회사: <input type="text" th:field="*{busCompany}" /></label><br>
+  <label>버스번호: <input type="text" th:field="*{busNumber}" /></label><br>
+  <label>습득일: <input type="date" th:field="*{foundTime}" /></label><br>
+  <label>습득 장소: <input type="text" th:field="*{foundPlace}" /></label><br>
+  <label>내용: <textarea th:field="*{content}"></textarea></label><br>
+  <label>보관 위치: <input type="text" th:field="*{storageLocation}" /></label><br>
+  <label>연락처: <input type="text" th:field="*{handlerContact}" /></label><br>
+  <label>이메일: <input type="email" th:field="*{handlerEmail}" /></label><br>
+
+  <label>처리 상태:
+    <select th:field="*{status}">
+      <option th:each="st : ${T(kroryi.bus2.entity.lost.FoundStatus).values()}"
+              th:value="${st}" th:text="${st.displayName}">상태</option>
+    </select>
+  </label><br>
+
   <button type="submit">등록</button>
 </form>
 
@@ -27,43 +37,35 @@
     <th>ID</th>
     <th>물품명</th>
     <th>버스번호</th>
-    <th>보관 위치</th>
+    <th>습득일</th>
+    <th>습득 장소</th>
     <th>상태</th>
-    <th>등록일</th>
     <th>액션</th>
   </tr>
   <tr th:each="item : ${foundItems}">
-    <td><a th:href="@{'/admin/found?selectedId=' + ${item.id}}" th:text="${item.id}">ID</a></td>
-    <td th:text="${item.itemName}">물품</td>
-    <td th:text="${item.busNumber}">버스번호</td>
-    <td th:text="${item.storageLocation}">보관위치</td>
-    <td th:text="${item.status}">상태</td>
-    <td th:text="${item.createdAt}">등록일</td>
+    <td th:text="${item.id}"></td>
     <td>
-      <!-- 숨김 버튼 -->
-      <form th:action="@{'/admin/found/hide/' + ${item.id}}" method="post"
-            onsubmit="return confirm('숨기시겠습니까?');">
+      <a th:href="@{/admin/found/view/{id}(id=${item.id})}" th:text="${item.itemName}"></a>
+    </td>
+    <td th:text="${item.busNumber}"></td>
+    <td th:text="${item.foundTime != null ? #temporals.format(item.foundTime, 'yyyy-MM-dd') : '없음'}"></td>
+    <td th:text="${item.foundPlace}"></td>
+    <td th:text="${item.statusName}"></td>
+    <td>
+      <form th:action="@{/admin/found/hide/{id}(id=${item.id})}" method="post" style="display:inline;">
         <button type="submit">숨김</button>
       </form>
-      <!-- 삭제 버튼 -->
-      <form th:action="@{'/admin/found/delete/' + ${item.id}}" method="post"
-            onsubmit="return confirm('삭제하시겠습니까?');">
+      <form th:action="@{/admin/found/delete/{id}(id=${item.id})}" method="post" style="display:inline;">
         <button type="submit">삭제</button>
       </form>
+      <form th:action="@{/admin/found/match/{foundItemId}(foundItemId=${item.id})}" method="post">
+        <input type="text" name="lostItemId" placeholder="분실물 ID 입력" />
+        <button type="submit" th:disabled="${item.matched}">매칭</button>
+      </form>
+
     </td>
   </tr>
 </table>
-
-<hr>
-
-<!-- 상세보기 -->
-<div th:if="${selectedItem != null}">
-  <h3>상세 보기</h3>
-  <p><strong>물품명:</strong> <span th:text="${selectedItem.itemName}"></span></p>
-  <p><strong>내용:</strong> <span th:text="${selectedItem.content}"></span></p>
-  <p><strong>습득 시간:</strong> <span th:text="${selectedItem.foundTime}"></span></p>
-  <p><strong>이메일:</strong> <span th:text="${selectedItem.handlerEmail}"></span></p>
-</div>
 
 </body>
 </html>

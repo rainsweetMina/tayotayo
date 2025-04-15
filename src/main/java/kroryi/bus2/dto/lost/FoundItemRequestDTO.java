@@ -1,20 +1,31 @@
 package kroryi.bus2.dto.lost;
 
-import lombok.Data;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import kroryi.bus2.entity.lost.FoundStatus;
+import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FoundItemRequestDTO {
     private String itemName;
     private String busCompany;
     private String busNumber;
     private String foundPlace;
+    private LocalDate foundTime;
     private String content;
+    private String storageLocation;
     private String handlerContact;
     private String handlerEmail;
-    private String status;
-    private String storageLocation;
-    private LocalDateTime foundTime;
+    private FoundStatus status;
     private String photoUrl;
     private Long handlerId;
 }
+

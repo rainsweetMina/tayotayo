@@ -1,46 +1,91 @@
 package kroryi.bus2.entity.lost;
 
 import jakarta.persistence.*;
+import kroryi.bus2.dto.lost.FoundItemRequestDTO;
 import kroryi.bus2.entity.user.User;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FoundItem extends BaseTimeEntity{
+public class FoundItem extends BaseTimeEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private boolean deleted;
 
     private String itemName;
     private String busCompany;
     private String busNumber;
     private String foundPlace;
+    private LocalDateTime foundTime;
     private String content;
+    private String storageLocation;
     private String handlerContact;
     private String handlerEmail;
-    private String status;
-    private String storageLocation;
+
+    @Enumerated(EnumType.STRING)
+    private FoundStatus status;
+
     private String photoUrl;
 
-    private LocalDateTime foundTime; // 습득 시각
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "handler_id")
+    private User handler;
 
-    @ManyToOne
-    private User handler; // 등록한 버스회사 관리자
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
-    private boolean matched = false; // 매칭 여부
+    @Builder.Default
+    @Column(name = "is_hidden", nullable = false)
+    private boolean isHidden = false;
 
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean visible = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean matched = false;
 
     @OneToOne(mappedBy = "foundItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private Photo photo;
 
-    // 🔹 추가: 숨김 여부 (soft delete)
-    @Setter
-    @Builder.Default
-    private boolean visible = true;
+    // soft delete
+    public void markDeleted() {
+        this.isDeleted = true;
+    }
+
+    public void markHidden() {
+        this.isHidden = true;
+    }
+
+    public void matchAndComplete() {
+        this.status = FoundStatus.RETURNED;
+    }
+
+    public void update(FoundItemRequestDTO dto) {
+        this.itemName = dto.getItemName();
+        this.busCompany = dto.getBusCompany();
+        this.busNumber = dto.getBusNumber();
+        this.foundPlace = dto.getFoundPlace();
+        this.foundTime = dto.getFoundTime().atStartOfDay();
+        this.content = dto.getContent();
+        this.handlerContact = dto.getHandlerContact();
+        this.handlerEmail = dto.getHandlerEmail();
+        this.status = dto.getStatus();
+        this.storageLocation = dto.getStorageLocation();
+        this.photoUrl = dto.getPhotoUrl();
+        // ✅ 수령완료 선택 시 matched true 처리
+        if (dto.getStatus() == FoundStatus.RETURNED && !this.matched) {
+            this.matched = true;
+        }
+    }
 }
