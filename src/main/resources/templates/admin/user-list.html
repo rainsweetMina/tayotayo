@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>회원 목록 관리</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>회원 목록 관리</h1>
+
+  <form method="get" th:action="@{/admin/users}" class="search-form">
+    <input type="text" name="keyword" placeholder="아이디, 이름, 이메일 검색" th:value="${keyword}">
+    <button type="submit">검색</button>
+  </form>
+
+  <div th:if="${message}" class="message success" th:text="${message}"></div>
+  <div th:if="${error}" class="message error" th:text="${error}"></div>
+
+  <table>
+    <thead>
+    <tr>
+      <th>아이디</th>
+      <th>이름</th>
+      <th>이메일</th>
+      <th>전화번호</th>
+      <th>가입유형</th>
+      <th>가입일</th>
+      <th>권한</th>
+      <th>권한 변경</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user : ${users}">
+      <td th:text="${user.userId}">아이디</td>
+      <td th:text="${user.username}">이름</td>
+      <td th:text="${user.email}">이메일</td>
+      <td th:text="${user.phoneNumber} ?: '-'">전화번호</td>
+      <td th:text="${user.signupType}">가입유형</td>
+      <td th:text="${user.signupDate}">가입일</td>
+      <td th:text="${user.role}">권한</td>
+      <td>
+        <form th:action="@{/admin/users/{userId}/role(userId=${user.userId})}" method="post">
+          <select name="role">
+            <option th:selected="${user.role.name() == 'USER'}" value="USER">USER</option>
+            <option th:selected="${user.role.name() == 'ADMIN'}" value="ADMIN">ADMIN</option>
+            <option th:selected="${user.role.name() == 'BUS'}" value="BUS">BUS</option>
+            <option th:selected="${user.role.name() == 'AD'}" value="AD">AD</option>
+          </select>
+          <button type="submit">변경</button>
+        </form>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
