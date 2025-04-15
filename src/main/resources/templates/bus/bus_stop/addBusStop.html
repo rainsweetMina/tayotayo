@@ -27,6 +27,9 @@
     정류장 이름: <input type="text" id="bsNm" required><br>
     위도 (Y): <input type="text" id="ypos" readonly><br>
     경도 (X): <input type="text" id="xpos" readonly><br>
+    시 (City): <input type="text" id="city"><br>
+    구/군 (District): <input type="text" id="district"><br>
+    동 (Neighborhood): <input type="text" id="neighborhood"><br>
     <button type="submit">정류장 등록</button>
 </form>
 
@@ -90,24 +93,36 @@
     document.getElementById("busStopForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const bsId = document.getElementById("bsId").value;
-        const bsNm = document.getElementById("bsNm").value;
+        const bsId = document.getElementById("bsId").value.trim();
+        const bsNm = document.getElementById("bsNm").value.trim();
         const xpos = parseFloat(document.getElementById("xpos").value);
         const ypos = parseFloat(document.getElementById("ypos").value);
 
-        const payload = {bsId, bsNm, xpos, ypos};
+        const city = document.getElementById("city").value.trim();
+        const district = document.getElementById("district").value.trim();
+        const neighborhood = document.getElementById("neighborhood").value.trim();
+
+        const payload = {
+            bsId,
+            bsNm,
+            xpos,
+            ypos,
+            city,
+            district,
+            neighborhood
+        };
 
         try {
             const res = await fetch("/api/bus/addBusStop", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
 
             if (res.ok) {
                 alert("정류장이 성공적으로 추가되었습니다!");
                 document.getElementById("busStopForm").reset();
-                loadBusStopsInView(map, markers); // 새로고침
+                loadBusStopsInView(map, markers); // 마커 새로고침
             } else {
                 const error = await res.json();
                 alert("추가 실패: " + (error.message || "오류 발생"));

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.board.BusScheduleHeaderRequestDTO;
 import kroryi.bus2.entity.BusScheduleHeader;
-import kroryi.bus2.entity.RouteStopLink;
 import kroryi.bus2.service.board.BusScheduleHeaderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

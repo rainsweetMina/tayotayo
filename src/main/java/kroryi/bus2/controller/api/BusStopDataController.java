@@ -2,14 +2,16 @@ package kroryi.bus2.controller.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.Route.RouteIdAndNoDTO;
-import kroryi.bus2.dto.busStop.BusStopDTO;
+import kroryi.bus2.dto.busStop.*;
+
+import kroryi.bus2.service.busStop.AddBusStopService;
+import kroryi.bus2.service.busStop.BusStopDataService;
+import kroryi.bus2.service.busStop.DeleteBusStopService;
+import kroryi.bus2.service.busStop.UpdateBusStopService;
 import kroryi.bus2.dto.busStop.BusStopListDTO;
 import kroryi.bus2.dto.busStop.BusStopUpdateDTO;
 import kroryi.bus2.entity.busStop.BusStop;
-import kroryi.bus2.service.BusStop.AddBusStopService;
-import kroryi.bus2.service.BusStop.BusStopDataService;
-import kroryi.bus2.service.BusStop.DeleteBusStopService;
-import kroryi.bus2.service.BusStop.UpdateBusStopService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -32,6 +34,7 @@ public class BusStopDataController {
     private final DeleteBusStopService deleteBusStopService;
 
     // 페이징과 검색이 적용된 전체 정류장 리스트 컨트롤러
+    @Operation(summary = "전체 정류장 리스트", description = "페이징과 검색이 적용된 전체 정류장 리스트 컨트롤러")
     @GetMapping("/AllBusStop")
     public ResponseEntity<Page<BusStopListDTO>> getBusStops(
             @RequestParam(defaultValue = "") String keyword,
@@ -45,19 +48,19 @@ public class BusStopDataController {
 
     @Operation(summary = "정류장 추가", description = "새로운 정류장(BusStop)을 추가합니다. 좌표(xpos, ypos), 정류장 ID(bsId), 이름(bsNm)를 포함합니다.")
     @PostMapping("/addBusStop")
-    public ResponseEntity<BusStop> addStop(@RequestBody BusStopDTO dto) {
+    public ResponseEntity<BusStop> addStop(@RequestBody BusStopDetailResponseDTO dto) {
         BusStop created = addBusStopService.createBusStop(dto);
         return ResponseEntity.ok(created);
     }
 
     // 정류장 ID로 조회
-    @Operation(summary = "정류장 단건 조회", description = "정류장 ID(bsId)를 기준으로 해당 정류장의 상세 정보를 조회합니다.")
+    @Operation(summary = "정류장 상세 정보 + 위치,주소 정보 + 정류장에 오는 노선 조회", description = "정류장 ID(bsId)를 기준으로 상세 정보 및 위치 정보(시/구/동 포함) + 정류장에 오는 노선을 조회합니다.")
     @GetMapping("/busStop")
-    public ResponseEntity<BusStop> getBusStopById(@RequestParam String bsId) {
-        log.info("[GET] /busStop?keyword={} 호출", bsId);
-        BusStop stop = busStopDataService.getBusStopById(bsId);
-        return ResponseEntity.ok(stop);
+    public ResponseEntity<BusStopFullDetailDTO> getFullDetail(@RequestParam String bsId) {
+        BusStopFullDetailDTO detail = busStopDataService.getFullBusStopDetail(bsId);
+        return ResponseEntity.ok(detail);
     }
+
 
     @Operation(summary = "정류장 정보 수정", description = "정류장 ID(bsId)에 해당하는 정류장의 이름, 좌표 등을 수정합니다.")
     @PutMapping("/updateStop/{bsId}")
@@ -86,6 +89,7 @@ public class BusStopDataController {
         }
     }
 
+    @Operation(summary = "정류장에 오는 노선 조회", description = "정류장 ID(bsId)로 해당 정류장에 오는 노선을 조회합니다.")
     @GetMapping("/RouteByBS")
     public ResponseEntity<List<RouteIdAndNoDTO>> getRoutesForBusStop(@RequestParam String bsId) {
         List<RouteIdAndNoDTO> routes = busStopDataService.getRoutesByBusStop(bsId);

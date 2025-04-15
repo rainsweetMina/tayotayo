@@ -1,7 +1,6 @@
 package kroryi.bus2.controller.board;
 
 import io.swagger.v3.oas.annotations.Operation;
-import kroryi.bus2.entity.RouteStopLink;
 import kroryi.bus2.entity.busStop.BusStopInfo;
 import kroryi.bus2.service.board.BusStopInfoService;
 import lombok.RequiredArgsConstructor;

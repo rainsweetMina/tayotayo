@@ -29,5 +29,7 @@ public interface BusStopInfoRepository extends JpaRepository<BusStopInfo,Long> {
             "JOIN Route r1 ON r1.routeId = r.routeId WHERE r1.routeNo =:routeNo")
     List<BusStopInfo> findByRouteNo(@Param("routeNo") String routeNo);
 
+    BusStopInfo findByBsId(String bsId);
 
+    void deleteByBsId(String bsId);
 }

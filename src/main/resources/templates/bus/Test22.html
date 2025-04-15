@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>버스 경로 시각화</title>
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    />
+    <style>
+        #map { height: 500px; margin-top: 1em; }
+        .highlight { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+<h2>버스 경로 시각화</h2>
+
+<label>
+    출발 정류장 ID:
+    <input type="text" id="startBsId" value="7001004600" />
+</label>
+<label>
+    도착 정류장 ID:
+    <input type="text" id="endBsId" value="7001002100" />
+</label>
+<button onclick="loadRoutes()">경로 조회</button>
+
+<div id="routeList"></div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([35.8714, 128.6014], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+    let currentLayers = [];
+
+    function clearMap() {
+        currentLayers.forEach(layer => map.removeLayer(layer));
+        currentLayers = [];
+    }
+
+    function loadRoutes() {
+        clearMap();
+
+        const startBsId = document.getElementById("startBsId").value;
+        const endBsId = document.getElementById("endBsId").value;
+
+        fetch(`/api/bus/findRoutes?startBsId=${startBsId}&endBsId=${endBsId}`)
+            .then(res => res.json())
+            .then(routes => {
+                console.log(routes);
+                const routeListDiv = document.getElementById("routeList");
+                routeListDiv.innerHTML = '';
+
+                routes.forEach((route, index) => {
+                    const color = route.type === '환승' ? 'red' : 'blue';
+                    const latlngs = [];
+
+                    const routeDiv = document.createElement('div');
+                    routeDiv.innerHTML = `<h4>${index + 1}. ${route.type} - ${route.routeNo}</h4>`;
+                    const ul = document.createElement('ul');
+
+                    route.stationIds.forEach((stop) => {
+                        latlngs.push([stop.ypos, stop.xpos]);
+                        const li = document.createElement('li');
+                        if (stop.bsId === route.transferStationId) {
+                            li.innerHTML = `<span class="highlight">🔁 ${stop.bsNm} (환승지점)</span>`;
+                        } else {
+                            li.textContent = stop.bsNm;
+                        }
+                        ul.appendChild(li);
+                    });
+
+                    const polyline = L.polyline(latlngs, { color }).addTo(map);
+                    currentLayers.push(polyline);
+                    currentLayers.push(
+                        L.circleMarker(latlngs[0], { color: 'green' }).addTo(map).bindPopup("출발지")
+                    );
+                    currentLayers.push(
+                        L.circleMarker(latlngs[latlngs.length - 1], { color: 'orange' }).addTo(map).bindPopup("도착지")
+                    );
+
+                    routeDiv.appendChild(ul);
+                    routeListDiv.appendChild(routeDiv);
+                });
+
+                if (routes.length > 0) {
+                    const allCoords = routes.flatMap(r => r.stationIds.map(s => [s.ypos, s.xpos]));
+                    map.fitBounds(allCoords);
+                }
+            })
+            .catch(err => {
+                console.error("경로 불러오기 실패:", err);
+                alert("경로 데이터를 불러올 수 없습니다.");
+            });
+    }
+
+</script>
+</body>
+</html>

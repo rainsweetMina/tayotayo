@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.dto.board.BusScheduleHeaderRequestDTO;
 import kroryi.bus2.entity.BusScheduleHeader;
-import kroryi.bus2.entity.RouteStopLink;
+
 import kroryi.bus2.repository.jpa.board.BusScheduleHeaderRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import lombok.RequiredArgsConstructor;

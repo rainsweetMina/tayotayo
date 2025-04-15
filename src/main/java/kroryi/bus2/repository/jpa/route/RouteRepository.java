@@ -1,8 +1,7 @@
 package kroryi.bus2.repository.jpa.route;
 
-import kroryi.bus2.dto.Route.RouteDTO;
 import kroryi.bus2.dto.Route.RouteIdAndNoDTO;
-import kroryi.bus2.entity.Route;
+import kroryi.bus2.entity.route.Route;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -48,7 +47,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 
     boolean existsByRouteId(String routeId);
 
-    @Query("SELECT new kroryi.bus2.dto.Route.RouteIdAndNoDTO(r.routeId, r.routeNo) FROM Route r WHERE r.routeId IN :routeIds")
+    @Query("SELECT new kroryi.bus2.dto.Route.RouteIdAndNoDTO(r.routeId, r.routeNo, r.routeNote) FROM Route r WHERE r.routeId IN :routeIds")
     List<RouteIdAndNoDTO> findRoutesByIds(@Param("routeIds") List<String> routeIds);
 
     // 페이징 + 검색이 추가된 전체 노선 게시판 레파지토리들
@@ -58,4 +57,38 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
             "LOWER(r.routeId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(r.routeNo) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Route> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+
+    @Query("""
+            SELECT r FROM Route r
+            WHERE r.routeId IN (
+                SELECT rl1.routeId FROM RouteStopLink rl1
+                JOIN RouteStopLink rl2 ON rl1.routeId = rl2.routeId
+                WHERE rl1.bsId = :startBsId
+                  AND rl2.bsId = :endBsId
+                  AND rl1.seq < rl2.seq
+            )
+            """)
+    List<Route> findDirectRoutes(@Param("startBsId") String startBsId,
+                                 @Param("endBsId") String endBsId);
+
+
+    @Query("""
+            SELECT r FROM Route r
+            WHERE r.routeId IN (
+                SELECT rl1.routeId
+                FROM RouteStopLink rl1
+                JOIN RouteStopLink rl2 ON rl1.routeId = rl2.routeId
+                WHERE rl1.bsId = :startBsId
+                  AND rl2.bsId = :endBsId
+                  AND rl1.moveDir = :moveDir
+                  AND rl2.moveDir = :moveDir
+                  AND rl1.seq < rl2.seq
+            )
+            """)
+    List<Route> findDirectRoutesConsideringDirection(@Param("startBsId") String startBsId,
+                                                     @Param("endBsId") String endBsId,
+                                                     @Param("moveDir") String moveDir);
+
+
 }

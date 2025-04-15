@@ -45,10 +45,15 @@
   <p><strong>이름:</strong> <span id="bsNm"></span></p>
   <p><strong>위도(Y):</strong> <span id="ypos"></span></p>
   <p><strong>경도(X):</strong> <span id="xpos"></span></p>
-  <p><strong>도착 노선:</strong> <span id="routes"></span></p>
+  <p><strong>시/도:</strong> <span id="city"></span></p>
+  <p><strong>구/군:</strong> <span id="district"></span></p>
+  <p><strong>동:</strong> <span id="neighborhood"></span></p>
+  <p><strong>도착 노선:</strong></p>
+  <ul id="routes" style="padding-left: 1rem;"></ul>
   <button onclick="deleteBusStop()">🗑️ 정류장 삭제</button>
   <button onclick="updateBusStop()">✏️ 정류장 수정</button>
 </div>
+
 
 <div id="map"></div>
 
@@ -88,25 +93,34 @@
       return;
     }
 
-    const res2 = await fetch(`/api/bus/RouteByBS?bsId=${bsId}`);
-    if (!res2.ok) {
-      alert("해당 정류장에 오는 노선 정보를 불러올 수 없습니다.");
-      return;
-    }
-
     const data = await res.json();
-    const data2 = await res2.json(); // data2 = 노선 목록
 
-    // 상세 정보 표시
+    // ✅ 상세 정보 표시
     document.getElementById("detail").style.display = "block";
     document.getElementById("bsId").textContent = data.bsId;
     document.getElementById("bsNm").textContent = data.bsNm;
     document.getElementById("xpos").textContent = data.xpos;
     document.getElementById("ypos").textContent = data.ypos;
 
-    // 노선 정보 렌더링
-    const routeNames = data2.map(r => r.routeNo).join(', ');
-    document.getElementById("routes").textContent = routeNames || "없음";
+    // ✅ 시/도, 구/군, 동 표시
+    document.getElementById("city").textContent = data.city || "-";
+    document.getElementById("district").textContent = data.district || "-";
+    document.getElementById("neighborhood").textContent = data.neighborhood || "-";
+
+    // ✅ 노선 정보
+    const routeList = document.getElementById("routes");
+    routeList.innerHTML = ""; // 기존 목록 초기화
+
+    (data.routes || []).forEach(r => {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${r.routeNo}</strong> <small style="color: gray;">(${r.routeNote || "방면 정보 없음"})</small>`;
+      routeList.appendChild(li);
+    });
+
+    if (data.routes.length === 0) {
+      routeList.innerHTML = "<li>노선 정보 없음</li>";
+    }
+
 
     // ✅ 지도 마커 갱신
     if (marker) map.removeLayer(marker);
@@ -116,7 +130,6 @@
             .openPopup();
     map.setView([data.ypos, data.xpos], 17);
   }
-
 
 </script>
 <script>

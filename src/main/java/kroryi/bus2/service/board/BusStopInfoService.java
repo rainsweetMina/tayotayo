@@ -1,6 +1,5 @@
 package kroryi.bus2.service.board;
 
-import kroryi.bus2.entity.RouteStopLink;
 import kroryi.bus2.entity.busStop.BusStopInfo;
 import kroryi.bus2.repository.jpa.board.BusStopInfoRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;

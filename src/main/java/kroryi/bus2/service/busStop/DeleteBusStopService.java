@@ -1,0 +1,35 @@
+package kroryi.bus2.service.busStop;
+
+import jakarta.transaction.Transactional;
+import kroryi.bus2.repository.jpa.board.BusStopInfoRepository;
+import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
+import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
+
+@Service
+@Log4j2
+@RequiredArgsConstructor
+public class DeleteBusStopService {
+
+    private final BusStopRepository busStopRepository;
+    private final RouteStopLinkRepository routeStopLinkRepository;
+    private final BusStopInfoRepository busStopInfoRepository;
+
+    @Transactional
+    public void deleteBusStopIfNotLinked(String bsId) {
+        // 1. 노선에 연결되어 있는지 확인
+        int linkedCount = routeStopLinkRepository.countByBsId(bsId); // 🔁 기존 busStopRepository → routeStopLinkRepository
+
+        if (linkedCount > 0) {
+            throw new IllegalStateException("❌ 해당 정류장은 " + linkedCount + "개의 노선에 연결되어 있어 삭제할 수 없습니다.");
+        }
+
+        // 2. 정류장 상세정보 먼저 삭제
+        busStopInfoRepository.deleteByBsId(bsId);
+        // 3. 정류장 삭제
+        busStopRepository.deleteByBsId(bsId);
+    }
+
+}

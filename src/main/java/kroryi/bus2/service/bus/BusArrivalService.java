@@ -1,4 +1,4 @@
-package kroryi.bus2.service;
+package kroryi.bus2.service.bus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

@@ -1,4 +1,4 @@
-package kroryi.bus2.repository.jpa;
+package kroryi.bus2.repository.jpa.bus_stop;
 
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.entity.busStop.BusStop;
@@ -47,5 +47,19 @@ public interface BusStopRepository extends JpaRepository<BusStop,Long> {
             "WHERE LOWER(b.bsId) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(b.bsNm) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<BusStop> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+
+    @Query("""
+SELECT distinct bs.bsId FROM BusStop bs
+WHERE 
+ABS(bs.xPos - :x) * 111320 * COS(RADIANS(:y)) <= :radius
+AND 
+ABS(bs.yPos - :y) * 110540 <= :radius
+""")
+    List<String> findNearbyStationIdsWithGeo(
+            @Param("x") Double x,
+            @Param("y") Double y,
+            @Param("radius") Double radius);
+
 
 }

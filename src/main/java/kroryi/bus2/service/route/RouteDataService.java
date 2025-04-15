@@ -1,4 +1,4 @@
-package kroryi.bus2.service.Route;
+package kroryi.bus2.service.route;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +8,7 @@ import kroryi.bus2.dto.Route.RouteListDTO;
 import kroryi.bus2.dto.busStop.XyPointDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
 
-import kroryi.bus2.entity.Route;
+import kroryi.bus2.entity.route.Route;
 
 import kroryi.bus2.repository.jpa.NodeRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;

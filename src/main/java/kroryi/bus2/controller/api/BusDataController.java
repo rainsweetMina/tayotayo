@@ -11,18 +11,21 @@ import kroryi.bus2.dto.BusRealtimeDTO;
 import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
 import kroryi.bus2.dto.Route.RouteDTO;
 import kroryi.bus2.dto.Route.RouteListDTO;
+import kroryi.bus2.dto.Route.RouteResultDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
+
 import kroryi.bus2.entity.busStop.BusStop;
-import kroryi.bus2.entity.Route;
-import kroryi.bus2.repository.jpa.BusStopRepository;
+import kroryi.bus2.entity.route.Route;
+import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
+
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.service.BusInfoInitService;
-import kroryi.bus2.service.BusStop.BusStopDataService;
-import kroryi.bus2.service.Route.*;
-import kroryi.bus2.service.Route.RouteDataService;
+import kroryi.bus2.service.busStop.BusStopDataService;
+import kroryi.bus2.service.route.*;
+import kroryi.bus2.service.route.RouteDataService;
 import kroryi.bus2.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -62,6 +65,8 @@ public class BusDataController {
     private final InsertStopIntoRouteService insertStopIntoRouteService;
     private final DeleteStopFromRouteService deleteStopFromRouteService;
     private final DeleteRouteService deleteRouteService;
+    private final RouteFinderService routeFinderService;
+
 
     @Value("${api.service-key-decoding}")
     private String serviceKey;
@@ -80,15 +85,15 @@ public class BusDataController {
     }
 
 
-    // 전체 버스정류장 불러오는거
-    @Operation(summary = "정류장 불러오기", description = "전체 버스정류장 불러오는거")
-    @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
-
-        List<BusStopDTO> list = busStopDataService.getAllBusStops();
-        log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(list));
-        return ResponseEntity.ok(list);
-    }
+//    // 전체 버스정류장 불러오는거
+//    @Operation(summary = "정류장 불러오기", description = "전체 버스정류장 불러오는거")
+//    @GetMapping(value = "/busStops", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<List<BusStopDTO>> getBusStop() throws JsonProcessingException {
+//
+//        List<BusStopDTO> list = busStopDataService.getAllBusStops();
+//        log.info("데이터 : {}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(list));
+//        return ResponseEntity.ok(list);
+//    }
 
     @Operation(summary = "좌표기반 정류소 서칭", description = "전체 버스정류장을 좌표기반으로 불러오는거")
     @GetMapping("/busStopsInBounds")
@@ -322,6 +327,21 @@ public class BusDataController {
         }
     }
 
+
+    @GetMapping("/findRoutes")
+    public ResponseEntity<List<RouteResultDTO>> findRoutes(
+            @RequestParam String startBsId,
+            @RequestParam String endBsId) {
+
+        List<RouteResultDTO> directResults = routeFinderService.findRoutesWithNearbyStart(startBsId, endBsId);
+        List<RouteResultDTO> transferResults = routeFinderService.findRoutesWithNearbyStart2(startBsId, endBsId);
+
+        List<RouteResultDTO> combinedResults = new ArrayList<>();
+        combinedResults.addAll(directResults);
+        combinedResults.addAll(transferResults);
+
+        return ResponseEntity.ok(combinedResults);
+    }
 
 
 

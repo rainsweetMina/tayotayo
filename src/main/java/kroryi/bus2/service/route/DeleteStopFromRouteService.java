@@ -1,7 +1,7 @@
-package kroryi.bus2.service.Route;
+package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
-import kroryi.bus2.entity.RouteStopLink;
+import kroryi.bus2.entity.route.RouteStopLink;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
