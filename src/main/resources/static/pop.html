@@ -13,6 +13,18 @@
   <button onclick="document.getElementById('noticePopup').style.display='none'">닫기</button>
 </div>
 
+<!-- 광고 팝업 영역 -->
+<div id="adPopup" style="display:none; position:fixed; top:150px; left:50%; transform:translateX(-50%);
+     background:#fff; padding:0; z-index:9999;">
+  <a id="adLink" href="#" target="_blank">
+    <img id="adImage" src="" alt="광고" style="max-width:400px;">
+  </a>
+  <div style="text-align:right;">
+    <button onclick="document.getElementById('adPopup').style.display='none'">닫기</button>
+  </div>
+</div>
+
+<script src="/js/ad-popup.js"></script>
 <script src="/js/notice-popup.js"></script>
 
 </body>

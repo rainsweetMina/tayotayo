@@ -18,7 +18,9 @@ public class Ad {
     private Long id;
 
     private String title;            // 광고 제목
-    private String imageUrl;         // 광고 배너 이미지 경로
+    @Column(columnDefinition = "TEXT")
+    private String imageUrl;
+    // 광고 배너 이미지 경로
     private String linkUrl;          // 클릭 시 이동 링크 (선택)
 
     private LocalDateTime startDateTime;   // 광고 시작 시간
@@ -30,17 +32,24 @@ public class Ad {
     public String getStatus() {
         LocalDateTime now = LocalDateTime.now();
 
-        if (deleted) return "DELETED";
-        if (now.isBefore(startDateTime)) return "SCHEDULED";            // 진행 전
-        if (now.isAfter(endDateTime)) return "ENDED";                  // 종료됨
-        if (now.plusDays(7).isAfter(endDateTime)) return "ENDING_SOON"; // 7일 이내 종료 예정
+        // ✅ null 방어 코드 추가
+        if (startDateTime == null || endDateTime == null) return "UNKNOWN";
 
-        return "ONGOING"; // 기본은 진행 중
+        if (deleted) return "DELETED";
+        if (now.isBefore(startDateTime)) return "SCHEDULED";
+        if (now.isAfter(endDateTime)) return "ENDED";
+        if (now.plusDays(7).isAfter(endDateTime)) return "ENDING_SOON";
+
+        return "ONGOING";
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     private AdCompany company;
+
+    @Column(nullable = false)
+    private boolean showPopup;
+
 
 }
 

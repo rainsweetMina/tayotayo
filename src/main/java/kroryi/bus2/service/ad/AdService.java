@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.collect;
@@ -32,6 +33,7 @@ public class AdService {
                 .linkUrl(dto.getLinkUrl())
                 .startDateTime(dto.getStartDateTime())
                 .endDateTime(dto.getEndDateTime())
+                .showPopup(dto.isShowPopup())
                 .deleted(false)
                 .company(company) // ✅ 여기서 연동
                 .build();
@@ -119,7 +121,7 @@ public class AdService {
                 .linkUrl(ad.getLinkUrl())
                 .startDateTime(ad.getStartDateTime())
                 .endDateTime(ad.getEndDateTime())
-                .status(ad.getStatus())
+                .status(ad.getStatus() != null ? ad.getStatus() : "UNKNOWN")
                 .company(company != null ? AdCompanyDTO.builder()
                         .id(company.getId())
                         .name(company.getName())
@@ -133,9 +135,18 @@ public class AdService {
                 .email(company != null ? company.getEmail() : null)
                 .build();
     }
+    // AdServiceImpl.java
+    public Optional<Ad> findValidPopupAd() {
+        LocalDateTime now = LocalDateTime.now();
+        return adRepository.findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now);
+    }
 
-
-
+    public Optional<AdPopupResponseDTO> findPopupAd() {
+        LocalDateTime now = LocalDateTime.now();
+        return adRepository
+                .findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now)
+                .map(AdPopupResponseDTO::new);
+    }
 
 
 }

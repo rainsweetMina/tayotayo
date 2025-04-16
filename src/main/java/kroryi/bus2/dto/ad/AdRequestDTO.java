@@ -14,5 +14,7 @@ public class AdRequestDTO {
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private Long companyId;
+    private boolean showPopup;
+
 
 }
