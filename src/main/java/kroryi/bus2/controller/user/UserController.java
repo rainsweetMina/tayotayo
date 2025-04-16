@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.user;
 
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginFormDTO;
