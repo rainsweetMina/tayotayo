@@ -8,6 +8,7 @@ import kroryi.bus2.entity.Notice;
 import java.util.List;
 import java.util.Optional;
 
+
 public interface NoticeService {
     NoticeResponseDTO createNotice(CreateNoticeRequestDTO dto);
     NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto);
