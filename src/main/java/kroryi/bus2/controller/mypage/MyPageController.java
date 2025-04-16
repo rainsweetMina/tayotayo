@@ -1,4 +1,4 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.mypage;
 
 import jakarta.validation.Valid;
 import kroryi.bus2.config.security.CustomOAuth2User;
