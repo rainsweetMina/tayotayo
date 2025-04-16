@@ -23,4 +23,6 @@ public class AdResponseDTO {
     private String email;
 
 
+
+
 }

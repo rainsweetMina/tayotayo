@@ -1,9 +1,6 @@
 package kroryi.bus2.controller.ad;
 
-import kroryi.bus2.dto.ad.AdRequestDTO;
-import kroryi.bus2.dto.ad.AdResponseDTO;
-import kroryi.bus2.dto.ad.AdStatsDTO;
-import kroryi.bus2.dto.ad.AdUpdateRequestDTO;
+import kroryi.bus2.dto.ad.*;
 import kroryi.bus2.entity.ad.Ad;
 import kroryi.bus2.entity.ad.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
@@ -13,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/ad")
@@ -70,6 +68,15 @@ public class AdController {
     public ResponseEntity<AdResponseDTO> getAdById(@PathVariable Long id) {
         return ResponseEntity.ok(adService.getAdById(id));
     }
+    // PublicAdController.java
+    @GetMapping("/popup")
+    public ResponseEntity<AdPopupResponseDTO> getPopupAd() {
+        return adService.findPopupAd()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+
 
 
 

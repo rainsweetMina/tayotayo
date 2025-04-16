@@ -54,15 +54,18 @@ function loadAds() {
             tbody.innerHTML = "";
 
             data.forEach(ad => {
+                console.log("status 확인:", ad.status); // 👈 여기에 꼭 추가해서 실제 값 확인
                 const row = document.createElement("tr");
 
-                // 상태를 한글로 변환
+                // ✅ 상태를 한글로 변환
                 let statusText = "-";
                 switch (ad.status) {
                     case "SCHEDULED": statusText = "예정"; break;
                     case "ONGOING": statusText = "진행중"; break;
                     case "ENDED": statusText = "종료됨"; break;
                     case "DELETED": statusText = "삭제됨"; break;
+                    case "ENDING_SOON": statusText = "곧 종료"; break; // ✅ 추가!
+                    default: statusText = ad.status || "-"; break;
                 }
 
                 row.innerHTML = `
