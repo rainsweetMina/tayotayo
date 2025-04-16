@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
+import kroryi.bus2.entity.mypage.FavoriteBusStop;
+import kroryi.bus2.entity.mypage.FavoriteRoute;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.user.UserService;
@@ -18,6 +20,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @Log4j2
@@ -37,19 +41,21 @@ public class MyPageController {
         } else if (principal instanceof UserDetails userDetails) {
             return userDetails.getUsername();
         } else if (principal instanceof OAuth2User oAuth2User) {
-            // 혹시 다른 OAuth2User 타입으로 들어왔을 경우 보완
             Map<String, Object> attributes = oAuth2User.getAttributes();
-            Object userId = attributes.get("id"); // 또는 CustomOAuth2User에서 넣어준 키
+            Object userId = attributes.get("id");
             if (userId != null) {
-                return userId.toString(); // fallback
+                return userId.toString();
             }
         }
-
-//        return null;
-        // ✅ 개발 중: 로그인 안 해도 테스트 가능하게 null 대신 기본값 리턴
-        return "admin";
+        return "admin"; // 기본값으로 admin을 리턴
     }
 
+    private User getCurrentUser(Principal principal) {
+        if (principal == null) {
+            throw new IllegalStateException("사용자가 로그인되지 않았습니다.");
+        }
+        return userService.findByUserId(principal.getName());
+    }
 
     // 마이페이지 메인
     @GetMapping("")
@@ -66,11 +72,10 @@ public class MyPageController {
         }
 
         log.info("✅ 현재 로그인된 사용자 ID: {}", userId);
-        model.addAttribute("user", user); // ✅ 사용자 정보 추가
+        model.addAttribute("user", user);
 
         return "mypage/index";
     }
-
 
     // 비밀번호 변경 폼
     @GetMapping("/password")
@@ -167,30 +172,6 @@ public class MyPageController {
             model.addAttribute("error", e.getMessage());
             return "mypage/modify";
         }
-    }
-
-    // 즐겨찾기
-    @GetMapping("/favorites")
-    public String favorites() {
-        return "mypage/favorites";
-    }
-
-    // 분실물 신고
-    @GetMapping("/lost-report")
-    public String lostReport() {
-        return "mypage/lost-report";
-    }
-
-    // Q&A
-    @GetMapping("/qna")
-    public String qna() {
-        return "mypage/qna";
-    }
-
-    // 최근 검색 내역
-    @GetMapping("/recent-searches")
-    public String recentSearches() {
-        return "mypage/recent-searches";
     }
 
     // 회원 탈퇴
