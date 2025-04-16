@@ -1,5 +1,6 @@
 package kroryi.bus2.service.ad;
 
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.ad.*;
 import kroryi.bus2.entity.ad.Ad;
 import kroryi.bus2.entity.ad.AdCompany;
@@ -22,7 +23,7 @@ public class AdService {
     private final AdRepository adRepository;
     private final AdCompanyRepository adCompanyRepository;
 
-
+    @AdminAudit(action = "광고 등록", target = "Ad")
     public Ad saveAd(AdRequestDTO dto) {
         AdCompany company = adCompanyRepository.findById(dto.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다."));
@@ -67,6 +68,7 @@ public class AdService {
 
         return new AdStatsDTO(scheduled, ongoing, endingSoon, ended, deleted);
     }
+    @AdminAudit(action = "광고 삭제", target = "Ad")
     public void deleteAd(Long id) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고 ID를 찾을 수 없습니다."));
@@ -86,6 +88,7 @@ public class AdService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+    @AdminAudit(action = "광고 수정", target = "Ad")
     public Ad updateAd(Long id, AdUpdateRequestDTO dto) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고를 찾을 수 없습니다."));
