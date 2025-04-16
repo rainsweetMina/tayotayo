@@ -72,4 +72,26 @@ public class AdminAuditAspect {
         if (method.startsWith("delete")) return "삭제";
         return "작업";
     }
+    @AfterReturning(value = "@annotation(adminAudit)", returning = "result")
+    public void logAdminAudit(JoinPoint joinPoint, AdminAudit adminAudit, Object result) {
+        try {
+            String adminId = getCurrentAdminUsername();
+            if ("anonymous".equals(adminId)) return;
+
+            String argsJson = objectMapper.writeValueAsString(joinPoint.getArgs());
+            String resultJson = objectMapper.writeValueAsString(result);
+
+            auditLogService.logAdminAction(
+                    adminAudit.action(),
+                    adminAudit.target(),
+                    argsJson,
+                    resultJson
+            );
+
+            log.info("[🛡️ AdminAudit] {} - {} by {}", adminAudit.action(), adminAudit.target(), adminId);
+        } catch (Exception e) {
+            log.error("🚨 AdminAudit 기록 실패", e);
+        }
+    }
+
 }
