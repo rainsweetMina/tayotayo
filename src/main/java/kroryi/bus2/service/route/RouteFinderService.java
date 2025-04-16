@@ -54,7 +54,6 @@ public class RouteFinderService {
         return result;
     }
 
-    // 얘는 직통노선 찾아주는거
     public List<RouteResultDTO> findDirectRoutes(String startBsId, String endBsId) {
         List<RouteResultDTO> result = new ArrayList<>();
         List<String> routeIds = routeStopLinkRepository.findDirectRouteIdsWithSeqAndDir(startBsId, endBsId);
@@ -63,7 +62,7 @@ public class RouteFinderService {
             List<String> moveDirs = routeStopLinkRepository.findMoveDirByRouteIdAndBsId(routeId, startBsId);
             if (moveDirs.isEmpty()) continue;
 
-            String moveDir = moveDirs.get(0); // 임시로 첫 번째 방향 사용
+            String moveDir = moveDirs.get(0); // 첫 번째 방향 사용
 
             List<BusStopDTO> stationIds;
             try {
@@ -79,6 +78,9 @@ public class RouteFinderService {
             Route route = routeRepository.findByRouteId(routeId)
                     .orElseThrow(() -> new RuntimeException("노선 없음: " + routeId));
 
+            // 정류장 수 기반 예상 시간 계산
+            int estimatedMinutes = (int) Math.round(stationIds.size() * 2.5);
+
             result.add(RouteResultDTO.builder()
                     .type("직통")
                     .routeId(route.getRouteId())
@@ -87,11 +89,13 @@ public class RouteFinderService {
                     .endBsId(endBsId)
                     .transferCount(0)
                     .stationIds(stationIds)
+                    .estimatedMinutes(estimatedMinutes)
                     .build());
         }
 
         return result;
     }
+
 
     public List<RouteResultDTO> findRoutesWithNearbyStart2(String startBsId, String endBsId) {
         List<RouteResultDTO> result = new ArrayList<>();
@@ -137,18 +141,15 @@ public class RouteFinderService {
     public List<RouteResultDTO> findTransferRoutes(String startBsId, String endBsId) {
         List<RouteResultDTO> transferResults = new ArrayList<>();
 
-        // 1. 중간 정류장 후보 찾기
+        // 후보 찾기 (중간 생략)
         List<String> midPointsA = routeStopLinkRepository.findReachableStopsFrom(startBsId);
         List<String> midPointsB = routeStopLinkRepository.findReachableStopsTo(endBsId);
-
         Set<String> transferPoints = new HashSet<>(midPointsA);
         transferPoints.retainAll(midPointsB);
 
-        // 2. 거리 계산을 위한 출발/도착 정류장 정보 조회
         BusStop startStop = busStopRepository.findByBsId(startBsId).orElseThrow();
         BusStop endStop = busStopRepository.findByBsId(endBsId).orElseThrow();
 
-        // 3. 거리 기반 환승 후보 정렬
         List<String> sortedTransferPoints = transferPoints.stream()
                 .map(bsId -> {
                     BusStop stop = busStopRepository.findByBsId(bsId).orElse(null);
@@ -158,28 +159,27 @@ public class RouteFinderService {
                 })
                 .filter(Objects::nonNull)
                 .sorted(Comparator.comparingDouble(TransferCandidate::getTotalDistance))
-                .limit(1) // 최대 3개의 환승 지점만 선택
+                .limit(1)
                 .map(TransferCandidate::getBsId)
                 .collect(Collectors.toList());
 
-        // 4. 경로 구성
         for (String transferBsId : sortedTransferPoints) {
             List<RouteResultDTO> firstLegs = findDirectRoutes(startBsId, transferBsId);
             List<RouteResultDTO> secondLegs = findDirectRoutes(transferBsId, endBsId);
 
-            if (firstLegs.isEmpty() || secondLegs.isEmpty()) continue;
+            RouteResultDTO first = firstLegs.stream()
+                    .min(Comparator.comparingInt(r -> r.getStationIds().size()))
+                    .orElse(null);
+            RouteResultDTO second = secondLegs.stream()
+                    .min(Comparator.comparingInt(r -> r.getStationIds().size()))
+                    .orElse(null);
 
-            RouteResultDTO first = firstLegs.get(0);
-            RouteResultDTO second = secondLegs.get(0);
-
-            // 같은 노선
+            if (first == null || second == null) continue;
             if (first.getRouteId().equals(second.getRouteId())) continue;
 
-            // 정류장 수가 너무 많은 경우
-//            int totalStops = first.getStationIds().size() + second.getStationIds().size() - 1;
-//            if (totalStops > 30) continue;
+            int totalStops = first.getStationIds().size() + second.getStationIds().size() - 1;
+            if (totalStops > 30) continue;
 
-            // 지나치는 경로가 실제 직선거리보다 너무 먼 경우
             BusStop transferStop = busStopRepository.findByBsId(transferBsId).orElse(null);
             if (transferStop == null) continue;
 
@@ -187,13 +187,16 @@ public class RouteFinderService {
             double viaTransfer = distanceBetween(startStop, transferStop) + distanceBetween(transferStop, endStop);
             if (viaTransfer > direct * 2.5) continue;
 
-            // 통과 시 등록
+            // 예상 소요 시간 계산
+            double avgMinutesPerStop = 2.5; // 평균 정류장 간 시간 (분)
+            double estimatedMinutes = totalStops * avgMinutesPerStop;
+
             List<BusStopDTO> fullPath = new ArrayList<>(first.getStationIds());
             if (second.getStationIds().size() > 1) {
                 fullPath.addAll(second.getStationIds().subList(1, second.getStationIds().size()));
             }
 
-            transferResults.add(RouteResultDTO.builder()
+            RouteResultDTO dto = RouteResultDTO.builder()
                     .type("환승")
                     .routeId(first.getRouteId() + " → " + second.getRouteId())
                     .routeNo(first.getRouteNo() + " → " + second.getRouteNo())
@@ -203,10 +206,16 @@ public class RouteFinderService {
                     .stationIds(fullPath)
                     .transferStationId(transferBsId)
                     .transferStationName(
-                            transferStop.getBsNm() != null ? transferStop.getBsNm() : "알 수 없음"
-                    )
-                    .build());
+                            transferStop.getBsNm() != null ? transferStop.getBsNm() : "알 수 없음")
+                    .estimatedMinutes(estimatedMinutes)
+                    .build();
+
+            transferResults.add(dto);
         }
+
+        // 정렬 기준을 estimatedMinutes 로 변경
+        transferResults.sort(Comparator.comparingDouble(RouteResultDTO::getEstimatedMinutes));
+
         return transferResults;
     }
 
