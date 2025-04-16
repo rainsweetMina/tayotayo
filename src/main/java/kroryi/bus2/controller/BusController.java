@@ -85,13 +85,6 @@ public class BusController {
         return "bus/bus_stop/updateBusStop";
     }
 
-    // 정류장의 정보를 수정하는 페이지
-    @GetMapping("/ApiTest")
-    public String apitest() {
-        return "/apiSampleTest";
-    }
-
-    // 정류장의 정보를 수정하는 페이지
     @GetMapping("/Test22")
     public String test22() {
         return "bus/Test22";
