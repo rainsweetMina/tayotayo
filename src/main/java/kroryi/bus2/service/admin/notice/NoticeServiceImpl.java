@@ -1,6 +1,7 @@
 package kroryi.bus2.service.admin.notice;
 
 import jakarta.persistence.EntityNotFoundException;
+import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;
 import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
 import kroryi.bus2.dto.notice.UpdateNoticeRequestDTO;
@@ -86,6 +87,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     //팝업관련
+    @AdminTracked
     @Override
     public Optional<Notice> findValidPopup() {
         LocalDateTime now = LocalDateTime.now();

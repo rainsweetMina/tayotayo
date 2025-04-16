@@ -25,5 +25,4 @@ public interface ApiLogEntryRepository extends JpaRepository<ApiLogEntry, Long> 
             "ORDER BY FUNCTION('DATE_FORMAT', a.timestamp, '%H:00')")
     List<Object[]> findHourlyAvgToday();
 
-
 }

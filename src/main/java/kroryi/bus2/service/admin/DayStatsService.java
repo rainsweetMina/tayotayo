@@ -1,5 +1,6 @@
 package kroryi.bus2.service.admin;
 
+import kroryi.bus2.aop.AdminTracked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,15 @@ public class DayStatsService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+
+    // Redis에 저장할 키를 생성하는 메서드
     private String getTodayKey(String metric) {
         // "requests:20250407" 같은 키 만들기
         LocalDate today = LocalDate.now();
         return String.format("%s:%s", metric, today.toString().replace("-", ""));
     }
 
+    // Redis에 저장된 키를 가져오는 메서드
     public void incrementRequestCount() {
         String key = getTodayKey("requests");
         Long count = redisTemplate.opsForValue().increment(key);
