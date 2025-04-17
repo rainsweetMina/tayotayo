@@ -28,4 +28,5 @@ public class AdminAuditLog {
     private String afterValue;      // 수정 후 (JSON)
 
     private LocalDateTime timestamp;
+
 }

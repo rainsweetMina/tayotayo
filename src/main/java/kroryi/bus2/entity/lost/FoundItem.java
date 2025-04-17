@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class FoundItem extends BaseTimeEntity {
 
     @Id
@@ -31,8 +32,6 @@ public class FoundItem extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private FoundStatus status;
-
-    private String photoUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "handler_id")
@@ -82,10 +81,12 @@ public class FoundItem extends BaseTimeEntity {
         this.handlerEmail = dto.getHandlerEmail();
         this.status = dto.getStatus();
         this.storageLocation = dto.getStorageLocation();
-        this.photoUrl = dto.getPhotoUrl();
-        // ✅ 수령완료 선택 시 matched true 처리
+
+        // 🔥 photoUrl은 setter로만 직접 관리 (이미지 처리 쪽에서만 설정)
+
         if (dto.getStatus() == FoundStatus.RETURNED && !this.matched) {
             this.matched = true;
         }
     }
+
 }

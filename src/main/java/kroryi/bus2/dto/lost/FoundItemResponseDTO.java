@@ -1,5 +1,6 @@
 package kroryi.bus2.dto.lost;
 
+import kroryi.bus2.entity.lost.FoundItem;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,6 +21,23 @@ public class FoundItemResponseDTO {
     private String storageLocation; // 보관장소
     private LocalDateTime foundTime; // 습득 날짜
     private String photoUrl; // 이미지 URL
+
+    public static FoundItemResponseDTO fromEntity(FoundItem item) {
+        return FoundItemResponseDTO.builder()
+                .id(item.getId())
+                .itemName(item.getItemName())
+                .foundPlace(item.getFoundPlace())
+                .busNumber(item.getBusNumber())
+                .busCompany(item.getBusCompany())
+                .content(item.getContent())
+                .handlerContact(item.getHandlerContact())
+                .handlerEmail(item.getHandlerEmail())
+                .status(item.getStatus().name())  // ENUM을 문자열로
+                .storageLocation(item.getStorageLocation())
+                .foundTime(item.getFoundTime())
+                .photoUrl(item.getPhoto() != null ? item.getPhoto().getUrl() : null) // 양방향 매핑 되어 있으면
+                .build();
+    }
 }
 
 

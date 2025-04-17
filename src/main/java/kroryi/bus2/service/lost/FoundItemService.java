@@ -1,15 +1,21 @@
 package kroryi.bus2.service.lost;
 
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.lost.FoundItemAdminResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO;
+import kroryi.bus2.dto.lost.FoundItemResponseDTO;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface FoundItemService {
 
-    // 등록
-    void registerFoundItem(FoundItemRequestDTO dto);
+//    void registerFoundItem(FoundItemRequestDTO dto); // 기존 등록
+
+    // 이미지 포함 버전 (어노테이션 제거)
+    void registerFoundItem(FoundItemRequestDTO dto, MultipartFile image);
+
 
     // 전체 목록 조회 (삭제되지 않은 것만)
     List<FoundItemAdminResponseDTO> getAllFoundItems();
@@ -18,7 +24,7 @@ public interface FoundItemService {
     FoundItemAdminResponseDTO getFoundItemById(Long id);
 
     // 수정
-    void updateFoundItem(Long id, FoundItemRequestDTO dto);
+    void updateFoundItem(Long id, FoundItemRequestDTO dto, MultipartFile image);
 
     // 숨김 처리
     void hideFoundItem(Long id);
@@ -37,6 +43,11 @@ public interface FoundItemService {
     List<FoundItemAdminResponseDTO> getAllForAdmin();
 
     FoundItemAdminResponseDTO getFoundItemAdminById(Long id);
+
+    List<FoundItemResponseDTO> getVisibleFoundItemsForUser();
+    FoundItemResponseDTO getFoundItemDetailForUser(Long id);
+
+
 
 }
 

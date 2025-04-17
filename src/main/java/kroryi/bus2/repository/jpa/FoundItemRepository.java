@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
 
@@ -20,6 +21,9 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
     //수정으로 수령 매칭
     @Query("SELECT COUNT(f) FROM FoundItem f WHERE f.status = 'RETURNED'")
     Long countMatchedIncludingManual();
+
+    Optional<FoundItem> findByIdAndIsDeletedFalseAndVisibleTrue(Long id);
+
 
 
 

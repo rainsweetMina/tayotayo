@@ -6,28 +6,27 @@
 </head>
 <body>
 <h1>습득물 등록</h1>
-<form th:action="@{/admin/found}" th:object="${foundItemForm}" method="post">
-  <input type="hidden" th:field="*{handlerId}" value="3" />
-
-  <label>물품명: <input type="text" th:field="*{itemName}" /></label><br>
-  <label>버스회사: <input type="text" th:field="*{busCompany}" /></label><br>
-  <label>버스번호: <input type="text" th:field="*{busNumber}" /></label><br>
-  <label>습득일: <input type="date" th:field="*{foundTime}" /></label><br>
-  <label>습득 장소: <input type="text" th:field="*{foundPlace}" /></label><br>
-  <label>내용: <textarea th:field="*{content}"></textarea></label><br>
-  <label>보관 위치: <input type="text" th:field="*{storageLocation}" /></label><br>
-  <label>연락처: <input type="text" th:field="*{handlerContact}" /></label><br>
-  <label>이메일: <input type="email" th:field="*{handlerEmail}" /></label><br>
-
-  <label>처리 상태:
-    <select th:field="*{status}">
-      <option th:each="st : ${T(kroryi.bus2.entity.lost.FoundStatus).values()}"
-              th:value="${st}" th:text="${st.displayName}">상태</option>
+<form th:action="@{/admin/found}" method="post" enctype="multipart/form-data">
+  <label>물품명: <input type="text" name="itemName" /></label><br>
+  <label>버스회사: <input type="text" name="busCompany" /></label><br>
+  <label>버스번호: <input type="text" name="busNumber" /></label><br>
+  <label>습득일: <input type="date" name="foundTime" /></label><br>
+  <label>습득 장소: <input type="text" name="foundPlace" /></label><br>
+  <label>내용: <textarea name="content"></textarea></label><br>
+  <label>보관 위치: <input type="text" name="storageLocation" /></label><br>
+  <label>연락처: <input type="text" name="handlerContact" /></label><br>
+  <label>이메일: <input type="email" name="handlerEmail" /></label><br>
+  <label>상태:
+    <select name="status">
+      <option value="IN_STORAGE">보관 중</option>
+      <option value="RETURNED">회수 완료</option>
     </select>
   </label><br>
-
+  <input type="hidden" name="handlerId" value="3" />
+  <label>이미지 등록: <input type="file" name="image" accept="image/*" /></label><br>
   <button type="submit">등록</button>
 </form>
+
 
 <hr>
 

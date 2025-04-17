@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FoundItemAdminResponseDTO  {
+@ToString
+public class FoundItemAdminResponseDTO {
     private Long id;
     private String itemName;
     private String busCompany;
@@ -35,7 +36,6 @@ public class FoundItemAdminResponseDTO  {
     private String statusName;
 
 
-
     public static FoundItemAdminResponseDTO fromEntity(FoundItem entity) {
 
         return FoundItemAdminResponseDTO.builder()
@@ -51,7 +51,7 @@ public class FoundItemAdminResponseDTO  {
                 .handlerEmail(entity.getHandlerEmail())
                 .status(entity.getStatus())
                 .statusName(entity.getStatus().getDisplayName()) // 추가!
-                .photoUrl(entity.getPhotoUrl())
+                .photoUrl(entity.getPhoto() != null ? entity.getPhoto().getUrl() : null)
                 .isHidden(entity.isHidden())
                 .isDeleted(entity.getIsDeleted())
                 .handlerId(entity.getHandler() != null ? entity.getHandler().getId() : null)

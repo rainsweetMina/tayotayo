@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class FoundItemRequestDTO {
     private String itemName;
     private String busCompany;
@@ -25,7 +26,6 @@ public class FoundItemRequestDTO {
     private String handlerContact;
     private String handlerEmail;
     private FoundStatus status;
-    private String photoUrl;
     private Long handlerId;
 }
 
