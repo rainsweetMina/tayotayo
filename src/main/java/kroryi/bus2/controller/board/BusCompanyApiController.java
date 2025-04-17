@@ -1,6 +1,7 @@
 package kroryi.bus2.controller.board;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.dto.board.BusCompanyDTO;
 import kroryi.bus2.entity.BusCompany;
 import kroryi.bus2.service.board.BusCompanyService;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "버스 회사 정보", description = "")
 @RestController
 @RequestMapping("/api/companies")
 @RequiredArgsConstructor
