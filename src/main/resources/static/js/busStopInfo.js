@@ -139,14 +139,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 왼쪽 열
             row.innerHTML += `
-            <td>${leftInfo?.city ?? ''} ${leftInfo?.district ?? ''}</td>
+            <td>${leftInfo?.district ?? ''} ${leftInfo?.neighborhood ?? ''}</td>
             <td>${leftInfo?.busStop?.bsNm ?? leftInfo?.bsNm ?? ''}</td>
         `;
 
             // 오른쪽 열
             if (rightInfo) {
                 row.innerHTML += `
-                <td>${rightInfo?.city ?? ''} ${rightInfo?.district ?? ''}</td>
+                <td>${rightInfo?.district ?? ''} ${rightInfo?.neighborhood ?? ''}</td>
                 <td>${rightInfo?.busStop?.bsNm ?? rightInfo?.bsNm ?? ''}</td>
             `;
             } else {

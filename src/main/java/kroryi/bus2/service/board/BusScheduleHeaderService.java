@@ -37,7 +37,7 @@ public class BusScheduleHeaderService {
         busScheduleHeaderRepository.save(header);
     }
 
-    @AdminAudit(action = "지정 노선 조회", target = "BusScheduleHeader")
+    // 지정 노선 조회 (시간표 헤드에 사용)
     public List<Integer> getStopOrder(String routeId, String moveDir) {
         try {
             Optional<BusScheduleHeader> optional;

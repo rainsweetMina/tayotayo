@@ -16,7 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class BusScheduleHeaderController {
+public class BusScheduleHeaderApiController {
 
     private final BusScheduleHeaderService busScheduleHeaderService;
 
