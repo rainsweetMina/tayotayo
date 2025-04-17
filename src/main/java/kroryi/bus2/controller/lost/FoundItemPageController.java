@@ -20,13 +20,13 @@ public class FoundItemPageController {
 
     private final FoundItemService foundItemService;
 
-    // ✅ 등록 + 목록 화면
-    @GetMapping
-    public String showFoundItemList(Model model) {
-        model.addAttribute("foundItems", foundItemService.getAllFoundItems());
-        model.addAttribute("foundItemForm", new FoundItemRequestDTO());
-        return "admin/found-list";
-    }
+//    // ✅ 등록 + 목록 화면
+//    @GetMapping
+//    public String showFoundItemList(Model model) {
+//        model.addAttribute("foundItems", foundItemService.getAllFoundItems());
+//        model.addAttribute("foundItemForm", new FoundItemRequestDTO());
+//        return "admin/found-list";
+//    }
 
     // ✅ 습득물 등록
     @PostMapping

@@ -40,11 +40,11 @@ public class QnaController {
         QnaResponseDTO response = qnaService.getQnaDetail(id, memberId, isAdmin);
         return ResponseEntity.ok(response);
     }
-    @PostMapping("/admin/answer")
-    public ResponseEntity<String> answerQna(@RequestBody @Valid QnaAnswerDTO dto) {
-        qnaService.answerQna(dto);
-        return ResponseEntity.ok("답변이 등록되었습니다.");
-    }
+//    @PostMapping("/admin/answer")
+//    public ResponseEntity<String> answerQna(@RequestBody @Valid QnaAnswerDTO dto) {
+//        qnaService.answerQna(dto);
+//        return ResponseEntity.ok("답변이 등록되었습니다.");
+//    }
     @GetMapping("/admin")
     public ResponseEntity<List<QnaResponseDTO>> getAllQnaForAdmin() {
         List<QnaResponseDTO> qnas = qnaService.getAllQnaForAdmin();
@@ -75,6 +75,13 @@ public class QnaController {
         qnaService.deleteQna(id, memberId);
         return ResponseEntity.ok("질문글이 삭제되었습니다.");
     }
+    @PutMapping("/{id}/answer")
+    public ResponseEntity<Void> answerQna(@PathVariable Long id,
+                                          @RequestBody QnaAnswerDTO dto) {
+        qnaService.answerQna(id, dto.getAnswer());  // ✅ id는 경로에서, answer는 body에서 받음
+        return ResponseEntity.ok().build();
+    }
+
 
 
 
