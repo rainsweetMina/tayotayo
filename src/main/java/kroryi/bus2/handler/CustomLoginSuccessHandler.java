@@ -34,7 +34,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         if (user != null && user.getRole() == Role.ADMIN) {
             log.info("✅ 관리자 로그인 성공: {}", userId);
-            response.sendRedirect("/admin");
+            response.sendRedirect("/admin/ad-manage");
         } else {
             log.info("✅ 일반 사용자 로그인 성공: {}", userId);
             response.sendRedirect("/mypage");

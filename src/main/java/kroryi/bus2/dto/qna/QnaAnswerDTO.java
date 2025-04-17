@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class QnaAnswerDTO {
 
-    private Long qnaId;
     private String answer;
 }
 

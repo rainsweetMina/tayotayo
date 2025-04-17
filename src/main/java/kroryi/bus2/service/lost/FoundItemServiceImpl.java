@@ -1,5 +1,7 @@
 package kroryi.bus2.service.lost;
 
+import kroryi.bus2.aop.AdminAudit;
+import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.dto.lost.FoundItemAdminResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO;
 import kroryi.bus2.entity.lost.FoundItem;
@@ -33,6 +35,7 @@ public class FoundItemServiceImpl implements FoundItemService {
 
     // ✅ 등록
     @Override
+    @AdminAudit(action = "습득물 등록", target = "FoundItem")
     public void registerFoundItem(FoundItemRequestDTO dto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
@@ -84,6 +87,7 @@ public class FoundItemServiceImpl implements FoundItemService {
 
     // ✅ 수정
     @Override
+    @AdminAudit(action = "습득물 수정", target = "FoundItem")
     public void updateFoundItem(Long id, FoundItemRequestDTO dto) {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("수정할 습득물이 존재하지 않습니다."));
@@ -101,6 +105,7 @@ public class FoundItemServiceImpl implements FoundItemService {
 
     // ✅ 숨김 처리
     @Override
+    @AdminTracked
     public void hideFoundItem(Long id) {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("숨길 습득물이 존재하지 않습니다."));
@@ -110,6 +115,7 @@ public class FoundItemServiceImpl implements FoundItemService {
 
     // ✅ 삭제 처리
     @Override
+    @AdminTracked
     public void deleteFoundItem(Long id) {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("삭제할 습득물이 존재하지 않습니다."));
@@ -120,6 +126,7 @@ public class FoundItemServiceImpl implements FoundItemService {
     // ✅ 매칭 처리 - 로그인 사용자 기준
     @Override
     @Transactional
+    @AdminAudit(action = "습득물 매칭", target = "FoundItem")
     public void matchFoundItem(Long foundItemId, Long lostItemId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();

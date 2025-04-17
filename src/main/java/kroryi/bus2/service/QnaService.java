@@ -1,6 +1,8 @@
 package kroryi.bus2.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.qna.*;
 import kroryi.bus2.entity.Qna;
 import kroryi.bus2.entity.QnaStatus;
@@ -72,13 +74,15 @@ public class QnaService {
                 .build();
     }
     @Transactional
-    public void answerQna(QnaAnswerDTO dto) {
-        Qna qna = qnaRepository.findById(dto.getQnaId())
-                .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
-
-        qna.setAnswer(dto.getAnswer());
-        qna.setStatus(QnaStatus.ANSWERED);
+    @AdminAudit(action = "QnA 답변 등록", target = "Qna")
+    public void answerQna(Long id, String answer) {
+        Qna qna = qnaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 QnA를 찾을 수 없습니다."));
+        qna.setAnswer(answer); // ✅ 답변 저장
+        qnaRepository.save(qna);
     }
+
+
     public List<QnaResponseDTO> getAllQnaForAdmin() {
         List<Qna> qnas = qnaRepository.findAllByOrderByCreatedAtDesc();
         return qnas.stream()
@@ -86,6 +90,7 @@ public class QnaService {
                 .collect(Collectors.toList());
     }
     @Transactional
+    @AdminAudit(action = "QnA 숨김 처리", target = "Qna")
     public void hideQna(Long qnaId) {
         Qna qna = qnaRepository.findById(qnaId)
                 .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
@@ -126,6 +131,7 @@ public class QnaService {
         if (dto.getIsSecret() != null) qna.setSecret(dto.getIsSecret());
     }
     @Transactional
+    @AdminAudit(action = "QnA 삭제", target = "Qna")
     public void deleteQna(Long qnaId, Long memberId) {
         Qna qna = qnaRepository.findById(qnaId)
                 .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
@@ -137,12 +143,6 @@ public class QnaService {
 
         qna.setDeleted(true);
     }
-
-
-
-
-
-
 
 }
 

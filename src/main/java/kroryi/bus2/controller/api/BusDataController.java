@@ -42,6 +42,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/bus")
@@ -327,12 +328,22 @@ public class BusDataController {
         }
     }
 
-
     @GetMapping("/findRoutes")
+    @Operation(summary = "길찾기", description = "출도착 정류소Id를 입력하면 직통,환승 된 노선을 찾아줌")
     public ResponseEntity<List<RouteResultDTO>> findRoutes(
             @RequestParam String startBsId,
             @RequestParam String endBsId) {
 
+        String redisKey = "route:path:" + startBsId + ":" + endBsId;
+
+        // 1. Redis 캐시 확인
+        List<RouteResultDTO> cached = (List<RouteResultDTO>) redisTemplate.opsForValue().get(redisKey);
+        if (cached != null) {
+            log.info("✅ [Cache Hit] 길찾기 경로 Redis에서 가져옴: {}", redisKey);
+            return ResponseEntity.ok(cached);
+        }
+
+        // 2. 없으면 서비스로 직접 계산
         List<RouteResultDTO> directResults = routeFinderService.findRoutesWithNearbyStart(startBsId, endBsId);
         List<RouteResultDTO> transferResults = routeFinderService.findRoutesWithNearbyStart2(startBsId, endBsId);
 
@@ -340,8 +351,13 @@ public class BusDataController {
         combinedResults.addAll(directResults);
         combinedResults.addAll(transferResults);
 
+        // 3. Redis 캐시 저장 (TTL: 12시간 = 43200초)
+        redisTemplate.opsForValue().set(redisKey, combinedResults, 43200, TimeUnit.SECONDS);
+        log.info("[Cache Store] 길찾기 경로 Redis에 저장됨: {}", redisKey);
+
         return ResponseEntity.ok(combinedResults);
     }
+
 
 
 

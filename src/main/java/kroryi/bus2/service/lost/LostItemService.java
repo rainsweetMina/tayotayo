@@ -2,6 +2,7 @@ package kroryi.bus2.service.lost;
 
 
 import jakarta.persistence.EntityNotFoundException;
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.lost.*;
 import kroryi.bus2.entity.lost.LostItem;
 import kroryi.bus2.entity.user.User;
@@ -24,7 +25,7 @@ public class LostItemService {
     private final FoundItemRepository foundItemRepository;
     private final LostFoundMatchRepository lostFoundMatchRepository;
 
-
+    @AdminAudit(action = "분실물 등록", target = "LostItem")
     public LostItem saveLostItem(LostItemRequestDTO dto) {
         // 신고자 유저 불러오기
         User reporter = userRepository.findById(dto.getReporterId())
@@ -107,6 +108,7 @@ public class LostItemService {
                 .build();
     }
     @Transactional
+    @AdminAudit(action = "분실물 숨김", target = "LostItem")
     public void hideLostItem(Long id) {
         LostItem item = lostItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("해당 분실물을 찾을 수 없습니다."));
@@ -114,6 +116,7 @@ public class LostItemService {
         item.setVisible(false); // ✅ 숨김 처리
     }
     @Transactional
+    @AdminAudit(action = "분실물 삭제", target = "LostItem")
     public void deleteLostItem(Long id) {
         LostItem item = lostItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("해당 분실물을 찾을 수 없습니다."));

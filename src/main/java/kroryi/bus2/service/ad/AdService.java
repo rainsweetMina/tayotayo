@@ -1,5 +1,6 @@
 package kroryi.bus2.service.ad;
 
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.ad.*;
 import kroryi.bus2.entity.ad.Ad;
 import kroryi.bus2.entity.ad.AdCompany;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.collect;
@@ -21,7 +23,7 @@ public class AdService {
     private final AdRepository adRepository;
     private final AdCompanyRepository adCompanyRepository;
 
-
+    @AdminAudit(action = "광고 등록", target = "Ad")
     public Ad saveAd(AdRequestDTO dto) {
         AdCompany company = adCompanyRepository.findById(dto.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다."));
@@ -32,6 +34,7 @@ public class AdService {
                 .linkUrl(dto.getLinkUrl())
                 .startDateTime(dto.getStartDateTime())
                 .endDateTime(dto.getEndDateTime())
+                .showPopup(dto.isShowPopup())
                 .deleted(false)
                 .company(company) // ✅ 여기서 연동
                 .build();
@@ -65,6 +68,7 @@ public class AdService {
 
         return new AdStatsDTO(scheduled, ongoing, endingSoon, ended, deleted);
     }
+    @AdminAudit(action = "광고 삭제", target = "Ad")
     public void deleteAd(Long id) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고 ID를 찾을 수 없습니다."));
@@ -84,6 +88,7 @@ public class AdService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+    @AdminAudit(action = "광고 수정", target = "Ad")
     public Ad updateAd(Long id, AdUpdateRequestDTO dto) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고를 찾을 수 없습니다."));
@@ -119,7 +124,7 @@ public class AdService {
                 .linkUrl(ad.getLinkUrl())
                 .startDateTime(ad.getStartDateTime())
                 .endDateTime(ad.getEndDateTime())
-                .status(ad.getStatus())
+                .status(ad.getStatus() != null ? ad.getStatus() : "UNKNOWN")
                 .company(company != null ? AdCompanyDTO.builder()
                         .id(company.getId())
                         .name(company.getName())
@@ -133,9 +138,18 @@ public class AdService {
                 .email(company != null ? company.getEmail() : null)
                 .build();
     }
+    // AdServiceImpl.java
+    public Optional<Ad> findValidPopupAd() {
+        LocalDateTime now = LocalDateTime.now();
+        return adRepository.findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now);
+    }
 
-
-
+    public Optional<AdPopupResponseDTO> findPopupAd() {
+        LocalDateTime now = LocalDateTime.now();
+        return adRepository
+                .findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now)
+                .map(AdPopupResponseDTO::new);
+    }
 
 
 }
