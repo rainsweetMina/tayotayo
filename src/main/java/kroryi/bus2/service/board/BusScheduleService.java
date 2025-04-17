@@ -1,5 +1,6 @@
 package kroryi.bus2.service.board;
 
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.board.BusScheduleDTO;
 import kroryi.bus2.entity.BusSchedule;
 import kroryi.bus2.repository.jpa.board.BusScheduleRepository;
@@ -17,6 +18,7 @@ public class BusScheduleService {
 
     // 수정 페이지에서 추가&수정
     @Transactional
+    @AdminAudit(action = "시간표 수정&추가(웹)", target = "BusSchedule")
     public void saveOrUpdateSchedules(List<BusSchedule> schedules) {
         for (BusSchedule schedule : schedules) {
             if (schedule.getId() == null) {
@@ -47,11 +49,13 @@ public class BusScheduleService {
 
     // 수정 페이지에서 삭제
     @Transactional
+    @AdminAudit(action = "시간표 삭제(웹)", target = "BusSchedule")
     public void deleteSchedulesByIds(List<Long> ids) {
         busScheduleRepository.deleteAllByIdInBatch(ids);
     }
 
     // 관리자용 추가
+    @AdminAudit(action = "시간표 추가", target = "BusSchedule")
     public BusSchedule saveSchedule(BusScheduleDTO dto) {
         BusSchedule entity = dto.toEntity();
         return busScheduleRepository.save(entity);
@@ -59,6 +63,7 @@ public class BusScheduleService {
 
     // 관리자용 수정
     @Transactional
+    @AdminAudit(action = "시간표 수정", target = "BusSchedule")
     public BusSchedule updateSchedule(Long id, BusScheduleDTO dto) {
         BusSchedule schedule = busScheduleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("스케줄 없음"));
@@ -81,6 +86,7 @@ public class BusScheduleService {
 
     // 관리자용 삭제
     @Transactional
+    @AdminAudit(action = "시간표 삭제", target = "BusSchedule")
     public void deleteSchedules(String routeId, String moveDir, Integer scheduleNo) {
         if (scheduleNo != null) {
             if (moveDir != null && !moveDir.isBlank()) {

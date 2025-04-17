@@ -1,5 +1,6 @@
 package kroryi.bus2.service.board;
 
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.entity.busStop.BusStopInfo;
 import kroryi.bus2.repository.jpa.board.BusStopInfoRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -16,22 +17,27 @@ public class BusStopInfoService {
     private final RouteStopLinkRepository routeStopLinkRepository;
     private final RouteRepository routeRepository;
 
+    // 웹 드롭다운에 사용할 구(주소) 목록 조회
     public List<String> getAllDistricts() {
         return busStopInfoRepository.findDistinctDistrict();
     }
 
+    // 웹 드롭다운에 사용할 동(주소) 목록 조회
     public List<String> getNeighborhoodsByDistrict(String district) {
         return busStopInfoRepository.findNeighborhoodsByDistrict(district);
     }
 
+    // 정류장 목록 조회(구)
     public List<BusStopInfo> getBusStopsByDistrict(String district) {
         return busStopInfoRepository.findByDistrict(district);
     }
 
+    // 정류장 목록 조회(구&동)
     public List<BusStopInfo> getBusStopsByDistrictAndNeighborhood(String district, String neighborhood) {
         return busStopInfoRepository.findByDistrictAndNeighborhood(district, neighborhood);
     }
 
+    // 웹 드롭다운에 사용할 노선 조회
     public List<String> getRouteNosByType(String type) {
         List<String> all = routeRepository.findDistinctRouteNos();
         return all.stream()
@@ -46,6 +52,7 @@ public class BusStopInfoService {
                 .toList();
     }
 
+    // 정류장 목록 조회(노선)
     public List<BusStopInfo> getStopsByRouteNo(String routeNo) {
         return busStopInfoRepository.findByRouteNo(routeNo);
     }

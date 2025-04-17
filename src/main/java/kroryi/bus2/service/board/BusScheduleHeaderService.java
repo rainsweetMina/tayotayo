@@ -2,6 +2,7 @@ package kroryi.bus2.service.board;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.board.BusScheduleHeaderRequestDTO;
 import kroryi.bus2.entity.BusScheduleHeader;
 
@@ -21,6 +22,7 @@ public class BusScheduleHeaderService {
     private final ObjectMapper objectMapper;
 
     // 웹 전용
+    @AdminAudit(action = "노선 지정(웹)", target = "BusScheduleHeader")
     public void saveStopOrder(String routeId, String moveDir, List<Integer> stopOrder) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(stopOrder);
 
@@ -35,6 +37,7 @@ public class BusScheduleHeaderService {
         busScheduleHeaderRepository.save(header);
     }
 
+    @AdminAudit(action = "지정 노선 조회", target = "BusScheduleHeader")
     public List<Integer> getStopOrder(String routeId, String moveDir) {
         try {
             Optional<BusScheduleHeader> optional;
@@ -64,6 +67,7 @@ public class BusScheduleHeaderService {
         return new ArrayList<>();
     }
 
+    @AdminAudit(action = "노선 전체 정류장 조회(방면)", target = "BusScheduleHeader")
     public Map<String, Object> getSeqsByRoute(String routeId) {
         List<String> seqList = routeStopLinkRepository.findSeqsByRouteId(routeId);
         return Map.of(
@@ -72,6 +76,7 @@ public class BusScheduleHeaderService {
         );
     }
 
+    @AdminAudit(action = "노선 전체 정류장 조회", target = "BusScheduleHeader")
     public Map<String, Object> getSeqsByRouteIdAndMoveDir(String routeId, String moveDir) {
         List<String> seqList = routeStopLinkRepository.findSeqByRouteIdAndMoveDir(routeId, moveDir);
         return Map.of(
@@ -81,12 +86,14 @@ public class BusScheduleHeaderService {
         );
     }
 
+    @AdminAudit(action = "노선 정류장 조회", target = "BusScheduleHeader")
     public List<String> findSeqsByRouteIdAndBusStopName(String routeId, String bsNm) {
         return routeStopLinkRepository.findSeqsByStopName(routeId, bsNm);
     }
 
 
     // CREATE
+    @AdminAudit(action = "노선 지정", target = "BusScheduleHeader")
     public BusScheduleHeader create(BusScheduleHeaderRequestDTO dto) {
         List<Integer> validSeqList = routeStopLinkRepository
                 .findSeqsByRouteIdAndMoveDir(dto.getRouteId(), dto.getMoveDir());
@@ -102,11 +109,13 @@ public class BusScheduleHeaderService {
     }
 
     // READ ALL
+    @AdminAudit(action = "지정 노선 전체조회", target = "BusScheduleHeader")
     public List<BusScheduleHeader> findAll() {
         return busScheduleHeaderRepository.findAll();
     }
 
     // UPDATE
+    @AdminAudit(action = "지정 노선 수정", target = "BusScheduleHeader")
     public BusScheduleHeader update(int id, BusScheduleHeaderRequestDTO dto) {
         BusScheduleHeader header = busScheduleHeaderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 ID: " + id));
@@ -123,6 +132,7 @@ public class BusScheduleHeaderService {
     }
 
     // DELETE
+    @AdminAudit(action = "지정 노선 삭제", target = "BusScheduleHeader")
     public void delete(int id) {
         busScheduleHeaderRepository.deleteById(id);
     }
