@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "notice")
@@ -30,6 +32,24 @@ public class Notice {
         this.title = title;
         this.author = author;
         this.content = content;
+    }
+
+    // 파일 업로드
+    @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NoticeFile> files = new ArrayList<>();
+
+    // ✅ 안전한 방식으로 파일들 교체하는 메서드 추가
+    public void updateFiles(List<NoticeFile> newFiles) {
+        this.files.clear(); // 기존 파일들 orphan 처리
+        for (NoticeFile file : newFiles) {
+            this.addFile(file);
+        }
+    }
+
+    // ✅ 개별 파일 추가 시 연관관계까지 묶는 메서드
+    public void addFile(NoticeFile file) {
+        this.files.add(file);
+        file.setNotice(this);
     }
 
     @PrePersist

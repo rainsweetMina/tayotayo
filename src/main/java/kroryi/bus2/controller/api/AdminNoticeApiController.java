@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,12 +31,16 @@ public class AdminNoticeApiController {
     }
 
     // 공지 등록
-    @PostMapping
-    public ResponseEntity<NoticeResponseDTO> createNotice(@RequestBody @Valid CreateNoticeRequestDTO dto) {
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<NoticeResponseDTO> createNotice(
+            @RequestPart("notice") @Valid CreateNoticeRequestDTO dto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    ) {
         log.info("📨 공지 등록 요청: {}", dto);
-        NoticeResponseDTO created = noticeService.createNotice(dto);
+        NoticeResponseDTO created = noticeService.createNotice(dto, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+
 
 
     // 공지 수정
