@@ -13,8 +13,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")  // DB 테이블 이름
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
