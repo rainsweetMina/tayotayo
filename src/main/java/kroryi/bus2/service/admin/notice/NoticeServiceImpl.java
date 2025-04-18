@@ -1,15 +1,21 @@
 package kroryi.bus2.service.admin.notice;
 
 import jakarta.persistence.EntityNotFoundException;
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;
 import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
 import kroryi.bus2.dto.notice.UpdateNoticeRequestDTO;
 import kroryi.bus2.entity.Notice;
+import kroryi.bus2.entity.NoticeFile;
 import kroryi.bus2.repository.jpa.NoticeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,30 +27,39 @@ public class NoticeServiceImpl implements NoticeService {
 
 
     private final NoticeRepository noticeRepository;
+    private final FileStorageService fileStorageService;
 
 
-    // 공지 등록
+
     @Override
-    public NoticeResponseDTO createNotice(CreateNoticeRequestDTO dto) {
+    @AdminAudit(action = "공지 등록", target = "공지사항")
+    public NoticeResponseDTO createNotice(CreateNoticeRequestDTO dto, List<MultipartFile> files) {
         Notice entity = new Notice();
         entity.setTitle(dto.getTitle());
         entity.setContent(dto.getContent());
         entity.setAuthor(dto.getAuthor());
 
-        // ✅ 팝업 관련 필드 추가
         entity.setShowPopup(dto.isShowPopup());
         entity.setPopupStart(dto.getPopupStart());
         entity.setPopupEnd(dto.getPopupEnd());
 
+        noticeRepository.save(entity);
 
-        noticeRepository.save(entity); // ← 이게 있어야 진짜 저장됨
-        return new NoticeResponseDTO(entity); // 저장된 결과를 다시 DTO로 반환
+        if (files != null && !files.isEmpty()) {
+            List<NoticeFile> storedFiles = fileStorageService.storeFiles(files, entity);
+            entity.updateFiles(storedFiles);
+        }
+
+        return new NoticeResponseDTO(entity);
     }
 
 
+
+
     // 공지 수정
+    @AdminAudit(action = "공지 수정", target = "공지사항")
     @Override
-    public NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto) {
+    public NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto, List<MultipartFile> files) {
         Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지 없음"));
 
@@ -61,6 +76,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     // 공지 삭제
+    @AdminAudit(action = "공지 삭제", target = "공지사항")
     @Override
     public void deleteNotice(Long id) {
         Notice notice = noticeRepository.findById(id)

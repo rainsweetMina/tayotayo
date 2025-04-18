@@ -26,15 +26,27 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("*");
     }
 
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String uploadPath = System.getProperty("user.dir") + "/uploads/";
+
+        registry.addResourceHandler("/files/**") // ← 브라우저가 접근하는 경로
+                .addResourceLocations("file:///" + uploadPath); // ← 실제 저장 폴더
+
+        registry.addResourceHandler("/uploads/found/**")
+                .addResourceLocations("file:"+ filePath);
+    }
+
+
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
         return new HiddenHttpMethodFilter();
     }
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/found/**")
-                .addResourceLocations("file:"+ filePath);
-    }
+//    @Override
+//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//        registry.addResourceHandler("/uploads/found/**")
+//                .addResourceLocations("file:"+ filePath);
+//    }
 
 
 }
