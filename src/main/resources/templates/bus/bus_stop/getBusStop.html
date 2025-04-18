@@ -1,8 +1,14 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>정류장 검색 및 상세보기</title>
+</head>
+
+<div layout:fragment="content" style="">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     #map {
@@ -29,7 +35,7 @@
       margin: 2px 0;
     }
   </style>
-</head>
+
 <body>
 
 <h2>🚌 정류장 검색</h2>
@@ -182,4 +188,5 @@
 </script>
 
 </body>
+</div>
 </html>

@@ -327,6 +327,7 @@ public class BusDataController {
     @DeleteMapping("/deleteRoute")
     public ResponseEntity<?> deleteRoute(@RequestParam String routeId) {
         try {
+            deleteRouteService.backupRoute(routeId);
             deleteRouteService.deleteRoute(routeId);
             return ResponseEntity.ok(Map.of("success", true, "message", "노선 삭제 완료"));
         } catch (Exception e) {

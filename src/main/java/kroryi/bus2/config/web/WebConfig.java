@@ -20,7 +20,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("https://localhost:8081")
                 .allowedMethods("GET", "POST", "DELETE", "PUT")
                 .allowCredentials(true);
+
+        registry.addMapping("/v3/api-docs/**")
+                .allowedOrigins("https://localhost:8081")
+                .allowedMethods("*");
     }
+
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
         return new HiddenHttpMethodFilter();
@@ -30,5 +35,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/uploads/found/**")
                 .addResourceLocations("file:"+ filePath);
     }
+
+
 }
 

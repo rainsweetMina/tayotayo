@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>버스 노선 추가</title>
 </head>
+
+<div layout:fragment="content" style="">
+
+
 <body>
-<h1>버스 노선 추가하기 (시각화를 위한 지도는 2차때 삽입 예정)</h1>
+<h1>버스 노선 추가하기</h1>
 
 <!-- 🔍 검색 기능 영역 -->
 <div>
@@ -184,4 +190,5 @@
 </script>
 
 </body>
+</div>
 </html>
