@@ -2,6 +2,7 @@ package kroryi.bus2.service.board;
 
 import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.entity.busStop.BusStopInfo;
+import kroryi.bus2.entity.route.RouteType;
 import kroryi.bus2.repository.jpa.board.BusStopInfoRepository;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
@@ -38,16 +39,10 @@ public class BusStopInfoService {
     }
 
     // 웹 드롭다운에 사용할 노선 조회
-    public List<String> getRouteNosByType(String type) {
+    public List<String> getRouteNosByType(RouteType type) {
         List<String> all = routeRepository.findDistinctRouteNos();
         return all.stream()
-                .filter(no -> switch (type) {
-                    case "순환" -> no.startsWith("순환");
-                    case "급행" -> no.startsWith("급행");
-                    case "간선" -> no.matches("^\\d+$");
-                    case "지선" -> no.matches("^[^\\d]+\\d+$");
-                    default -> false;
-                })
+                .filter(type::matches)
                 .sorted()
                 .toList();
     }

@@ -103,13 +103,13 @@ function fetchWeather() {
             const vec = getVal("VEC"); // 풍향
             const windDir = vec !== "N/A" ? windDirection(Number(vec)) : "N/A";
 
-            const skyMap = { "1": "☀", "3": "⛅", "4": "☁" };
+            const skyMap = { "1": "☀️", "3": "⛅", "4": "☁️" };
             const ptyMap = {
                 "0": "", // 강수없음이면 sky 상태로 대체
-                "1": "🌧",
-                "2": "🌨",
-                "3": "❄",
-                "4": "🌦"
+                "1": "🌧️",
+                "2": "🌨️",
+                "3": "❄️",
+                "4": "🌦️"
             };
 
             const weatherSymbol = (pty !== "0" && pty !== "N/A") ? ptyMap[pty] : skyMap[sky] || "❓";
