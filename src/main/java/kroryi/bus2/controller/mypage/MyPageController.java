@@ -195,45 +195,4 @@ public class MyPageController {
             return "redirect:/mypage";
         }
     }
-
-    // GET: API 키 신청 페이지
-    @GetMapping("/apikey-request")
-    public String showApiKeyRequestForm(Model model) {
-        String userId = extractUserId();
-        if (userId == null) {
-            return "redirect:/login";
-        }
-
-        // 사용자 ID로 API 키를 조회
-        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
-
-        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
-
-        if (apiKeyOpt.isPresent()) {
-            model.addAttribute("apiKey", apiKeyOpt.get());
-        } else {
-            model.addAttribute("apiKey", null);
-            model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
-        }
-
-        return "mypage/apikey-request";
-    }
-
-    // POST: API 키 신청 처리
-    @PostMapping("/apikey-request")
-    public String requestApiKey(RedirectAttributes redirectAttributes) {
-        String userId = extractUserId();
-        if (userId == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            apiKeyService.requestApiKey(userId); // API 키 신청 처리 (reason 파라미터 없이)
-            redirectAttributes.addFlashAttribute("message", "API 키 신청이 완료되었습니다. 승인을 기다려주세요.");
-        } catch (IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-
-        return "redirect:/mypage/apikey-request";
-    }
 }

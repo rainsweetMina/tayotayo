@@ -33,5 +33,12 @@ public class AppConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi mypageGroup(){
+        return GroupedOpenApi.builder()
+                .group("mypage")
+                .packagesToScan("kroryi.bus2.controller.mypage")
+                .build();
+    }
 
 }

@@ -2,7 +2,9 @@ package kroryi.bus2.controller.api;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.apikey.ApiKeyCallbackUrl;
@@ -16,16 +18,22 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Controller
-@RequestMapping("/admin/apikey")  // 경로 변경
 @RequiredArgsConstructor
 @Log4j2
 public class ApiKeyController {
@@ -35,50 +43,71 @@ public class ApiKeyController {
     private final JwtTokenUtil jwtTokenUtil;
     private final ApiKeyService apiKeyService;
 
-    // ✅ 관리자 대시보드 페이지 (최근 5개의 API 키만 표시)
-    @GetMapping("/dashboard")
+    private String extractUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = auth.getPrincipal();
+
+        if (principal instanceof CustomOAuth2User customUser) {
+            return customUser.getUserId();
+        } else if (principal instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        } else if (principal instanceof OAuth2User oAuth2User) {
+            Map<String, Object> attributes = oAuth2User.getAttributes();
+            Object userId = attributes.get("id");
+            if (userId != null) {
+                return userId.toString();
+            }
+        }
+        return "admin"; // 기본값으로 admin을 리턴
+    }
+
+    // ================================
+    // ✅ 관리자 영역 (/admin/apikey)
+    // ================================
+
+    @GetMapping("/admin/apikey/dashboard")
     public String dashboard(Model model) {
         List<ApiKey> recent = apiKeyRepository.findAll(Sort.by(Sort.Direction.DESC, "issuedAt"));
         model.addAttribute("recentKeys", recent);
         return "api/apiKeyDashboard";
     }
 
-    @GetMapping("/admin/apikey")
-    public String showApiKeyDashboard(Model model) {
-        List<ApiKey> keys = apiKeyService.getAllApiKeys();
-        model.addAttribute("apiKeys", keys);
-        return "admin/apikey";
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin/apikeys")
+    public String getApiKeyList(Model model) {
+        List<ApiKey> apiKeyList = apiKeyRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
+        model.addAttribute("apiKeyList", apiKeyList);
+        return "admin/apikey-list";
     }
 
-    // REST API 목록 조회
+
     @GetMapping("/admin/apikey/api")
     @ResponseBody
     public List<ApiKey> getAll() {
         return apiKeyRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
     }
 
-    // ✅ 특정 API 키 조회
     @ResponseBody
-    @GetMapping("/{id}")
+    @GetMapping("/admin/apikey/{id}")
     public ResponseEntity<ApiKey> getApiKey(@PathVariable Long id) {
-        Optional<ApiKey> apiKey = apiKeyRepository.findById(id);
-        return apiKey.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return apiKeyRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // ✅ API 키 생성
     @ResponseBody
-    @PostMapping
+    @PostMapping("/admin/apikey")
     public ApiKey createKey(@RequestBody CreateApiKeyRequest request) {
         ApiKey key = ApiKey.builder()
-                .name(request.name)
+                .name(request.name())
                 .active(true)
                 .issuedAt(LocalDateTime.now())
                 .expiresAt(request.expiresAt())
                 .allowedIp(request.allowedIp())
                 .build();
 
-        if (request.callbackUrls != null) {
-            for (String url : request.callbackUrls) {
+        if (request.callbackUrls() != null) {
+            for (String url : request.callbackUrls()) {
                 ApiKeyCallbackUrl cb = ApiKeyCallbackUrl.builder()
                         .url(url)
                         .apiKey(key)
@@ -93,38 +122,34 @@ public class ApiKeyController {
         return apiKeyRepository.save(saved);
     }
 
-    // ✅ API 키 상태 변경
     @ResponseBody
-    @PutMapping("/{id}/status")
+    @PutMapping("/admin/apikey/{id}/status")
     public ResponseEntity<?> toggleStatus(@PathVariable Long id, @RequestParam boolean active) {
-        Optional<ApiKey> opt = apiKeyRepository.findById(id);
-        if (opt.isEmpty()) return ResponseEntity.notFound().build();
-
-        ApiKey key = opt.get();
-        key.setActive(active);
-        apiKeyRepository.save(key);
-        return ResponseEntity.ok().build();
+        return apiKeyRepository.findById(id)
+                .map(key -> {
+                    key.setActive(active);
+                    apiKeyRepository.save(key);
+                    return ResponseEntity.ok().build();
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // API 키 활성화/비활성화 상태 변경
-    @PostMapping("/{id}/toggle")
+    @PostMapping("/admin/apikey/{id}/toggle")
     public String toggleApiKey(@PathVariable Long id) {
-        apiKeyService.toggleActive(id);  // 상태 변경
-        return "redirect:/admin/apikey/dashboard";  // 대시보드로 리다이렉트
+        apiKeyService.toggleActive(id);
+        return "redirect:/admin/apikey/dashboard";
     }
 
-    // ✅ API 키 삭제
     @ResponseBody
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/apikey/{id}")
     public ResponseEntity<?> deleteKey(@PathVariable Long id) {
         if (!apiKeyRepository.existsById(id)) return ResponseEntity.notFound().build();
         apiKeyRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ 콜백 URL 추가
     @ResponseBody
-    @PostMapping("/{id}/callback-urls")
+    @PostMapping("/admin/apikey/{id}/callback-urls")
     @Transactional
     public ResponseEntity<?> addCallbackUrl(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String url = body.get("url");
@@ -135,30 +160,91 @@ public class ApiKeyController {
         cb.setUrl(url);
         cb.setApiKey(key);
         callbackUrlRepository.save(cb);
-
         return ResponseEntity.ok().build();
     }
 
-    // ✅ 콜백 URL 삭제
     @ResponseBody
-    @DeleteMapping("/callback-urls/{callbackId}")
+    @DeleteMapping("/admin/apikey/callback-urls/{callbackId}")
     public ResponseEntity<?> deleteCallbackUrl(@PathVariable Long callbackId) {
         if (!callbackUrlRepository.existsById(callbackId)) return ResponseEntity.notFound().build();
         callbackUrlRepository.deleteById(callbackId);
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ 특정 API 키의 콜백 URL 목록 조회 (토큰 검증 포함)
+    // ================================
+    // ✅ 사용자 영역 (/mypage)
+    // ================================
+
+    @GetMapping("/mypage/apikey")
+    public String showApiKey(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            log.warn("🛑 사용자 정보가 없습니다.");
+            return "redirect:/login";
+        }
+
+        User user = userDetails.getUser();
+        ApiKey apiKey = apiKeyService.getApiKeyForUser(user);
+
+        model.addAttribute("apiKey", apiKey);
+        model.addAttribute("parameterName", "Your Parameter Value"); // 원하는 값 넣기
+        return "mypage/apikey-request";
+    }
+
+    // GET: API 키 신청 페이지
+    @GetMapping("/mypage/apikey-request")
+    public String showApiKeyRequestForm(Model model, HttpServletRequest request) {
+        String userId = extractUserId();
+        CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
+        model.addAttribute("_csrf", csrfToken);
+        log.info("✅ /mypage/apikey 요청이 들어왔습니다.");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        // 사용자 ID로 API 키를 조회
+        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
+
+        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
+
+        if (apiKeyOpt.isPresent()) {
+            model.addAttribute("apiKey", apiKeyOpt.get());
+        } else {
+            model.addAttribute("apiKey", null);
+            model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
+        }
+
+        return "mypage/apikey-request";
+    }
+
+    @PostMapping("/mypage/apikey-request")
+    public String requestApiKey(@AuthenticationPrincipal CustomUserDetails userDetails, RedirectAttributes redirectAttributes) {
+        if (userDetails == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            apiKeyService.requestApiKey(userDetails.getUsername());
+            redirectAttributes.addFlashAttribute("message", "API 키 신청이 완료되었습니다. 관리자의 승인을 기다려주세요.");
+        } catch (Exception e) {
+            log.error("API 키 신청 실패", e);
+            redirectAttributes.addFlashAttribute("error", "API 키 신청에 실패했습니다. 다시 시도해주세요.");
+        }
+
+        return "redirect:/mypage/apikey-request"; // 리다이렉트 후 메시지 전달
+    }
+
+
+
     @ResponseBody
-    @GetMapping("/{id}/callback-urls")
+    @GetMapping("/mypage/apikey/{id}/callback-urls")
     public ResponseEntity<?> getCallbackUrls(@PathVariable Long id,
                                              @RequestHeader("Authorization") String authHeader,
                                              @RequestHeader("callbackUrl") String callbackUrl) {
         try {
             String token = authHeader.replace("Bearer ", "");
             Claims claims = jwtTokenUtil.parseToken(token);
-
             String keyIdFromToken = claims.getSubject();
+
             if (!keyIdFromToken.equals(String.valueOf(id))) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: ID mismatch");
             }
@@ -171,35 +257,10 @@ public class ApiKeyController {
         }
     }
 
-    @GetMapping("/mypage/apikey")
-    public String showApiKey(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            log.warn("🛑 사용자 정보가 없습니다. (userDetails is null)");
-            return "redirect:/login";
-        }
-        User user = userDetails.getUser();  // User 엔티티를 가져옴
-        ApiKey apiKey = apiKeyService.getApiKeyForUser(user);
+    // ================================
+    // ✅ 내부 DTO
+    // ================================
 
-        // 템플릿에서 parameterName을 사용하고자 한다면, 이를 모델에 추가합니다.
-        model.addAttribute("apiKey", apiKey);
-        model.addAttribute("parameterName", "Your Parameter Value");  // 템플릿에 전달할 변수
-
-        return "mypage/apikey-request";
-    }
-
-
-    @PostMapping("/mypage/apikey-request")
-    public String requestApiKey(Model model) {
-        try {
-            // API 키 신청 로직
-            model.addAttribute("message", "API 키 신청이 완료되었습니다. 관리자의 승인을 기다려주세요.");
-        } catch (Exception e) {
-            model.addAttribute("error", "API 키 신청에 실패했습니다. 다시 시도해주세요.");
-        }
-        return "mypage/apikey-request";
-    }
-
-    // ✅ 요청용 DTO
     public record CreateApiKeyRequest(
             String name,
             String allowedIp,
@@ -207,4 +268,14 @@ public class ApiKeyController {
             List<String> callbackUrls
     ) {}
 
+    public record UpdateApiKeyStatusRequest(
+            boolean active
+    ) {}
+
+    @ResponseBody
+    @GetMapping("/apikey/status")
+//    test code
+    public ResponseEntity<String> getApiKeyStatus() {
+        return ResponseEntity.ok("OK");
+    }
 }
