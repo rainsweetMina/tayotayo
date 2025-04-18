@@ -6,6 +6,7 @@ import kroryi.bus2.service.QnaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -75,6 +76,7 @@ public class QnaController {
         qnaService.deleteQna(id, memberId);
         return ResponseEntity.ok("질문글이 삭제되었습니다.");
     }
+
     @PutMapping("/{id}/answer")
     public ResponseEntity<Void> answerQna(@PathVariable Long id,
                                           @RequestBody QnaAnswerDTO dto) {
