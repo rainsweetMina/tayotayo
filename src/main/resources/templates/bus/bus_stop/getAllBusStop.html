@@ -1,8 +1,14 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>전체 정류장 목록</title>
+</head>
+
+<div layout:fragment="content" style="">
+
   <style>
     table {
       width: 100%;
@@ -20,7 +26,7 @@
       margin: 2px;
     }
   </style>
-</head>
+
 <body>
 
 <h2>🚌 전체 정류장 목록</h2>
@@ -118,4 +124,5 @@
 </script>
 
 </body>
+</div>
 </html>

@@ -128,7 +128,7 @@ public class FoundItemServiceImpl implements FoundItemService {
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 습득물을 찾을 수 없습니다."));
 
-        System.out.println("11111111111->" + item.toString());
+        System.out.println("11111111111->" + item.getPhoto().getUrl());
 
         return FoundItemAdminResponseDTO.fromEntity(item);
     }

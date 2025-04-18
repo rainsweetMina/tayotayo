@@ -1,8 +1,14 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>노선 목록</title>
+</head>
+
+<div layout:fragment="content" style="">
+
     <style>
         table {
             width: 100%;
@@ -25,7 +31,6 @@
             user-select: none;
         }
     </style>
-</head>
 <body>
 <h2>🚌 전체 노선 목록</h2>
 
@@ -130,4 +135,5 @@
     fetchRoutes();
 </script>
 </body>
+</div>
 </html>

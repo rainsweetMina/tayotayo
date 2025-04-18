@@ -84,6 +84,7 @@ public class BusStopDataController {
     @DeleteMapping("/deleteBusStop")
     public ResponseEntity<?> deleteBusStop(@RequestParam String bsId) {
         try {
+            deleteBusStopService.backupBusStop(bsId);
             deleteBusStopService.deleteBusStopIfNotLinked(bsId);
             return ResponseEntity.ok(Map.of("success", true, "message", "정류장이 삭제되었습니다."));
         } catch (IllegalStateException e) {

@@ -1,12 +1,17 @@
 package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
+import kroryi.bus2.entity.route.Route;
+import kroryi.bus2.entity.route.RouteDelete;
 import kroryi.bus2.entity.route.RouteStopLink;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
+import kroryi.bus2.repository.jpa.route.RouteDeleteRepository;
+import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,6 +20,9 @@ import java.util.List;
 public class DeleteStopFromRouteService {
 
     private final RouteStopLinkRepository routeStopLinkRepository;
+
+
+
 
     @Transactional
     public void deleteStopFromRoute(String routeId, String moveDir, int seqToDelete) {

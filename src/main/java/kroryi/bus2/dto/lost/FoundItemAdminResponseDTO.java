@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
 public class FoundItemAdminResponseDTO {
     private Long id;
     private String itemName;

@@ -1,8 +1,14 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>정류장 순서 수정 - 방향 분리</title>
+</head>
+
+<div layout:fragment="content" style="">
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         table {
@@ -34,7 +40,7 @@
             cursor: not-allowed;
         }
     </style>
-</head>
+
 <body>
 
 <h1>🚌 노선 정류장 순서 수정 (정/역방향 분리)</h1>
@@ -199,4 +205,5 @@ async function submitAll() {
 </script>
 
 </body>
+</div>
 </html>
