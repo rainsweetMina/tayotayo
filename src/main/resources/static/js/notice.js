@@ -33,7 +33,7 @@ document.getElementById('addNoticeBtn').addEventListener('click', function () {
     const formData = new FormData();
     const fileInput = document.getElementById("files");
 
-    formData.append("notice", new Blob([JSON.stringify(noticeData)], { type: "application/json" }));
+    formData.append("notice", new Blob([JSON.stringify(dto)], { type: "application/json" }));
 
     if (fileInput && fileInput.files.length > 0) {
         for (let i = 0; i < fileInput.files.length; i++) {
