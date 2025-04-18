@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.entity.AdminAuditLog;
 import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -29,11 +30,8 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     public void logAdminAction(String action, String target, Object before, Object after) {
 
-        System.out.println("[AUDIT] 공지 로그 기록 시도 중");
         try {
             String adminId = getCurrentAdminUsername(); // ⬅ 관리자 ID 자동 추출
-
-
 
             AdminAuditLog log = AdminAuditLog.builder()
                     .adminId(adminId)
@@ -61,4 +59,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     public Page<AdminAuditLog> getLogs(Pageable pageable) {
         return adminAuditLogRepository.findAllByOrderByTimestampDesc(pageable);
     }
+
+
 }

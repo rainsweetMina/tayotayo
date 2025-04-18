@@ -8,6 +8,7 @@ import kroryi.bus2.service.admin.notice.NoticeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,11 +45,16 @@ public class AdminNoticeApiController {
 
 
     // 공지 수정
-    @PutMapping("/{id}")
-    public ResponseEntity<NoticeResponseDTO> editNotice(@PathVariable Long id, @RequestBody @Valid UpdateNoticeRequestDTO dto) {
-        NoticeResponseDTO updated = noticeService.updateNotice(id, dto);
-        return ResponseEntity.ok(updated);
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<NoticeResponseDTO> updateNotice(
+            @PathVariable Long id,
+            @RequestPart("notice") @Valid UpdateNoticeRequestDTO dto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    ) {
+        return ResponseEntity.ok(noticeService.updateNotice(id, dto, files));
     }
+
+
 
     // 공지 삭제
     @DeleteMapping("/{id}")

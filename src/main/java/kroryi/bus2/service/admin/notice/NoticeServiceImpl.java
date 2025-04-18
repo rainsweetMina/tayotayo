@@ -1,6 +1,7 @@
 package kroryi.bus2.service.admin.notice;
 
 import jakarta.persistence.EntityNotFoundException;
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;
 import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
@@ -29,7 +30,9 @@ public class NoticeServiceImpl implements NoticeService {
     private final FileStorageService fileStorageService;
 
 
+
     @Override
+    @AdminAudit(action = "공지 등록", target = "공지사항")
     public NoticeResponseDTO createNotice(CreateNoticeRequestDTO dto, List<MultipartFile> files) {
         Notice entity = new Notice();
         entity.setTitle(dto.getTitle());
@@ -54,8 +57,9 @@ public class NoticeServiceImpl implements NoticeService {
 
 
     // 공지 수정
+    @AdminAudit(action = "공지 수정", target = "공지사항")
     @Override
-    public NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto) {
+    public NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto, List<MultipartFile> files) {
         Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지 없음"));
 
@@ -72,6 +76,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     // 공지 삭제
+    @AdminAudit(action = "공지 삭제", target = "공지사항")
     @Override
     public void deleteNotice(Long id) {
         Notice notice = noticeRepository.findById(id)

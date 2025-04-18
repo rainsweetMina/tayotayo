@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface NoticeService {
     NoticeResponseDTO createNotice(CreateNoticeRequestDTO dto, List<MultipartFile> files);
-    NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto);
+    NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto, List<MultipartFile> files);
     void deleteNotice(Long id);
     List<NoticeResponseDTO> getAllNotices();
     NoticeResponseDTO getNoticeById(Long id);

@@ -27,13 +27,20 @@ document.getElementById('addNoticeBtn').addEventListener('click', function () {
         noticeData.author = author;
     }
 
-    const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `/api/admin/notices/${currentEditId}` : '/api/admin/notices';
+    const method = 'POST';
+    const url = isEditing
+        ? `/api/admin/notices/${currentEditId}`
+        : '/api/admin/notices';
 
     const formData = new FormData();
     const fileInput = document.getElementById("files");
 
-    formData.append("notice", new Blob([JSON.stringify(dto)], { type: "application/json" }));
+    // ✅ dto 이름 수정: dto → noticeData
+    formData.append("notice", new Blob(
+        [JSON.stringify(noticeData)],
+        { type: "application/json" }
+    ));
+
 
     if (fileInput && fileInput.files.length > 0) {
         for (let i = 0; i < fileInput.files.length; i++) {
@@ -42,9 +49,14 @@ document.getElementById('addNoticeBtn').addEventListener('click', function () {
     }
 
 
+    // ✅ 수정 시에는 override 헤더 붙여서 PUT처럼 처리
+    const headers = isEditing
+        ? { 'X-HTTP-Method-Override': 'PUT' }
+        : {};
 
     fetch(url, {
         method,
+        headers,
         body: formData
     })
         .then(response => {
@@ -109,7 +121,7 @@ function loadNotices() {
                             ${filesHtml}
                         </div>
                         <div class="notice-actions">
-                            <button class="button" onclick="editNotice(${notice.id})">수정</button>
+                            <button class="button" onclick="updateNotice(${notice.id})">수정</button>
                             <button class="button" onclick="deleteNotice(${notice.id})">삭제</button>
                         </div>
                         <hr/>
@@ -127,6 +139,9 @@ function submitNoticeForm() {
 
     fetch('/api/admin/notices' + noticeId, {
         method: 'POST',
+        headers: {
+            'X-HTTP-Method-Override': 'PUT' // 👈 Spring이 내부적으로 PUT로 인식
+        },
         body: formData
     })
         .then(response => {
@@ -150,7 +165,7 @@ function submitNoticeForm() {
 }
 
 
-function editNotice(id) {
+function updateNotice(id) {
     const notice = latestNotices.find(n => n.id === id);
     if (!notice) {
         alert('공지 데이터를 찾을 수 없습니다.');

@@ -1,8 +1,12 @@
 package kroryi.bus2.aop;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.entity.AdminAuditLog;
+import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
 import kroryi.bus2.service.AuditLogServiceImpl;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +21,14 @@ import java.util.List;
 @Slf4j
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class AdminAuditAspect {
 
     @Autowired
-    private AuditLogServiceImpl auditLogServiceImpl;
+    private final AuditLogServiceImpl auditLogServiceImpl;
+    private final ObjectMapper objectMapper;
+    private final AdminAuditLogRepository logRepository;
 
-    @Pointcut("execution(* kroryi..*.create*(..)) || execution(* kroryi..*.update*(..)) || execution(* kroryi..*.delete*(..)) || @annotation(AdminTracked)")
-    public void adminActions() {}
 
     @Around("adminActions()")
     public Object logAdminOperation(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -64,8 +69,10 @@ public class AdminAuditAspect {
 
         } catch (Exception e) {
             log.error("🚨 관리자 작업 로그 기록 실패", e);
+            throw e; // 예외를 다시 던져서 원래의 예외를 유지
         }
     }
+
 
     private String getCurrentAdminUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -87,7 +94,7 @@ public class AdminAuditAspect {
             String argsJson = objectMapper.writeValueAsString(joinPoint.getArgs());
             String resultJson = objectMapper.writeValueAsString(result);
 
-            auditLogService.logAdminAction(
+            auditLogServiceImpl.logAdminAction(
                     adminAudit.action(),
                     adminAudit.target(),
                     argsJson,

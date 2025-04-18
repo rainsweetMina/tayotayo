@@ -23,6 +23,11 @@
             margin: 0 2px;
             padding: 6px 12px;
         }
+        button.active {
+            font-weight: bold;
+            background-color: #e0e0e0;
+        }
+
     </style>
 </head>
 <body>
@@ -52,14 +57,21 @@
     </tbody>
 </table>
 
-<div class="pagination">
-    <span th:if="${logs.hasPrevious()}">
-        <a th:href="@{/admin/logs(page=${logs.number - 1})}">&laquo; 이전</a>
-    </span>
-    <span th:if="${logs.hasNext()}">
-        <a th:href="@{/admin/logs(page=${logs.number + 1})}">다음 &raquo;</a>
-    </span>
+<div>
+  <span th:if="${currentPage > 0}">
+    <a th:href="@{/admin/logs(page=${currentPage - 1})}">이전</a>
+  </span>
+
+    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+    <a th:href="@{/admin/logs(page=${i})}" th:text="${i + 1}"></a>
+  </span>
+
+    <span th:if="${currentPage + 1 < totalPages}">
+    <a th:href="@{/admin/logs(page=${currentPage + 1})}">다음</a>
+  </span>
 </div>
+
+
 
 </body>
 </html>
