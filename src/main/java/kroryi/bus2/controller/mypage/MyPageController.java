@@ -1,11 +1,15 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.mypage;
 
 import jakarta.validation.Valid;
 import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
+import kroryi.bus2.entity.apikey.ApiKey;
+import kroryi.bus2.entity.mypage.FavoriteBusStop;
+import kroryi.bus2.entity.mypage.FavoriteRoute;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
+import kroryi.bus2.service.apikey.ApiKeyService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +22,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
 import java.util.Map;
+import java.util.Optional;
 
 @Log4j2
 @Controller
@@ -27,6 +33,7 @@ import java.util.Map;
 public class MyPageController {
 
     private final UserService userService;
+    private final ApiKeyService apiKeyService;
 
     private String extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -37,19 +44,21 @@ public class MyPageController {
         } else if (principal instanceof UserDetails userDetails) {
             return userDetails.getUsername();
         } else if (principal instanceof OAuth2User oAuth2User) {
-            // 혹시 다른 OAuth2User 타입으로 들어왔을 경우 보완
             Map<String, Object> attributes = oAuth2User.getAttributes();
-            Object userId = attributes.get("id"); // 또는 CustomOAuth2User에서 넣어준 키
+            Object userId = attributes.get("id");
             if (userId != null) {
-                return userId.toString(); // fallback
+                return userId.toString();
             }
         }
-
-//        return null;
-        // ✅ 개발 중: 로그인 안 해도 테스트 가능하게 null 대신 기본값 리턴
-        return "admin";
+        return "admin"; // 기본값으로 admin을 리턴
     }
 
+    private User getCurrentUser(Principal principal) {
+        if (principal == null) {
+            throw new IllegalStateException("사용자가 로그인되지 않았습니다.");
+        }
+        return userService.findByUserId(principal.getName());
+    }
 
     // 마이페이지 메인
     @GetMapping("")
@@ -66,11 +75,10 @@ public class MyPageController {
         }
 
         log.info("✅ 현재 로그인된 사용자 ID: {}", userId);
-        model.addAttribute("user", user); // ✅ 사용자 정보 추가
+        model.addAttribute("user", user);
 
         return "mypage/index";
     }
-
 
     // 비밀번호 변경 폼
     @GetMapping("/password")
@@ -169,30 +177,6 @@ public class MyPageController {
         }
     }
 
-    // 즐겨찾기
-    @GetMapping("/favorites")
-    public String favorites() {
-        return "mypage/favorites";
-    }
-
-    // 분실물 신고
-    @GetMapping("/lost-report")
-    public String lostReport() {
-        return "mypage/lost-report";
-    }
-
-    // Q&A
-    @GetMapping("/qna")
-    public String qna() {
-        return "mypage/qna";
-    }
-
-    // 최근 검색 내역
-    @GetMapping("/recent-searches")
-    public String recentSearches() {
-        return "mypage/recent-searches";
-    }
-
     // 회원 탈퇴
     @PostMapping("/withdraw")
     public String withdraw(RedirectAttributes redirectAttributes) {
@@ -210,5 +194,46 @@ public class MyPageController {
             redirectAttributes.addFlashAttribute("error", "회원 탈퇴 중 오류가 발생했습니다.");
             return "redirect:/mypage";
         }
+    }
+
+    // GET: API 키 신청 페이지
+    @GetMapping("/apikey-request")
+    public String showApiKeyRequestForm(Model model) {
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        // 사용자 ID로 API 키를 조회
+        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
+
+        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
+
+        if (apiKeyOpt.isPresent()) {
+            model.addAttribute("apiKey", apiKeyOpt.get());
+        } else {
+            model.addAttribute("apiKey", null);
+            model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
+        }
+
+        return "mypage/apikey-request";
+    }
+
+    // POST: API 키 신청 처리
+    @PostMapping("/apikey-request")
+    public String requestApiKey(RedirectAttributes redirectAttributes) {
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            apiKeyService.requestApiKey(userId); // API 키 신청 처리 (reason 파라미터 없이)
+            redirectAttributes.addFlashAttribute("message", "API 키 신청이 완료되었습니다. 승인을 기다려주세요.");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/mypage/apikey-request";
     }
 }

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>API 키 발급 요청</title>
+</head>
+<body>
+<h2>API 키 발급 요청</h2>
+
+<!-- API 키 정보 출력 -->
+<div th:if="${apiKey != null}">
+    <h3>발급된 API 키</h3>
+    <p>API 키: <span th:text="${apiKey.apikey}">API 키 없음</span></p>
+    <p>상태: <span th:text="${apiKey.status}">상태 없음</span></p>
+</div>
+
+<!-- 발급된 키가 없을 경우 -->
+<div th:if="${apiKey == null}">
+    <p th:text="${error != null ? error : '현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.'}"></p>
+</div>
+
+<!-- 성공 메시지 -->
+<div th:if="${message != null}" th:text="${message}" style="color: green;"></div>
+
+<!-- 에러 메시지 -->
+<div th:if="${error != null}" th:text="${error}" style="color: red;"></div>
+
+<!-- API 키 신청 폼 (키가 없거나 상태가 PENDING일 경우) -->
+<div th:if="${apiKey == null or (apiKey.status != null and apiKey.status == 'PENDING')}">
+    <form th:action="@{/mypage/apikey-request}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <button type="submit">API키 신청하기</button>
+    </form>
+</div>
+
+<!-- 마이페이지로 돌아가기 링크 -->
+<p><a href="/mypage">← 마이페이지로 돌아가기</a></p>
+</body>
+</html>

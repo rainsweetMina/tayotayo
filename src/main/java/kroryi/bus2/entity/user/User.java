@@ -13,8 +13,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")  // DB 테이블 이름
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,7 +23,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;  // 고유 아이디 (PK)
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId;  // 유저 아이디
 
     @Column(nullable = false)
