@@ -32,3 +32,5 @@ build/
 
 ### VS Code ###
 .vscode/
+#습득물 이미지
+/uploads/found/
