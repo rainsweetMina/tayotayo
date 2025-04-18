@@ -3,6 +3,7 @@ package kroryi.bus2.controller.board;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.dto.board.BusScheduleHeaderRequestDTO;
 import kroryi.bus2.entity.BusScheduleHeader;
 import kroryi.bus2.service.board.BusScheduleHeaderService;
@@ -13,10 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "시간표 정류장 지정" +
+        "", description = "")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class BusScheduleHeaderController {
+public class BusScheduleHeaderApiController {
 
     private final BusScheduleHeaderService busScheduleHeaderService;
 

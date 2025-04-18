@@ -44,7 +44,7 @@ function getBaseDateTime() {
     now.setMinutes(now.getMinutes() - 40);
     const yyyyMMdd = now.toISOString().slice(0, 10).replace(/-/g, '');
     const hour = String(now.getHours()).padStart(2, '0');
-    const minute = String(now.getMinutes()).padStart(2, '0');
+    const minute = now.getMinutes() < 30 ? "00" : "30";
     return { base_date: yyyyMMdd, base_time: `${hour}${minute}` };
 }
 
@@ -64,23 +64,27 @@ function rotateDisplay(elements, targetEl) {
 
 function fetchWeather() {
     const { base_date, base_time } = getBaseDateTime();
-    const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=${encodeURIComponent(apiKey)}&numOfRows=100&pageNo=1&dataType=JSON&base_date=${base_date}&base_time=${base_time}&nx=${nx}&ny=${ny}`;
+    const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=${encodeURIComponent(apiKey)}&pageNo=1&numOfRows=100&dataType=JSON&base_date=${base_date}&base_time=${base_time}&nx=${nx}&ny=${ny}`;
 
     fetch(url)
         .then(res => res.json())
         .then(data => {
-            console.log(data);
             const items = data?.response?.body?.items?.item;
             if (!Array.isArray(items)) throw new Error("API 응답 오류");
 
-            const now = new Date();
-            const fcstDate = now.toISOString().slice(0, 10).replace(/-/g, '');
-            const fcstTime = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
-
             // 가장 가까운 시간값을 찾기
             function getVal(cat) {
-                const filtered = items.filter(i => i.category === cat && i.fcstDate === fcstDate);
-                const sorted = filtered.sort((a, b) => Math.abs(fcstTime - a.fcstTime) - Math.abs(fcstTime - b.fcstTime));
+                const now = new Date();
+                const nowTime = now.getHours() * 100 + (now.getMinutes() < 30 ? 0 : 30);
+
+                const filtered = items.filter(i => i.category === cat);
+                const sorted = filtered.sort((a, b) => {
+                    const aTime = parseInt(a.fcstDate + a.fcstTime);
+                    const bTime = parseInt(b.fcstDate + b.fcstTime);
+                    const nowFull = parseInt(now.toISOString().slice(0, 10).replace(/-/g, '') + String(nowTime).padStart(4, '0'));
+                    return Math.abs(aTime - nowFull) - Math.abs(bTime - nowFull);
+                });
+
                 return sorted[0]?.fcstValue ?? "N/A";
             }
 
@@ -99,7 +103,7 @@ function fetchWeather() {
             const vec = getVal("VEC"); // 풍향
             const windDir = vec !== "N/A" ? windDirection(Number(vec)) : "N/A";
 
-            const skyMap = { "1": "☀️", "3": "⛅", "4": "☁️" };
+            const skyMap = { "1": "☀", "3": "⛅", "4": "☁" };
             const ptyMap = {
                 "0": "", // 강수없음이면 sky 상태로 대체
                 "1": "🌧",

@@ -55,6 +55,7 @@ public class RouteStopLinkService {
                 .collect(Collectors.toList());
     }
 
+    // 해당 버스 전체 노선 조회(지선)
     public List<BusStopDTO> getStopsWithNamesByRouteIdAndMoveDir(String routeId, String moveDir) {
         List<Object[]> rows = routeStopLinkRepository.findRawStopDataByRouteIdAndMoveDir(routeId, moveDir);
 
@@ -82,7 +83,8 @@ public class RouteStopLinkService {
             log.error("단일 routeId [{}] 처리 중 오류: {}", routeId, e.getMessage());
         }
     }
-    
+
+    // 외부 노선 API 정보 가져오기
     public void fetchAndSaveBusData(String apiUrl, String routeId) {
         try {
             URI uri = new URI(apiUrl);
@@ -111,6 +113,7 @@ public class RouteStopLinkService {
         }
     }
     
+    // 외부 API Json 데이터 DB 저장
     private void saveRouteStopLinks(JsonNode nodeArray, String routeId) {
 
         for (JsonNode node : nodeArray) {

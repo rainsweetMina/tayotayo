@@ -1,5 +1,6 @@
 package kroryi.bus2.service.board;
 
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.board.BusCompanyDTO;
 import kroryi.bus2.entity.BusCompany;
 import kroryi.bus2.repository.jpa.board.BusCompanyRepository;
@@ -14,14 +15,17 @@ import java.util.List;
 public class BusCompanyService {
     private final BusCompanyRepository busCompanyRepository;
 
+    @AdminAudit(action = "버스회사 전체 조회", target = "BusCompany")
     public List<BusCompany> findAll() {
         return busCompanyRepository.findAll();
     }
 
+    @AdminAudit(action = "버스회사 조회", target = "BusCompany")
     public List<BusCompany> findByName(String name) {
         return busCompanyRepository.findByName(name);
     }
 
+    @AdminAudit(action = "버스회사 등록", target = "BusCompany")
     public BusCompany save(BusCompanyDTO dto) {
         BusCompany bc = new BusCompany();
         bc.setCompanyName(dto.getCompanyName());
@@ -32,6 +36,7 @@ public class BusCompanyService {
         return busCompanyRepository.save(bc);
     }
 
+    @AdminAudit(action = "버스회사 정보 수정", target = "BusCompany")
     public BusCompany update(int id, BusCompanyDTO dto) {
         BusCompany bc = busCompanyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 ID: " + id));
@@ -52,6 +57,7 @@ public class BusCompanyService {
         return busCompanyRepository.save(bc);
     }
 
+    @AdminAudit(action = "버스회사 노선추가", target = "BusCompany")
     public BusCompany addRoutes(int id, List<String> newRoutes) {
         BusCompany company = busCompanyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회사 ID: " + id));

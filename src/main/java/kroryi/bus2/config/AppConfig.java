@@ -16,6 +16,14 @@ public class AppConfig {
         return new RestTemplate();
     }
 
+    @Bean
+    public GroupedOpenApi defaultGroup() {
+        return GroupedOpenApi.builder()
+                .group("0_Default")
+                .pathsToExclude("/api/bus/**" , "/api/ad/**")
+                .packagesToExclude("kroryi.bus2.controller.board")
+                .build();
+    }
 
     @Bean
     public GroupedOpenApi adminApi() {
@@ -30,6 +38,14 @@ public class AppConfig {
         return GroupedOpenApi.builder()
                 .group("Ad")
                 .pathsToMatch("/api/ad/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi boardGroup(){
+        return GroupedOpenApi.builder()
+                .group("Board")
+                .packagesToScan("kroryi.bus2.controller.board")
                 .build();
     }
 

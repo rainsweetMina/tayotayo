@@ -2,6 +2,7 @@ package kroryi.bus2.controller.board;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.dto.SchedulePayloadDTO;
 import kroryi.bus2.dto.board.BusScheduleDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "버스 노선 시간표", description = "")
 @RestController
 @RequestMapping("/api/")
 @RequiredArgsConstructor
