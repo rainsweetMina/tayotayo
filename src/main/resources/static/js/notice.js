@@ -134,6 +134,26 @@ function loadNotices() {
         });
 }
 
+// 멀티 파일 첨부
+function handleFileInputChange(input) {
+    if (input.files.length > 0) {
+        const container = document.getElementById('fileInputs');
+
+        // 이미 마지막 input이면 새 input 생성
+        if ([...container.querySelectorAll('input[type="file"]')].every(i => i.files.length > 0)) {
+            const newInput = document.createElement('input');
+            newInput.type = 'file';
+            newInput.name = 'files';
+            newInput.className = 'file-input';
+            newInput.onchange = function () {
+                handleFileInputChange(this);
+            };
+            container.appendChild(newInput);
+        }
+    }
+}
+
+
 function submitNoticeForm() {
     const formData = new FormData(document.getElementById('noticeForm'));
 

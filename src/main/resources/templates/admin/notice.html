@@ -13,6 +13,16 @@
         .form-control { margin-bottom: 10px; padding: 5px; width: 100%; max-width: 300px; }
         .button { padding: 8px 12px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .button:hover { background-color: #357ae8; }
+        .file-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* 위아래 간격 */
+        }
+
+        .file-input {
+            width: 100%; /* 필요 시 조절 */
+        }
+
     </style>
 </head>
 <body>
@@ -23,7 +33,9 @@
         <input type="text" name="title" id="title" class="form-control" placeholder="제목" /> <br>
         <input type="text" name="author" id="author" class="form-control" placeholder="작성자" /> <br>
         <textarea name="content" id="content" class="form-control" placeholder="내용"></textarea><br>
-        <input type="file" id="files" name="files" multiple /><br>
+        <div id="fileInputs" class="file-input-wrapper">
+            <input type="file" name="files" class="file-input" onchange="handleFileInputChange(this)">
+        </div>
         <!-- ✅ 팝업 관련 필드 추가 -->
         <label>
             팝업 표시:
