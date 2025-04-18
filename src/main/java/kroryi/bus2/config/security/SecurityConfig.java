@@ -45,8 +45,9 @@ public class SecurityConfig {
         http
                 .userDetailsService(userDetailsService)
 
-                // ✅ CSRF 보호 비활성화 (개발 시 또는 API 서버에서는 보통 비활성화)
-                .csrf(csrf -> csrf.disable())
+
+//                // ✅ CSRF 보호 비활성화 (개발 시 또는 API 서버에서는 보통 비활성화)
+//                .csrf(csrf -> csrf.disable())
 
                 // ✅ URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
