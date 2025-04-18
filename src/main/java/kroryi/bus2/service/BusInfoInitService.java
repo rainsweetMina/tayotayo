@@ -88,25 +88,25 @@ public class BusInfoInitService {
             JsonNode jsonNode = jsonMapper.readTree(jsonResponse);
             System.out.println("변환된 JSON 데이터: " + jsonNode.toPrettyString());
 
-            JsonNode nodeData = jsonNode.path("body").path("items").path("node");
-            System.out.println("nodeData 구조: " + nodeData);
-            JsonNode bsData = jsonNode.path("body").path("items").path("bs");
+//            JsonNode nodeData = jsonNode.path("body").path("items").path("node");
+//            System.out.println("nodeData 구조: " + nodeData);
+//            JsonNode bsData = jsonNode.path("body").path("items").path("bs");
             JsonNode routeData = jsonNode.path("body").path("items").path("route");
-            JsonNode linkData = jsonNode.path("body").path("items").path("link");
+//            JsonNode linkData = jsonNode.path("body").path("items").path("link");
 
-            System.out.println("추출된 node 데이터: " + nodeData);
+//            System.out.println("추출된 node 데이터: " + nodeData);
 
-            if (nodeData.isArray() && !nodeData.isEmpty()) {
-                saveNodes(nodeData);
-            } else {
-                System.out.println("nodeData 데이터가 없음!");
-            }
+//            if (nodeData.isArray() && !nodeData.isEmpty()) {
+//                saveNodes(nodeData);
+//            } else {
+//                System.out.println("nodeData 데이터가 없음!");
+//            }
 
-            if (bsData.isArray() && !bsData.isEmpty()) {
-                saveBusStops(bsData);
-            } else {
-                System.out.println("bsData 데이터가 없음!");
-            }
+//            if (bsData.isArray() && !bsData.isEmpty()) {
+//                saveBusStops(bsData);
+//            } else {
+//                System.out.println("bsData 데이터가 없음!");
+//            }
 
             if (routeData.isArray() && !routeData.isEmpty()) {
                 saveRoutes(routeData);
@@ -114,11 +114,11 @@ public class BusInfoInitService {
                 System.out.println("routeData 데이터가 없음!");
             }
 
-            if (linkData.isArray() && !linkData.isEmpty()) {
-                saveLinks(linkData);
-            } else {
-                System.out.println("linkData 데이터가 없음!");
-            }
+//            if (linkData.isArray() && !linkData.isEmpty()) {
+//                saveLinks(linkData);
+//            } else {
+//                System.out.println("linkData 데이터가 없음!");
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,6 +169,10 @@ public class BusInfoInitService {
             newRoute.setStNm(route.path("stNm").asText());
             newRoute.setEdNm(route.path("edNm").asText());
             newRoute.setRouteNote(route.path("routeNote").asText());
+            newRoute.setRouteTCd(route.path("routeTCd").asText());
+            newRoute.setDataconnareacd(route.path("dataconareacd").asText());
+            newRoute.setDirRouteNote(route.path("dirRouteNote").asText());
+            newRoute.setNdirRouteNote(route.path("ndirRouteNote").asText());
 
             System.out.println("저장될 Node 데이터: " + newRoute);
             routeRepository.save(newRoute);

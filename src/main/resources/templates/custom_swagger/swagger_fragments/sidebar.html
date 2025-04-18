@@ -1,0 +1,59 @@
+<th:block th:fragment="sidebarFragment">
+    <style>
+        .sticky-sidebar {
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border-right: 1px solid #ccc;
+        }
+
+        .sticky-sidebar ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .sticky-sidebar li {
+            margin-bottom: 10px;
+        }
+
+        .sticky-sidebar a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .sticky-sidebar a:hover {
+            color: #007bff;
+        }
+    </style>
+
+    <div class="sticky-sidebar">
+        <ul>
+            <li><a href="#" onclick="scrollToSection('lost-item-admin-controller')">🚌 버스 컨트롤러</a></li>
+            <!-- 다른 메뉴도 추가 가능 -->
+        </ul>
+    </div>
+
+    <script>
+        function scrollToSection(tagName) {
+            const el = document.querySelector(`#operations-tag-${tagName}`);
+            console.log("찾은 요소:", el);
+
+            if (el) {
+                const isOpen = el.getAttribute('data-is-open');
+                if (isOpen === 'false') {
+                    el.click();
+                }
+                setTimeout(() => {
+                    el.scrollIntoView({behavior: 'smooth', block: 'start'});
+                }, 300);
+            } else {
+                alert('해당 태그를 찾을 수 없습니다.');
+            }
+        }
+    </script>
+</th:block>

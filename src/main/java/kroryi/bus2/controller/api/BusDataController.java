@@ -35,6 +35,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -136,7 +137,7 @@ public class BusDataController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "정류장 불러오기", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌",
+    @Operation(summary = "노선이 경유하는 정류장 불러오기", description = "노선Id로 해당하는 정류장 정보(좌표,이름 등)을 뿌려줌",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공적으로 데이터 반환"),
                     @ApiResponse(responseCode = "401", description = "JWT 인증 실패"),
@@ -221,6 +222,7 @@ public class BusDataController {
     }
 
     // 경유 정류소만 추가 거의 쓸일없을듯?
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "경유지 추가", description = "새로운 경유 정류소만 추가 거의 쓸일없을듯?")
     @PostMapping("/AddRouteStopLink")
     public void addRouteStopLink(@RequestBody List<RouteStopLinkDTO> dtoList) {
@@ -229,6 +231,7 @@ public class BusDataController {
     }
 
     // 노선만들기 + 경유 정류소 추가
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "노선 경유지 추가", description = "새로운 노선 경유지를 추가합니다.")
     @PostMapping("/AddBusRoute")
     public ResponseEntity<?> addRoute(@RequestBody CustomRouteRegisterRequestDTO request) {
@@ -248,6 +251,7 @@ public class BusDataController {
         return ResponseEntity.ok(route);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "노선정보 수정", description = "커스텀/일반 노선 구분 없이 노선ID로 정보 수정")
     @PutMapping("/UpdateRouteUnified/{routeId}")
     public ResponseEntity<?> updateAnyRoute(@PathVariable String routeId,
@@ -272,7 +276,7 @@ public class BusDataController {
                 .body(Map.of("success", false, "message", "해당 노선 ID를 찾을 수 없습니다."));
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "노선링크 순서 수정", description = "노선ID로 노선링크의 순서를 수정해줌 *기존 노선엔 절대 사용금지!!!")
     @PutMapping("/UpdateRouteLink")
     public ResponseEntity<?> updateRouteSeq(@RequestBody List<RouteStopLinkDTO> dtoList) {
@@ -292,6 +296,7 @@ public class BusDataController {
         return ResponseEntity.ok(Map.of("success", true, "message", "노선 순서(seq)가 성공적으로 수정되었습니다."));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "노선링크 정류소 추가", description = "노선ID로 노선링크의 정류소를 추가해줌 *기존의 노선에 새로운 정류소가 추가 될수도있으니 주의!")
     @PostMapping("/InsertStop")
     public ResponseEntity<?> insertStop(@RequestBody RouteStopLinkDTO dto) {
@@ -303,6 +308,7 @@ public class BusDataController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "노선링크 정류소 삭제", description = "노선링크의 정류소를 삭제해줌 *기존의 노선의 정류소도 삭제 가능하니 조심!")
     @DeleteMapping("/delete-stop")
     public ResponseEntity<?> deleteStop(@RequestParam String routeId,
@@ -316,6 +322,7 @@ public class BusDataController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "노선 삭제", description = "노선을 삭제해줌 *기존의 노선도 삭제 가능하니 조심!")
     @DeleteMapping("/deleteRoute")
     public ResponseEntity<?> deleteRoute(@RequestParam String routeId) {
@@ -370,6 +377,7 @@ public class BusDataController {
 
 
     // 레디스 수동으로 지우는컨트롤러     조심히 다루세요
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Redis 전체 캐시 삭제", description = "Redis에 저장된 모든 캐시 데이터를 삭제합니다. 운영 환경에서는 주의해서 사용하세요.")
     @DeleteMapping("/evict/all")
     public ResponseEntity<String> evictAllCache() {
@@ -387,6 +395,7 @@ public class BusDataController {
 
 
     // 얘는 db에 기초종합정보 넣는거 이젠 쓰지마시길 렉 걸림 (나중에 하루에 한번 자동으로 실행되어 데이터 갱싱용으로 바꿀 예정)
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "공공데이터 기초 종합 정보", description = "얘는 db에 기초종합정보 넣는거 이젠 쓰지마시길 렉 걸림 (나중에 하루에 한번 자동으로 실행되어 데이터 갱싱용으로 바꿀 예정)")
     @PostMapping("/fetch")
     public String fetchPostBusData() {
