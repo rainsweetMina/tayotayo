@@ -18,10 +18,30 @@
                 <div id="collapsePosts" class="accordion-collapse collapse" aria-labelledby="headingPosts"
                      data-bs-parent="#adminSidebarAccordion">
                     <div class="accordion-body">
+                        <!-- 📌 게시글 관리 -->
                         <ul class="list-unstyled">
-                            <li><a href="#" class="text-decoration-none">공지사항 관리</a></li>
-                            <li><a href="#" class="text-decoration-none">Q&A 관리</a></li>
-                            <li><a href="#" class="text-decoration-none">광고 관리</a></li>
+                            <li><a href="/admin/notice" class="text-decoration-none">공지사항 관리</a></li>
+                            <li><a href="/admin/qna" class="text-decoration-none">Q&A 관리</a></li>
+                            <li><a href="/admin/ad-manage" class="text-decoration-none">광고 관리</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 분실물/습득물 관리 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingLostFound">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseLostFound" aria-expanded="false" aria-controls="collapseLostFound">
+                        🧳 분실/습득물 관리
+                    </button>
+                </h2>
+                <div id="collapseLostFound" class="accordion-collapse collapse" aria-labelledby="headingLostFound"
+                     data-bs-parent="#adminSidebarAccordion">
+                    <div class="accordion-body">
+                        <ul class="list-unstyled">
+                            <li><a href="/admin/lost" class="text-decoration-none">신고된 분실물</a></li>
+                            <li><a href="/admin/found" class="text-decoration-none">등록된 습득물</a></li>
                         </ul>
                     </div>
                 </div>
@@ -40,7 +60,7 @@
                     <div class="accordion-body">
                         <ul class="list-unstyled">
                             <li><a href="#" class="text-decoration-none">운행기간 관리</a></li>
-                            <li><a href="#" class="text-decoration-none">시스템 로그 관리</a></li>
+                            <li><a href="/admin/logs" class="text-decoration-none">시스템 로그 관리</a></li>
                             <li><a href="#" class="text-decoration-none">전체 이용 통계</a></li>
                         </ul>
                     </div>

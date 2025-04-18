@@ -1,63 +1,68 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>관리자 - 분실물 목록</title>
 </head>
+
 <body>
-<h1>📦 관리자용 분실물 목록</h1>
+<div layout:fragment="content" class="p-4">
 
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>제목</th>
-        <th>버스 번호</th>
-        <th>신고자</th>
-        <th>삭제 여부</th>
-        <th>숨김 여부</th>
-        <th>등록일</th>
-        <th>액션</th> <!-- ✅ 버튼 칸 -->
-    </tr>
-    <tr th:each="item : ${lostItems}">
-        <td th:text="${item.id}">1</td>
-        <td th:text="${item.title}">제목</td>
-        <td th:text="${item.busNumber}">버스번호</td>
-        <td th:text="${item.memberId}">신고자</td>
-        <td th:text="${item.deleted} ? '삭제됨' : '정상'">삭제여부</td>
-        <td th:text="${item.visible} ? '보임' : '숨김'">숨김여부</td>
-        <td th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">등록일</td>
+    <h2>📦 관리자용 분실물 목록</h2>
 
-        <!-- ✅ 상세 링크 + 숨김/삭제 버튼 -->
-        <td>
-            <!-- 상세 보기 (선택된 ID 전달) -->
-            <a th:href="@{/admin/lost(selectedId=${item.id})}">상세</a>
+    <table class="table table-bordered text-center">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>제목</th>
+            <th>버스 번호</th>
+            <th>신고자</th>
+            <th>삭제 여부</th>
+            <th>숨김 여부</th>
+            <th>등록일</th>
+            <th>액션</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${lostItems}">
+            <td th:text="${item.id}">1</td>
+            <td th:text="${item.title}">제목</td>
+            <td th:text="${item.busNumber}">버스번호</td>
+            <td th:text="${item.memberId}">신고자</td>
+            <td th:text="${item.deleted} ? '삭제됨' : '정상'">삭제여부</td>
+            <td th:text="${item.visible} ? '보임' : '숨김'">숨김여부</td>
+            <td th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">등록일</td>
+            <td>
+                <a th:href="@{/admin/lost(selectedId=${item.id})}" class="btn btn-outline-primary btn-sm">상세</a>
 
-            <!-- 숨김 처리 -->
-            <form th:action="@{'/api/admin/lost/hide/' + ${item.id}}" method="post"
-                  onsubmit="return confirm('숨기시겠습니까?');">
-                <input type="hidden" name="_method" value="patch"/>
-                <button type="submit">숨김</button>
-            </form>
+                <form th:action="@{'/api/admin/lost/hide/' + ${item.id}}" method="post"
+                      style="display:inline;" onsubmit="return confirm('숨기시겠습니까?');">
+                    <input type="hidden" name="_method" value="patch"/>
+                    <button type="submit" class="btn btn-warning btn-sm">숨김</button>
+                </form>
 
-            <!-- 삭제 처리 -->
-            <form th:action="@{'/api/admin/lost/' + ${item.id}}" method="post"
-                  onsubmit="return confirm('삭제하시겠습니까?');">
-                <input type="hidden" name="_method" value="delete"/>
-                <button type="submit">삭제</button>
-            </form>
-        </td>
-    </tr>
-</table>
+                <form th:action="@{'/api/admin/lost/' + ${item.id}}" method="post"
+                      style="display:inline;" onsubmit="return confirm('삭제하시겠습니까?');">
+                    <input type="hidden" name="_method" value="delete"/>
+                    <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
-<!-- ✅ 선택된 분실물 상세 정보 표시 영역 -->
-<div th:if="${selectedItem != null}">
-    <hr/>
-    <h2>📌 선택한 분실물 상세 정보</h2>
-    <p><strong>제목:</strong> <span th:text="${selectedItem.title}"></span></p>
-    <p><strong>내용:</strong> <span th:text="${selectedItem.content}"></span></p>
-    <p><strong>버스 번호:</strong> <span th:text="${selectedItem.busNumber}"></span></p>
-    <p><strong>등록일:</strong> <span th:text="${#temporals.format(selectedItem.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+    <!-- ✅ 선택된 분실물 상세 정보 표시 -->
+    <div th:if="${selectedItem != null}" class="mt-4">
+        <hr/>
+        <h4>📌 선택한 분실물 상세 정보</h4>
+        <p><strong>제목:</strong> <span th:text="${selectedItem.title}"></span></p>
+        <p><strong>내용:</strong> <span th:text="${selectedItem.content}"></span></p>
+        <p><strong>버스 번호:</strong> <span th:text="${selectedItem.busNumber}"></span></p>
+        <p><strong>등록일:</strong> <span th:text="${#temporals.format(selectedItem.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+    </div>
+
 </div>
-
 </body>
 </html>

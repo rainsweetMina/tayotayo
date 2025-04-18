@@ -26,6 +26,7 @@ public class Ad {
     private LocalDateTime startDateTime;   // 광고 시작 시간
     private LocalDateTime endDateTime;     // 광고 종료 시간
 
+
     @Setter
     private boolean deleted;         // soft delete 여부
 

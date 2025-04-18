@@ -144,5 +144,6 @@ public class QnaService {
         qna.setDeleted(true);
     }
 
+
 }
 

@@ -17,4 +17,5 @@ public class AdRequestDTO {
     private boolean showPopup;
 
 
+
 }

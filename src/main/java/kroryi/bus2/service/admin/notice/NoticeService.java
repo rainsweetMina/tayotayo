@@ -18,4 +18,6 @@ public interface NoticeService {
 
     //팝업관련
     Optional<Notice> findValidPopup();
+
+
 }

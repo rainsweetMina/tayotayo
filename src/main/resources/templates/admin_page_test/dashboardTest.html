@@ -5,38 +5,94 @@
 <head>
     <meta charset="UTF-8">
     <title>관리자 대시보드</title>
-
-</head>
-<body>
-<div layout:fragment="content" style="">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            /*padding: 2rem;*/
-        }
-        canvas {
-            margin-top: 2rem;
-        }
-        #apiResponseChart {
-            width: 600px !important;
-            height: 400px !important;
-        }
-    </style>
+<body>
+<div layout:fragment="content" class="p-4">
 
-<h1>관리자 대시보드</h1>
+    <h2>관리자 대시보드</h2>
 
-<p>📌 Routes Count: <span id="routesCount">-</span></p>
-<p>📌 Requests Today: <span id="requestToday">-</span></p>
-<p>📌 Memory Usage: <span id="memoryUsage">-</span></p>
-<p>📌 Connected Clients: <span id="connectedClients">-</span></p>
+    <!-- ✅ 신규 카드 UI 추가 -->
+    <div class="row row-cols-1 row-cols-md-4 g-4 mt-3">
+        <div class="col">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">신고된 분실물</h5>
+                    <p class="card-text"><span th:text="${lostCount}">0</span> 건</p>
+                    <a href="/admin/lost" class="btn btn-light btn-sm">바로가기</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">등록된 습득물</h5>
+                    <p class="card-text"><span th:text="${foundCount}">0</span> 건</p>
+                    <a href="/admin/found" class="btn btn-light btn-sm">바로가기</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">매칭 완료</h5>
+                    <p class="card-text"><span th:text="${matchedCount}">0</span> 건</p>
+                    <a href="/admin/found" class="btn btn-light btn-sm">바로가기</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">미매칭 습득물</h5>
+                    <p class="card-text"><span th:text="${unmatchedCount}">0</span> 건</p>
+                    <a href="/admin/found" class="btn btn-dark btn-sm">바로가기</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-dark">
+                <div class="card-body">
+                    <h5 class="card-title">미처리 Q&A</h5>
+                    <p class="card-text"><span th:text="${qnaPendingCount}">0</span> 건</p>
+                    <a href="/admin/qna" class="btn btn-light btn-sm">바로가기</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">광고 현황</h5>
+                    <p class="card-text">배너 <span th:text="${bannerCount}">0</span> / 팝업 <span th:text="${popupAdCount}">0</span></p>
+                    <a href="/admin/ad-manage" class="btn btn-light btn-sm">바로가기</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">공지사항</h5>
+                    <p class="card-text">게시글 <span th:text="${noticeCount}">0</span> / 팝업 <span th:text="${popupNoticeCount}">0</span></p>
+                    <a href="/admin/notice" class="btn btn-light btn-sm">바로가기</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- ✅ 기존 통계 텍스트 -->
+    <div class="mt-5">
+        <p>📌 Routes Count: <span id="routesCount">-</span></p>
+        <p>📌 Requests Today: <span id="requestToday">-</span></p>
+        <p>📌 Memory Usage: <span id="memoryUsage">-</span></p>
+        <p>📌 Connected Clients: <span id="connectedClients">-</span></p>
+    </div>
 
-<h2>📈 API 응답 속도 추이</h2>
-<canvas id="apiResponseChart" width="600" height="400"></canvas>
+    <!-- ✅ API 응답 속도 그래프 -->
+    <h2 class="mt-4">📈 API 응답 속도 추이</h2>
+    <canvas id="apiResponseChart" width="600" height="400"></canvas>
+    <script src="/js/dashboard.js"></script>
 
-<script src="/js/dashboard.js"></script>
 </div>
 </body>
 </html>

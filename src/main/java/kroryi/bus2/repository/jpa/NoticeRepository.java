@@ -16,4 +16,6 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
     Optional<Notice> findFirstByShowPopupTrueAndPopupStartBeforeAndPopupEndAfterOrderByPopupStartDesc(
             LocalDateTime now1, LocalDateTime now2);
 
+
+
 }

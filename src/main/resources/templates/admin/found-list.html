@@ -1,70 +1,81 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>관리자 - 습득물 관리</title>
 </head>
+
 <body>
-<h1>습득물 등록</h1>
-<form th:action="@{/admin/found}" method="post" enctype="multipart/form-data">
-  <label>물품명: <input type="text" name="itemName" /></label><br>
-  <label>버스회사: <input type="text" name="busCompany" /></label><br>
-  <label>버스번호: <input type="text" name="busNumber" /></label><br>
-  <label>습득일: <input type="date" name="foundTime" /></label><br>
-  <label>습득 장소: <input type="text" name="foundPlace" /></label><br>
-  <label>내용: <textarea name="content"></textarea></label><br>
-  <label>보관 위치: <input type="text" name="storageLocation" /></label><br>
-  <label>연락처: <input type="text" name="handlerContact" /></label><br>
-  <label>이메일: <input type="email" name="handlerEmail" /></label><br>
-  <label>상태:
-    <select name="status">
-      <option value="IN_STORAGE">보관 중</option>
-      <option value="RETURNED">회수 완료</option>
-    </select>
-  </label><br>
-  <input type="hidden" name="handlerId" value="3" />
-  <label>이미지 등록: <input type="file" name="image" accept="image/*" /></label><br>
-  <button type="submit">등록</button>
-</form>
+<div layout:fragment="content" class="p-4">
 
+  <h2>📦 습득물 등록</h2>
+  <form th:action="@{/admin/found}" method="post" enctype="multipart/form-data" class="mb-4">
+    <div class="mb-2"><label>물품명: <input type="text" name="itemName" class="form-control"/></label></div>
+    <div class="mb-2"><label>버스회사: <input type="text" name="busCompany" class="form-control"/></label></div>
+    <div class="mb-2"><label>버스번호: <input type="text" name="busNumber" class="form-control"/></label></div>
+    <div class="mb-2"><label>습득일: <input type="date" name="foundTime" class="form-control"/></label></div>
+    <div class="mb-2"><label>습득 장소: <input type="text" name="foundPlace" class="form-control"/></label></div>
+    <div class="mb-2"><label>내용: <textarea name="content" class="form-control"></textarea></label></div>
+    <div class="mb-2"><label>보관 위치: <input type="text" name="storageLocation" class="form-control"/></label></div>
+    <div class="mb-2"><label>연락처: <input type="text" name="handlerContact" class="form-control"/></label></div>
+    <div class="mb-2"><label>이메일: <input type="email" name="handlerEmail" class="form-control"/></label></div>
+    <div class="mb-2">
+      <label>상태:
+        <select name="status" class="form-select">
+          <option value="IN_STORAGE">보관 중</option>
+          <option value="RETURNED">회수 완료</option>
+        </select>
+      </label>
+    </div>
+    <input type="hidden" name="handlerId" value="3"/>
+    <div class="mb-3"><label>이미지 등록: <input type="file" name="image" accept="image/*" class="form-control"/></label></div>
 
-<hr>
+    <button type="submit" class="btn btn-primary">등록</button>
+  </form>
 
-<h2>습득물 목록</h2>
-<table border="1">
-  <tr>
-    <th>ID</th>
-    <th>물품명</th>
-    <th>버스번호</th>
-    <th>습득일</th>
-    <th>습득 장소</th>
-    <th>상태</th>
-    <th>액션</th>
-  </tr>
-  <tr th:each="item : ${foundItems}">
-    <td th:text="${item.id}"></td>
-    <td>
-      <a th:href="@{/admin/found/view/{id}(id=${item.id})}" th:text="${item.itemName}"></a>
-    </td>
-    <td th:text="${item.busNumber}"></td>
-    <td th:text="${item.foundTime != null ? #temporals.format(item.foundTime, 'yyyy-MM-dd') : '없음'}"></td>
-    <td th:text="${item.foundPlace}"></td>
-    <td th:text="${item.statusName}"></td>
-    <td>
-      <form th:action="@{/admin/found/hide/{id}(id=${item.id})}" method="post" style="display:inline;">
-        <button type="submit">숨김</button>
-      </form>
-      <form th:action="@{/admin/found/delete/{id}(id=${item.id})}" method="post" style="display:inline;">
-        <button type="submit">삭제</button>
-      </form>
-      <form th:action="@{/admin/found/match/{foundItemId}(foundItemId=${item.id})}" method="post">
-        <input type="text" name="lostItemId" placeholder="분실물 ID 입력" />
-        <button type="submit" th:disabled="${item.matched}">매칭</button>
-      </form>
+  <hr>
 
-    </td>
-  </tr>
-</table>
+  <h2>📋 습득물 목록</h2>
+  <table class="table table-bordered text-center">
+    <thead class="table-light">
+    <tr>
+      <th>ID</th>
+      <th>물품명</th>
+      <th>버스번호</th>
+      <th>습득일</th>
+      <th>습득 장소</th>
+      <th>상태</th>
+      <th>액션</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${foundItems}">
+      <td th:text="${item.id}"></td>
+      <td>
+        <a th:href="@{/admin/found/view/{id}(id=${item.id})}" th:text="${item.itemName}"></a>
+      </td>
+      <td th:text="${item.busNumber}"></td>
+      <td th:text="${item.foundTime != null ? #temporals.format(item.foundTime, 'yyyy-MM-dd') : '없음'}"></td>
+      <td th:text="${item.foundPlace}"></td>
+      <td th:text="${item.statusName}"></td>
+      <td>
+        <form th:action="@{/admin/found/hide/{id}(id=${item.id})}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-warning btn-sm">숨김</button>
+        </form>
+        <form th:action="@{/admin/found/delete/{id}(id=${item.id})}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+        </form>
+        <form th:action="@{/admin/found/match/{foundItemId}(foundItemId=${item.id})}" method="post" style="display:inline;">
+          <input type="text" name="lostItemId" placeholder="분실물 ID" class="form-control d-inline w-50" />
+          <button type="submit" class="btn btn-success btn-sm mt-1" th:disabled="${item.matched}">매칭</button>
+        </form>
+      </td>
+    </tr>
+    </tbody>
+  </table>
 
+</div>
 </body>
 </html>

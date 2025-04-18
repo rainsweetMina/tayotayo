@@ -1,60 +1,65 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>습득물 상세보기</title>
+    <title>관리자 - 습득물 상세보기</title>
 </head>
+
 <body>
-<h1>습득물 상세보기</h1>
+<div layout:fragment="content" class="p-4">
 
-<div>
-    <p><strong>물품명:</strong> <span th:text="${selectedItem.itemName}"></span></p>
-    <p><strong>버스 회사:</strong> <span th:text="${selectedItem.busCompany}"></span></p>
-    <p><strong>버스 번호:</strong> <span th:text="${selectedItem.busNumber}"></span></p>
-    <p><strong>내용:</strong> <span th:text="${selectedItem.content}"></span></p>
-    <p><strong>습득일:</strong> <span th:text="${#temporals.format(selectedItem.foundTime, 'yyyy-MM-dd')}"></span></p>
-    <p><strong>습득 장소:</strong> <span th:text="${selectedItem.foundPlace}"></span></p>
-    <p><strong>보관 위치:</strong> <span th:text="${selectedItem.storageLocation}"></span></p>
-    <p><strong>상태:</strong> <span th:text="${selectedItem.statusName}"></span></p>
-    <p><strong>연락처:</strong> <span th:text="${selectedItem.handlerContact}"></span></p>
-    <p><strong>이메일:</strong> <span th:text="${selectedItem.handlerEmail}"></span></p>
+    <h2>📦 습득물 상세보기</h2>
 
-    <!-- ✅ 이미지 출력 -->
-    <div th:if="${selectedItem.photoUrl != null}">
-        <label>등록된 이미지:</label><br>
-<!--        <img th:src="@{'/uploads/found/'+ ${selectedItem.photoUrl}}" alt="습득물 이미지" width="200"/>-->
-        <img th:src="@{${uploadPrefix} + ${selectedItem.photoUrl}}" alt="습득물 이미지" width="200"/>
+    <div th:if="${selectedItem != null}" class="mb-4">
+        <p><strong>물품명:</strong> <span th:text="${selectedItem.itemName}"></span></p>
+        <p><strong>버스 회사:</strong> <span th:text="${selectedItem.busCompany}"></span></p>
+        <p><strong>버스 번호:</strong> <span th:text="${selectedItem.busNumber}"></span></p>
+        <p><strong>내용:</strong> <span th:text="${selectedItem.content}"></span></p>
+        <p><strong>습득일:</strong> <span th:text="${#temporals.format(selectedItem.foundTime, 'yyyy-MM-dd')}"></span></p>
+        <p><strong>습득 장소:</strong> <span th:text="${selectedItem.foundPlace}"></span></p>
+        <p><strong>보관 위치:</strong> <span th:text="${selectedItem.storageLocation}"></span></p>
+        <p><strong>상태:</strong> <span th:text="${selectedItem.statusName}"></span></p>
+        <p><strong>연락처:</strong> <span th:text="${selectedItem.handlerContact}"></span></p>
+        <p><strong>이메일:</strong> <span th:text="${selectedItem.handlerEmail}"></span></p>
+
+        <!-- ✅ 이미지 출력 -->
+        <div th:if="${selectedItem.photoUrl != null}" class="mt-3">
+            <label>등록된 이미지:</label><br>
+            <img th:src="@{${uploadPrefix} + ${selectedItem.photoUrl}}" alt="습득물 이미지" width="200"/>
+        </div>
     </div>
+
+    <hr/>
+
+    <h4>✏️ 정보 수정</h4>
+    <form th:action="@{'/admin/found/update/' + ${selectedItem.id}}" method="post" enctype="multipart/form-data" class="mt-3">
+        <div class="mb-2"><label>물품명: <input type="text" name="itemName" th:value="${selectedItem.itemName}" class="form-control"/></label></div>
+        <div class="mb-2"><label>버스회사: <input type="text" name="busCompany" th:value="${selectedItem.busCompany}" class="form-control"/></label></div>
+        <div class="mb-2"><label>버스번호: <input type="text" name="busNumber" th:value="${selectedItem.busNumber}" class="form-control"/></label></div>
+        <div class="mb-2"><label>습득일: <input type="date" name="foundTime" th:value="${formattedDate}" class="form-control"/></label></div>
+        <div class="mb-2"><label>습득 장소: <input type="text" name="foundPlace" th:value="${selectedItem.foundPlace}" class="form-control"/></label></div>
+        <div class="mb-2"><label>내용: <textarea name="content" class="form-control" th:text="${selectedItem.content}"></textarea></label></div>
+        <div class="mb-2"><label>보관 위치: <input type="text" name="storageLocation" th:value="${selectedItem.storageLocation}" class="form-control"/></label></div>
+        <div class="mb-2"><label>연락처: <input type="text" name="handlerContact" th:value="${selectedItem.handlerContact}" class="form-control"/></label></div>
+        <div class="mb-2"><label>이메일: <input type="email" name="handlerEmail" th:value="${selectedItem.handlerEmail}" class="form-control"/></label></div>
+        <div class="mb-2">
+            <label>상태:
+                <select name="status" class="form-select">
+                    <option value="IN_STORAGE" th:selected="${selectedItem.statusName == '보관중'}">보관 중</option>
+                    <option value="RETURNED" th:selected="${selectedItem.statusName == '수령완료'}">회수 완료</option>
+                </select>
+            </label>
+        </div>
+        <div class="mb-3"><label>이미지 변경: <input type="file" name="image" accept="image/*" class="form-control"/></label></div>
+
+        <input type="hidden" name="handlerId" th:value="${selectedItem.handlerId}" />
+        <button type="submit" class="btn btn-primary">수정 완료</button>
+    </form>
+
+    <a th:href="@{/admin/found}" class="btn btn-secondary mt-4">← 목록으로</a>
+
 </div>
-
-<hr>
-
-<h2>정보 수정</h2>
-
-<form th:action="@{'/admin/found/update/' + ${selectedItem.id}}" method="post" enctype="multipart/form-data">
-    <label>물품명: <input type="text" name="itemName" th:value="${selectedItem.itemName}" /></label><br>
-    <label>버스회사: <input type="text" name="busCompany" th:value="${selectedItem.busCompany}" /></label><br>
-    <label>버스번호: <input type="text" name="busNumber" th:value="${selectedItem.busNumber}" /></label><br>
-    <label>습득일: <input type="date" name="foundTime" th:value="${formattedDate}" /></label><br>
-    <label>습득 장소: <input type="text" name="foundPlace" th:value="${selectedItem.foundPlace}" /></label><br>
-    <label>내용: <textarea name="content" th:text="${selectedItem.content}"></textarea></label><br>
-    <label>보관 위치: <input type="text" name="storageLocation" th:value="${selectedItem.storageLocation}" /></label><br>
-    <label>연락처: <input type="text" name="handlerContact" th:value="${selectedItem.handlerContact}" /></label><br>
-    <label>이메일: <input type="email" name="handlerEmail" th:value="${selectedItem.handlerEmail}" /></label><br>
-    <label>상태:
-        <select name="status">
-            <option value="IN_STORAGE" th:selected="${selectedItem.statusName == '보관중'}">보관 중</option>
-            <option value="RETURNED" th:selected="${selectedItem.statusName == '수령완료'}">회수 완료</option>
-        </select>
-    </label><br>
-    <label>이미지 변경: <input type="file" name="image" accept="image/*" /></label><br>
-    <input type="hidden" name="handlerId" th:value="${selectedItem.handlerId}" />
-    <button type="submit">수정 완료</button>
-</form>
-
-
-<hr>
-<a th:href="@{/admin/found}"><button>목록으로</button></a>
-
 </body>
 </html>
