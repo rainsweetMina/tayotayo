@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/layout.html}" lang="ko">
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <link rel="stylesheet" th:href="@{/css/routeMap.css}">
     <title>버스 시간표 수정 페이지</title>
+    <style>
+        td{
+            border: 1px solid #ddd !important;
+        }
+    </style>
 </head>
 
-<th:block layout:fragment="sidebar"></th:block>
+<!--<th:block layout:fragment="sidebar"></th:block>-->
 
 <div layout:fragment="content">
 
