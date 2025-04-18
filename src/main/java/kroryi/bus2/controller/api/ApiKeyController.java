@@ -38,19 +38,23 @@ public class ApiKeyController {
     // ✅ 관리자 대시보드 페이지 (최근 5개의 API 키만 표시)
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        List<ApiKey> recent = apiKeyRepository.findAll(Sort.by(Sort.Direction.DESC, "issuedAt"))
-                .stream()
-                .limit(5)
-                .toList();
+        List<ApiKey> recent = apiKeyRepository.findAll(Sort.by(Sort.Direction.DESC, "issuedAt"));
         model.addAttribute("recentKeys", recent);
         return "api/apiKeyDashboard";
     }
 
-    // ✅ 전체 API 키 목록 (REST)
+    @GetMapping("/admin/apikey")
+    public String showApiKeyDashboard(Model model) {
+        List<ApiKey> keys = apiKeyService.getAllApiKeys();
+        model.addAttribute("apiKeys", keys);
+        return "admin/apikey";
+    }
+
+    // REST API 목록 조회
+    @GetMapping("/admin/apikey/api")
     @ResponseBody
-    @GetMapping
     public List<ApiKey> getAll() {
-        return apiKeyRepository.findAll();
+        return apiKeyRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
     }
 
     // ✅ 특정 API 키 조회
@@ -100,6 +104,13 @@ public class ApiKeyController {
         key.setActive(active);
         apiKeyRepository.save(key);
         return ResponseEntity.ok().build();
+    }
+
+    // API 키 활성화/비활성화 상태 변경
+    @PostMapping("/{id}/toggle")
+    public String toggleApiKey(@PathVariable Long id) {
+        apiKeyService.toggleActive(id);  // 상태 변경
+        return "redirect:/admin/apikey/dashboard";  // 대시보드로 리다이렉트
     }
 
     // ✅ API 키 삭제

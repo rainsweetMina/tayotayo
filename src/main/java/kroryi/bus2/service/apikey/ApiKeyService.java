@@ -7,10 +7,12 @@ import kroryi.bus2.repository.jpa.UserRepository;
 import kroryi.bus2.repository.jpa.apikey.ApiKeyRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -79,5 +81,30 @@ public class ApiKeyService {
         // 가장 최근에 발급된 API 키를 조회
         return apiKeyRepository.findTopByUserOrderByCreatedAtDesc(user)
                 .orElse(null);  // 만약 API 키가 없다면 null 반환
+    }
+
+    // 모든 API Key 목록을 최근 생성 순으로 조회
+    public List<ApiKey> getAllApiKeys() {
+        return apiKeyRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));  // createdAt 기준으로 내림차순 정렬
+    }
+
+    // API 키 상태를 토글하는 메서드 (활성화/비활성화)
+    @Transactional
+    public boolean toggleActive(Long id) {
+        // API 키 조회
+        ApiKey apiKey = apiKeyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("API 키를 찾을 수 없습니다."));
+
+        // 상태에 따른 활성화/비활성화 처리
+        if (apiKey.getStatus() == ApiKeyStatus.PENDING) {
+            apiKey.setStatus(ApiKeyStatus.APPROVED);  // PENDING → APPROVED
+        } else if (apiKey.getStatus() == ApiKeyStatus.APPROVED) {
+            apiKey.setStatus(ApiKeyStatus.PENDING);  // APPROVED → PENDING
+        }
+
+        apiKeyRepository.save(apiKey);
+
+        // 상태에 따라 active 판단 (예: APPROVED → true)
+        return apiKey.getStatus() == ApiKeyStatus.APPROVED;
     }
 }
