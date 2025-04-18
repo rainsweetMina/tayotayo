@@ -17,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,7 +46,7 @@ public class BusStopDataController {
         return ResponseEntity.ok(result);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "정류장 추가", description = "새로운 정류장(BusStop)을 추가합니다. 좌표(xpos, ypos), 정류장 ID(bsId), 이름(bsNm)를 포함합니다.")
     @PostMapping("/addBusStop")
     public ResponseEntity<BusStop> addStop(@RequestBody BusStopDetailResponseDTO dto) {
@@ -61,7 +62,7 @@ public class BusStopDataController {
         return ResponseEntity.ok(detail);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "정류장 정보 수정", description = "정류장 ID(bsId)에 해당하는 정류장의 이름, 좌표 등을 수정합니다.")
     @PutMapping("/updateStop/{bsId}")
     public ResponseEntity<String> updateBusStop(
@@ -78,6 +79,7 @@ public class BusStopDataController {
         return ResponseEntity.ok(busStop);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "정류장 삭제", description = "정류장 ID(bsId)로 해당 정류장을 삭제합니다. (만약 해당 정류장이 노선에 이어져 있는 경우 삭제는 불가합니다.)")
     @DeleteMapping("/deleteBusStop")
     public ResponseEntity<?> deleteBusStop(@RequestParam String bsId) {

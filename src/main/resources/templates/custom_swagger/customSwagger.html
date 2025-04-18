@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{custom_swagger/swagger_layout/layout.html}" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>커스텀 스웨거</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />
+
+    <!-- ✅ 기본적인 깔끔한 스타일 추가 -->
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: 'Segoe UI', 'Pretendard', sans-serif;-->
+<!--            background-color: #f4f6f8;-->
+<!--            color: #333;-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--        }-->
+
+<!--        .swagger-container {-->
+<!--            max-width: 1200px;-->
+<!--            margin: 40px auto;-->
+<!--            background: white;-->
+<!--            padding: 30px;-->
+<!--            border-radius: 16px;-->
+<!--            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);-->
+<!--        }-->
+
+<!--        h1 {-->
+<!--            text-align: center;-->
+<!--            font-size: 2rem;-->
+<!--            margin-bottom: 20px;-->
+<!--            color: #2e7d32;-->
+<!--        }-->
+<!--    </style>-->
+
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="swagger-container">
+        <h1 style="text-align: center; margin: 10px">🧭 API 문서 - Swagger UI</h1>
+
+        <!-- Swagger UI 들어가는 영역 -->
+        <div id="swagger-ui"></div>
+    </div>
+
+    <!-- Swagger UI 스크립트 -->
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+    <script>
+        const ui = SwaggerUIBundle({
+            url: '/v3/api-docs', // API 문서 JSON 경로
+            dom_id: '#swagger-ui',
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            layout: "BaseLayout",
+            docExpansion: "none", // folded by default
+            deepLinking: true
+        });
+    </script>
+</div>
+</body>
+</html>

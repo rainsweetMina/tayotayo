@@ -18,12 +18,6 @@ public class BusController {
         return "bus/busStops";
     }
 
-//    // 이건 테스트용인듯
-//    @GetMapping("/bus2")
-//    public String getBusStops2() {
-//        return "bus/busStops2";
-//    }
-
     // 전체 노선 불러오는 페이지
     @GetMapping("/GetAllRoute")
     public String GetAllBusRoute() {

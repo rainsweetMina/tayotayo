@@ -1,0 +1,67 @@
+<th:block th:fragment="headerFragment" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <style>
+        ul {
+            padding-left: 10px;
+        }
+
+        .bus-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .bus-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+
+        .busRouteSpan {
+            display: block;
+            margin-top: 14px;
+        }
+    </style>
+    <!-- 관리자 출력 -->
+    <span sec:authorize="hasAuthority('ROLE_ADMIN')">🙆‍♂️ 관리자 계정입니다</span>
+    <!-- 일반 USER 출력 -->
+    <span sec:authorize="hasAuthority('ROLE_USER')">🙆‍♂️ 일반 계정입니다</span>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="#">뻐어스</a>
+            <!--날씨-->
+
+            <ul class="navbar-nav">
+
+                <li class="weatherBox" style="align-content: center;">
+                    <span id="weatherData" class="visible" style="color: #a5a5a5;"></span>
+                </li>
+                <!-- 비로그인 사용자: 로그인/회원가입 -->
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a class="nav-link" th:href="@{/login}">회원가입(로그인)</a>
+                </li>
+
+                <!-- 일반 사용자 메뉴 -->
+                <li class="nav-item" sec:authorize="hasAuthority('ROLE_USER')">
+                    <a class="nav-link" th:href="@{/mypage}">마이페이지</a>
+                </li>
+
+                <!-- 관리자 전용 메뉴 -->
+                <li class="nav-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                    <a class="nav-link" th:href="@{/admin}">관리자 페이지</a>
+                </li>
+
+                <!-- 공통 로그아웃 -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <a class="nav-link" href="#" onclick="this.closest('form').submit(); return false;">
+                            로그아웃
+                        </a>
+                    </form>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+    <script src="/js/weatherInfo.js"></script>
+</th:block>

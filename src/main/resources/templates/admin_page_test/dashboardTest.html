@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 대시보드</title>
+
+</head>
+<body>
+<div layout:fragment="content" style="">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            /*padding: 2rem;*/
+        }
+        canvas {
+            margin-top: 2rem;
+        }
+        #apiResponseChart {
+            width: 600px !important;
+            height: 400px !important;
+        }
+    </style>
+
+<h1>관리자 대시보드</h1>
+
+<p>📌 Routes Count: <span id="routesCount">-</span></p>
+<p>📌 Requests Today: <span id="requestToday">-</span></p>
+<p>📌 Memory Usage: <span id="memoryUsage">-</span></p>
+<p>📌 Connected Clients: <span id="connectedClients">-</span></p>
+
+
+<h2>📈 API 응답 속도 추이</h2>
+<canvas id="apiResponseChart" width="600" height="400"></canvas>
+
+<script src="/js/dashboard.js"></script>
+</div>
+</body>
+</html>

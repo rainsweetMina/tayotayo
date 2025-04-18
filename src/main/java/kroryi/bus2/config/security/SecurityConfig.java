@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+//@EnableMethodSecurity // ✅ 메서드 수준 권한 체크 활성화
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -47,6 +49,10 @@ public class SecurityConfig {
 
                 // ✅ CSRF 보호 비활성화 (개발 시 또는 API 서버에서는 보통 비활성화)
                 .csrf(csrf -> csrf.disable())
+
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.disable()) // 👈 iframe 허용
+                )
 
                 // ✅ URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
@@ -123,4 +129,6 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+
 }
