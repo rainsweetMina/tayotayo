@@ -1,4 +1,4 @@
-package kroryi.bus2.controller.api;
+package kroryi.bus2.controller.bus;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;

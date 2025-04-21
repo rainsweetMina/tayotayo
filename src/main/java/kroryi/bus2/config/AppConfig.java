@@ -27,13 +27,13 @@ public class AppConfig {
                 .build();
     }
 
-    @Bean
-    public GroupedOpenApi adminApi() {
-        return GroupedOpenApi.builder()
-                .group("Bus")
-                .pathsToMatch("/api/bus/**")
-                .build();
-    }
+//    @Bean
+//    public GroupedOpenApi adminApi() {
+//        return GroupedOpenApi.builder()
+//                .group("Bus")
+//                .pathsToMatch("/api/bus/**")
+//                .build();
+//    }
 
     @Bean
     public GroupedOpenApi userApi() {
@@ -48,6 +48,14 @@ public class AppConfig {
         return GroupedOpenApi.builder()
                 .group("Board")
                 .packagesToScan("kroryi.bus2.controller.board")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi busGroup(){
+        return GroupedOpenApi.builder()
+                .group("Bus")
+                .packagesToScan("kroryi.bus2.controller.bus")
                 .build();
     }
 
