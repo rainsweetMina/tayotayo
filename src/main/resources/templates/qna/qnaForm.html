@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>Q&A 등록 페이지</title>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+        <h2>Q&A 등록 페이지</h2>
+        <div>
+            <form id="qnaForm" class="mb-4">
+                <div class="mb-3">
+                    <label for="title" class="form-label">제목</label>
+                    <input type="text" name="title" id="title" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="content" class="form-label">내용</label>
+                    <textarea name="content" id="content" class="form-control" rows="5" required></textarea>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="isSecret" id="isSecret" class="form-check-input">
+                    <label class="form-check-label" for="isSecret">비공개</label>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" onclick="history.back()">뒤로가기</button>
+                    <button type="submit" class="btn btn-primary">등록</button>
+                </div>
+            </form>
+
+        </div>
+
+    </section>
+
+
+<script>
+    document.getElementById("qnaForm").addEventListener("submit", function(e) {
+        e.preventDefault(); // 🛑 기본 submit 동작 방지
+
+        const dto = {
+            title: document.querySelector('input[name="title"]').value,
+            content: document.querySelector('textarea[name="content"]').value,
+            isSecret: document.querySelector('input[name="isSecret"]').checked
+        };
+
+        fetch("/api/qna-form", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(dto)
+        }).then(res => {
+            if (res.ok) {
+                alert("등록 완료");
+                window.location.href = "/qna/list";
+            } else {
+                alert("등록 실패");
+            }
+        }).catch(err => {
+            console.error(err);
+            alert("서버 오류 발생");
+        });
+    });
+</script>
+</div>
+
+</html>

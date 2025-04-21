@@ -3,6 +3,8 @@ package kroryi.bus2.repository.jpa;
 import kroryi.bus2.entity.Qna;
 import kroryi.bus2.entity.QnaStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +38,8 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
 
     // 숨김 처리된 QnA 수
     long countByVisibleFalse();
+
+
 
 }
 
