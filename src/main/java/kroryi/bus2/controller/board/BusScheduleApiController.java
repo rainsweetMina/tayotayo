@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "버스 노선 시간표", description = "")
+@Tag(name = "버스-노선-시간표", description = "")
 @RestController
 @RequestMapping("/api/")
 @RequiredArgsConstructor

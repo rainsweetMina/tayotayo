@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>Q&A 리스트 페이지</title>
+    <style>
+        a {
+            text-decoration: none;
+        }
+
+        .status-icon {
+            margin-left: 6px;
+        }
+    </style>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+        <div class="container mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Q&A 리스트</h2>
+            </div>
+
+            <table class="table table-bordered table-hover text-center align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th width="50px;">ID</th>
+                    <th>제목</th>
+                    <th>작성자</th>
+                    <th>작성일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="qna : ${qnaList}">
+                    <td th:text="${qna.id}"></td>
+                    <td class="text-start">
+                        <a th:href="@{'/qna/view/' + ${qna.id}}">
+                            <span th:text="${qna.title}"></span>
+                            <span th:if="${qna.status == 'ANSWERED'}" class="status-icon" title="답변 완료">💬</span>
+                        </a>
+                        <span style="width: 55px;" th:text="${qna.secret ? '🔒' : ''}"></span>
+                    </td>
+                    <td th:text="${qna.username}"></td>
+                    <td th:text="${#temporals.format(qna.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+
+                </tr>
+                </tbody>
+            </table>
+                <a href="/qna/question" class="btn btn-primary">등록</a>
+        </div>
+    </section>
+
+</div>
+
+</html>

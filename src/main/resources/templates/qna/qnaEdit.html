@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>Q&A 등록 페이지</title>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+        <h2>Q&A 수정</h2>
+        <div>
+            <form id="editForm" th:attr="data-id=${qna.id}" class="container mt-4">
+                <div class="mb-3">
+                    <label for="title" class="form-label">제목</label>
+                    <input type="text" name="title" id="title" class="form-control" th:value="${qna.title}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="content" class="form-label">내용</label>
+                    <textarea name="content" id="content" class="form-control" rows="5" required
+                              th:text="${qna.content}"></textarea>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="isSecretCheckbox" name="isSecret"
+                           th:checked="${qna.isSecret()}">
+                    <label class="form-check-label" for="isSecretCheckbox">비공개</label>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" onclick="history.back()">뒤로가기</button>
+                    <button type="submit" class="btn btn-primary">수정</button>
+                </div>
+            </form>
+
+        </div>
+    </section>
+    <script>
+        document.getElementById("editForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const form = document.getElementById("editForm");
+            const id = form.dataset.id;
+
+            const title = form.querySelector('input[name="title"]').value;
+            const content = form.querySelector('textarea[name="content"]').value;
+            const isSecret = form.querySelector('input[name="isSecret"]').checked;
+
+            const dto = {
+                title: title,
+                content: content,
+                isSecret: isSecret
+            };
+
+            fetch(`/api/qna-edit/${id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(dto)
+            })
+                .then(res => {
+                    if (res.redirected) {
+                        window.location.href = res.url;
+                    } else if (res.ok) {
+                        alert("수정 완료");
+                        window.location.href = `/qna/view/${id}`;  // 여기 경로 확인
+                    } else {
+                        alert("수정 실패");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("서버 오류 발생");
+                });
+        });
+
+    </script>
+</div>
+
+</html>
