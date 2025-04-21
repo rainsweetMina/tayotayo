@@ -30,9 +30,9 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-//        String path = request.getRequestURI();
-//
-//        // Swagger UI 관련 경로는 필터 제외
+        String path = request.getRequestURI();
+
+        // Swagger UI 관련 경로는 필터 제외
 //        return path.startsWith("/swagger-ui")
 //                || path.startsWith("/v3/api-docs")
 //                || path.startsWith("/swagger-resources")
