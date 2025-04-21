@@ -51,5 +51,13 @@ public class AppConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi adminGroup(){
+        return GroupedOpenApi.builder()
+                .group("Admin")
+                .packagesToScan("kroryi.bus2.controller.admin")
+                .build();
+    }
+
 
 }

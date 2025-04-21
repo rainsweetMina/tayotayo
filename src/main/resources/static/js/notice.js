@@ -2,6 +2,11 @@
 let currentEditId = null;
 let latestNotices = [];
 
+window.addEventListener("error", function (e) {
+    console.error("💥 JS Error:", e.message, e.filename, e.lineno);
+});
+
+
 document.getElementById('addNoticeBtn').addEventListener('click', function () {
     const title = document.getElementById('title').value.trim();
     const content = document.getElementById('content').value.trim();
@@ -154,36 +159,6 @@ function handleFileInputChange(input) {
 }
 
 
-function submitNoticeForm() {
-    const formData = new FormData(document.getElementById('noticeForm'));
-
-    fetch('/api/admin/notices' + noticeId, {
-        method: 'POST',
-        headers: {
-            'X-HTTP-Method-Override': 'PUT' // 👈 Spring이 내부적으로 PUT로 인식
-        },
-        body: formData
-    })
-        .then(response => {
-            if (response.ok) {
-                alert('📌 공지 등록 완료!');
-                loadNotices(); // 목록 새로고침
-
-                // ✅ 파일 input 리셋
-                document.getElementById('files').value = '';
-
-                // ✅ 전체 폼 리셋도 가능
-                document.getElementById('noticeForm').reset();
-            } else {
-                alert('❌ 등록 실패');
-            }
-        })
-        .catch(error => {
-            console.error('공지 등록 오류:', error);
-            alert('⚠️ 서버 오류');
-        });
-}
-
 
 function updateNotice(id) {
     const notice = latestNotices.find(n => n.id === id);
@@ -204,19 +179,6 @@ function updateNotice(id) {
     document.getElementById('addNoticeBtn').textContent = '수정 완료';
 }
 
-// function editNotice(id, title, content, showPopup, popupStart, popupEnd) {
-//     document.getElementById('title').value = title;
-//     document.getElementById('content').value = content;
-//     document.getElementById('showPopup').checked = showPopup;
-//     document.getElementById('popupStart').value = popupStart || '';
-//     document.getElementById('popupEnd').value = popupEnd || '';
-//
-//     isEditing = true;
-//     currentEditId = id;
-//
-//     document.getElementById('addNoticeBtn').textContent = '수정 완료';
-// }
-
 function resetForm() {
     document.getElementById('title').value = '';
     document.getElementById('author').value = '';
@@ -226,8 +188,18 @@ function resetForm() {
     document.getElementById('popupEnd').value = '';
 
 
-    // ✅ 파일 input 리셋
-    document.getElementById('files').value = '';
+    // ✅ 파일 input 모두 제거 후 하나만 남김
+    const container = document.getElementById('fileInputs');
+    container.innerHTML = ''; // 전체 제거
+
+    const newInput = document.createElement('input');
+    newInput.type = 'file';
+    newInput.name = 'files';
+    newInput.className = 'file-input';
+    newInput.onchange = function () {
+        handleFileInputChange(this);
+    };
+    container.appendChild(newInput);
 
     isEditing = false;
     currentEditId = null;

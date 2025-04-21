@@ -1,4 +1,4 @@
-package kroryi.bus2.controller.notice;
+package kroryi.bus2.controller.admin.notice;
 
 
 import kroryi.bus2.dto.notice.NoticeResponseDTO;

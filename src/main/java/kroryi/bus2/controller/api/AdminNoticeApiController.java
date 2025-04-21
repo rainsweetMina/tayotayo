@@ -1,5 +1,7 @@
 package kroryi.bus2.controller.api;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;
 import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "관리자 공지사항", description = "")
 @RestController
 @RequestMapping("/api/admin/notices")
 @RequiredArgsConstructor
@@ -25,13 +28,13 @@ public class AdminNoticeApiController {
 
 
 
-    // 공지 전체 목록
+    @Operation(summary = "공지 전체 목록")
     @GetMapping
     public ResponseEntity<List<NoticeResponseDTO>> getAllNotice() {
         return ResponseEntity.ok(noticeService.getAllNotices());
     }
 
-    // 공지 등록
+    @Operation(summary = "공지 등록")
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<NoticeResponseDTO> createNotice(
             @RequestPart("notice") @Valid CreateNoticeRequestDTO dto,
@@ -44,7 +47,7 @@ public class AdminNoticeApiController {
 
 
 
-    // 공지 수정
+    @Operation(summary = "공지 수정")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<NoticeResponseDTO> updateNotice(
             @PathVariable Long id,
@@ -56,7 +59,7 @@ public class AdminNoticeApiController {
 
 
 
-    // 공지 삭제
+    @Operation(summary = "공지 삭제")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotice(@PathVariable Long id) {
         noticeService.deleteNotice(id);

@@ -78,14 +78,17 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- ✅ 기존 통계 텍스트 -->
-    <div class="mt-5">
-        <p>📌 Routes Count: <span id="routesCount">-</span></p>
-        <p>📌 Requests Today: <span id="requestToday">-</span></p>
-        <p>📌 Memory Usage: <span id="memoryUsage">-</span></p>
-        <p>📌 Connected Clients: <span id="connectedClients">-</span></p>
+                <div class="col">
+                    <div class="card text-dark bg-white border">
+                        <div class="card-body">
+                            <h5 class="card-title">📌 Redis 상태</h5>
+                            <p class="card-text">Routes Count: <span id="routesCount">-</span></p>
+                            <p class="card-text">Requests Today: <span id="requestToday">-</span></p>
+                            <p class="card-text">Memory Usage: <span id="memoryUsage">-</span></p>
+                            <p class="card-text">Connected Clients: <span id="connectedClients">-</span></p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ✅ API 응답 속도 그래프 -->
