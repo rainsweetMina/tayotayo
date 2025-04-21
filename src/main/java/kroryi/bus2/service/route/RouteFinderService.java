@@ -8,6 +8,7 @@ import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
+import kroryi.bus2.service.busSetting.PathSettingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class RouteFinderService {
     private final RouteRepository routeRepository;
     private final RouteStopLinkRepository routeStopLinkRepository;
     private final BusStopRepository busStopRepository;
+    private final PathSettingService pathSettingService;
 
     // 출,도착 정류소들의 특정 미터안의 후보를 찾는거
     public List<RouteResultDTO> findRoutesWithNearbyStart(String startBsId, String endBsId) {
@@ -32,10 +34,14 @@ public class RouteFinderService {
         BusStop endStop = busStopRepository.findByBsId(endBsId)
                 .orElseThrow(() -> new RuntimeException("도착 정류장을 찾을 수 없습니다: " + endBsId));
 
+
+        double startRadius = pathSettingService.getStartRadius();
+        double endRadius = pathSettingService.getEndRadius();
+
         List<String> startCandidates = busStopRepository.findNearbyStationIdsWithGeo(
-                startStop.getXPos(), startStop.getYPos(), 300.0);
+                startStop.getXPos(), startStop.getYPos(), startRadius);
         List<String> endCandidates = busStopRepository.findNearbyStationIdsWithGeo(
-                endStop.getXPos(), endStop.getYPos(), 300.0);
+                endStop.getXPos(), endStop.getYPos(), endRadius);
 
         Set<String> visitedRouteIds = new HashSet<>();
 
@@ -79,7 +85,8 @@ public class RouteFinderService {
                     .orElseThrow(() -> new RuntimeException("노선 없음: " + routeId));
 
             // 정류장 수 기반 예상 시간 계산
-            int estimatedMinutes = (int) Math.round(stationIds.size() * 2.5);
+            double factor = pathSettingService.getTimeFactor();  // 서비스에서 가져오기
+            int estimatedMinutes = (int) Math.round(stationIds.size() * factor);
 
             result.add(RouteResultDTO.builder()
                     .type("직통")
@@ -97,7 +104,7 @@ public class RouteFinderService {
     }
 
 
-    public List<RouteResultDTO> findRoutesWithNearbyStart2(String startBsId, String endBsId) {
+    public List<RouteResultDTO> findRoutesWithNearbyStartTransfer(String startBsId, String endBsId) {
         List<RouteResultDTO> result = new ArrayList<>();
 
         BusStop startStop = busStopRepository.findByBsId(startBsId)

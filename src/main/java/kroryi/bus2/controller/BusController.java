@@ -30,7 +30,6 @@ public class BusController {
         return "bus/bus_stop/getAllBusStop";
     }
 
-
     // 버스의 노선 추가 하는 페이지
     @GetMapping("/AddRouteStopLink")
     public String AddBusRoute() {
@@ -79,18 +78,11 @@ public class BusController {
         return "bus/bus_stop/updateBusStop";
     }
 
+    // 길찾기 테스트 해보는 페이지
     @GetMapping("/Test22")
     public String test22() {
         return "bus/Test22";
     }
-
-
-//    @GetMapping
-//    public String loadBusStopsToRedis(){
-//        busRedisService.loadBusStopsToRedis();
-//        return "Redis에 버스 정류장 데이터 저장 완료";
-//    }
-
 
     // 통합 메뉴
     @GetMapping("/TestMenu")

@@ -128,4 +128,9 @@ public class AdminPageController {
     }
 
 
+    // 정류장의 정보를 수정하는 페이지
+    @GetMapping("/path-settings")
+    public String PathSettings() {
+        return "bus/find-settings";
+    }
 }
