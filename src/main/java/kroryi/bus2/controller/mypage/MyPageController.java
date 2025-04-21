@@ -2,6 +2,10 @@ package kroryi.bus2.controller.mypage;
 
 import jakarta.validation.Valid;
 import kroryi.bus2.config.security.CustomOAuth2User;
+import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
+import kroryi.bus2.dto.lost.FoundItemResponseDTO;
+import kroryi.bus2.dto.lost.LostItemListResponseDTO;
+import kroryi.bus2.dto.lost.LostItemRequestDTO;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
 import kroryi.bus2.entity.apikey.ApiKey;
@@ -10,6 +14,8 @@ import kroryi.bus2.entity.mypage.FavoriteRoute;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.apikey.ApiKeyService;
+import kroryi.bus2.service.lost.FoundItemServiceImpl;
+import kroryi.bus2.service.lost.LostItemService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,6 +41,9 @@ public class MyPageController {
 
     private final UserService userService;
     private final ApiKeyService apiKeyService;
+    private final LostItemService lostItemService;
+    private final FoundItemServiceImpl foundItemServiceImpl;
+
 
     private String extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -236,4 +246,36 @@ public class MyPageController {
 
         return "redirect:/mypage/apikey-request";
     }
+
+    // ✅ 일반회원 마이페이지: 분실물 목록 및 등록 화면
+    @GetMapping("/lost")
+    public String userLostItems(Model model) {
+        List<LostItemListResponseDTO> lostItems = lostItemService.getAllLostItems();
+        model.addAttribute("lostItems", lostItems);
+        return "/mypage/mypage-lost"; //
+    }
+    //분실물 등록 처리
+    @PostMapping("/lost")
+    public String registerLostItem(LostItemRequestDTO dto) {
+        String userId = extractUserId();
+        Long memberId = userService.findByUserId(userId).getId();
+        dto.setReporterId(memberId);
+        lostItemService.saveLostItem(dto);
+        return "redirect:/mypage/lost";
+    }
+    //습득물 목록
+    @GetMapping("/found")
+    public String foundListForUser(Model model) {
+        List<FoundItemResponseDTO> foundItems = foundItemServiceImpl.getVisibleFoundItemsForUser();
+        model.addAttribute("foundItems", foundItems);
+        return "mypage/mypage-found"; // ✅ Thymeleaf 파일명
+    }
+
+
+
+
+
+
+
+
 }

@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>Q&A 관리</title>
     <script src="/js/qna.js" defer></script>
 </head>
+
 <body>
+<div layout:fragment="content" class="p-4">
 
-<h1>📨 Q&A 관리</h1>
+    <h2>📨 Q&A 관리</h2>
 
-<section>
-    <table border="1">
-        <thead>
+    <table class="table table-bordered text-center">
+        <thead class="table-light">
         <tr>
             <th>ID</th>
             <th>질문</th>
@@ -23,11 +26,10 @@
         </tr>
         </thead>
         <tbody id="qnaList">
-        <!-- JS에서 채움 -->
+        <!-- JS로 채움 -->
         </tbody>
     </table>
-</section>
 
+</div>
 </body>
 </html>
-

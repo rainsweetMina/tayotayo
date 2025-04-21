@@ -36,7 +36,7 @@ public class LostItemController {
                         .title(item.getTitle())
                         .busNumber(item.getBusNumber())
                         .lostTime(item.getLostTime())
-                        .matched(item.isMatched())
+//                        .matched(item.isMatched())
                         .build())
                 .toList();
         return ResponseEntity.ok(result);
@@ -52,7 +52,9 @@ public class LostItemController {
                         .title(item.getTitle())
                         .busNumber(item.getBusNumber())
                         .lostTime(item.getLostTime())
-                        .matched(item.isMatched())
+                        .createdAt(item.getCreatedAt())       // ← 이 필드들
+                        .updatedAt(item.getUpdatedAt())
+//                        .matched(item.isMatched())
                         .build())
                 .toList();
         return ResponseEntity.ok(result);

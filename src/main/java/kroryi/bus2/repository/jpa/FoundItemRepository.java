@@ -24,6 +24,7 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
 
     Optional<FoundItem> findByIdAndIsDeletedFalseAndVisibleTrue(Long id);
 
+    List<FoundItem> findAllByIsHiddenFalseAndIsDeletedFalse();
 
 
 

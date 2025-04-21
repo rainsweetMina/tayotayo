@@ -6,8 +6,10 @@ import kroryi.bus2.entity.ad.Ad;
 import kroryi.bus2.entity.ad.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
 import kroryi.bus2.repository.jpa.AdRepository;
+import kroryi.bus2.utils.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,21 +24,26 @@ public class AdService {
 
     private final AdRepository adRepository;
     private final AdCompanyRepository adCompanyRepository;
+    private final FileUploadUtil fileUploadUtil; // ✅ 이미지 저장 유틸 주입
 
-    @AdminAudit(action = "광고 등록", target = "Ad")
-    public Ad saveAd(AdRequestDTO dto) {
+    // ✅ FormData 기반 광고 등록 메서드 추가됨
+    @AdminAudit(action = "광고 등록 (파일업로드)", target = "Ad")
+    public Ad saveAdWithImage(AdRequestDTO dto, MultipartFile imageFile) {
         AdCompany company = adCompanyRepository.findById(dto.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다."));
 
+        String fullPath = fileUploadUtil.saveAdImage(imageFile);
+        String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1); // ✅ 파일명만 저장
+
         Ad ad = Ad.builder()
                 .title(dto.getTitle())
-                .imageUrl(dto.getImageUrl())
+                .imageUrl(fileName)
                 .linkUrl(dto.getLinkUrl())
                 .startDateTime(dto.getStartDateTime())
                 .endDateTime(dto.getEndDateTime())
                 .showPopup(dto.isShowPopup())
                 .deleted(false)
-                .company(company) // ✅ 여기서 연동
+                .company(company)
                 .build();
 
         return adRepository.save(ad);
@@ -48,6 +55,7 @@ public class AdService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
     public List<AdResponseDTO> getActiveAds() {
         LocalDateTime now = LocalDateTime.now();
         return adRepository.findAll().stream()
@@ -57,6 +65,7 @@ public class AdService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
     public AdStatsDTO getAdStats() {
         List<Ad> ads = adRepository.findAll();
 
@@ -68,6 +77,7 @@ public class AdService {
 
         return new AdStatsDTO(scheduled, ongoing, endingSoon, ended, deleted);
     }
+
     @AdminAudit(action = "광고 삭제", target = "Ad")
     public void deleteAd(Long id) {
         Ad ad = adRepository.findById(id)
@@ -75,6 +85,7 @@ public class AdService {
         ad.setDeleted(true);
         adRepository.save(ad);
     }
+
     public List<AdResponseDTO> getEndedAds() {
         LocalDateTime now = LocalDateTime.now();
         return adRepository.findAll().stream()
@@ -82,32 +93,40 @@ public class AdService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
     public List<AdResponseDTO> getDeletedAds() {
         return adRepository.findAll().stream()
                 .filter(Ad::isDeleted)
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    @AdminAudit(action = "광고 수정", target = "Ad")
-    public Ad updateAd(Long id, AdUpdateRequestDTO dto) {
+
+    @AdminAudit(action = "광고 수정 (파일업로드)", target = "Ad")
+    public Ad updateAdWithImage(Long id, AdUpdateRequestDTO dto, MultipartFile imageFile) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고를 찾을 수 없습니다."));
 
         ad.setTitle(dto.getTitle());
-        ad.setImageUrl(dto.getImageUrl());
         ad.setLinkUrl(dto.getLinkUrl());
         ad.setStartDateTime(dto.getStartDateTime());
         ad.setEndDateTime(dto.getEndDateTime());
+        ad.setShowPopup(dto.isShowPopup());
 
-        // 광고회사 수정도 포함시킬 경우:
         if (dto.getCompanyId() != null) {
             AdCompany company = adCompanyRepository.findById(dto.getCompanyId())
                     .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다."));
             ad.setCompany(company);
         }
 
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String fullPath = fileUploadUtil.saveAdImage(imageFile);
+            String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1); // ✅ 파일명만 저장
+            ad.setImageUrl(fileName);
+        }
+
         return adRepository.save(ad);
     }
+
     public AdResponseDTO getAdById(Long id) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 광고가 존재하지 않습니다."));
@@ -138,6 +157,7 @@ public class AdService {
                 .email(company != null ? company.getEmail() : null)
                 .build();
     }
+
     // AdServiceImpl.java
     public Optional<Ad> findValidPopupAd() {
         LocalDateTime now = LocalDateTime.now();
@@ -150,8 +170,5 @@ public class AdService {
                 .findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now)
                 .map(AdPopupResponseDTO::new);
     }
-
-
-
 
 }

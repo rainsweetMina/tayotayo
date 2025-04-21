@@ -35,6 +35,9 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/uploads/found/**")
                 .addResourceLocations("file:"+ filePath);
+        // ✅ 광고 이미지 접근 경로 추가됨
+        registry.addResourceHandler("/uploads/ad/**")
+                .addResourceLocations("file:" + uploadPath + "ad/");
     }
 
 

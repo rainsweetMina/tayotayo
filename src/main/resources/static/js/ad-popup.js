@@ -1,14 +1,16 @@
-window.addEventListener('DOMContentLoaded', () => {
-    fetch('/api/ad/popup')  // ✅ AdController에서 정의한 URL과 일치
-        .then(response => {
-            if (!response.ok) throw new Error('광고 팝업 조회 실패');
-            return response.json();
-        })
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/ad/popup')
+        .then(res => res.json())
         .then(data => {
-            if (!data || !data.imageUrl) return; // 보여줄 광고 없으면 종료
-            document.getElementById('adImage').src = data.imageUrl;
+            if (!data || !data.imageUrl) return;
+
+            const imagePath = data.imageUrl.startsWith('http')
+                ? data.imageUrl
+                : `/uploads/ad/${data.imageUrl}`;
+
+            document.getElementById('adImage').src = imagePath;
             document.getElementById('adLink').href = data.linkUrl || '#';
             document.getElementById('adPopup').style.display = 'block';
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error('광고 팝업 오류:', err));
 });

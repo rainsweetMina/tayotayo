@@ -18,6 +18,7 @@
             <th>ID</th>
             <th>제목</th>
             <th>버스 번호</th>
+            <th>버스 회사</th>
             <th>신고자</th>
             <th>삭제 여부</th>
             <th>숨김 여부</th>
@@ -30,6 +31,7 @@
             <td th:text="${item.id}">1</td>
             <td th:text="${item.title}">제목</td>
             <td th:text="${item.busNumber}">버스번호</td>
+            <td th:text="${item.busCompany}">버스회사</td>
             <td th:text="${item.memberId}">신고자</td>
             <td th:text="${item.deleted} ? '삭제됨' : '정상'">삭제여부</td>
             <td th:text="${item.visible} ? '보임' : '숨김'">숨김여부</td>
@@ -60,8 +62,10 @@
         <p><strong>제목:</strong> <span th:text="${selectedItem.title}"></span></p>
         <p><strong>내용:</strong> <span th:text="${selectedItem.content}"></span></p>
         <p><strong>버스 번호:</strong> <span th:text="${selectedItem.busNumber}"></span></p>
+        <p><strong>버스 회사:</strong> <span th:text="${selectedItem.busCompany}"></span></p>
         <p><strong>등록일:</strong> <span th:text="${#temporals.format(selectedItem.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
     </div>
+
 
 </div>
 </body>

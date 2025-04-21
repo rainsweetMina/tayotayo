@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>습득물 리스트</title>
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: middle; }
+    img { width: 80px; height: auto; }
+  </style>
+</head>
+<body>
+
+<h2>🎒 습득물 리스트</h2>
+<p>버스에서 습득한 분실물을 공지합니다</p>
+
+<table>
+  <thead>
+  <tr>
+    <th>번호</th>
+    <th>사진</th>
+    <th>습득물</th>
+    <th>내용물</th>
+    <th>습득일</th>
+    <th>버스회사<br>보관장소/연락처</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="item : ${foundItems}">
+    <td th:text="${item.id}">31473</td>
+
+    <!-- ✅ 이미지 출력 -->
+    <td>
+      <img th:if="${item.photoUrl}" th:src="@{'/uploads/found/' + ${item.photoUrl}}" alt="습득물 사진"/>
+      <span th:if="${item.photoUrl == null}">없음</span>
+    </td>
+
+    <td th:text="${item.itemName}">기타</td>
+    <td th:text="${item.content}">교통카드</td>
+    <td th:text="${#temporals.format(item.foundTime, 'yyyy-MM-dd')}">2025-04-15</td>
+
+    <!-- ✅ 줄바꿈 있는 정보 -->
+    <td>
+      <div th:text="${item.busCompany}">대덕교통</div>
+      <div th:text="${item.storageLocation}">회사내 보관소</div>
+      <div th:text="${item.handlerContact}">053-961-7451</div>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
