@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "시간표 정류장 지정" +
-        "", description = "")
+@Tag(name = "시간표-정류장-지정", description = "")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor

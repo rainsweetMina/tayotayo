@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "버스 회사 정보", description = "")
+@Tag(name = "버스-회사-정보", description = "")
 @RestController
 @RequestMapping("/api/companies")
 @RequiredArgsConstructor
