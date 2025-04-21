@@ -16,7 +16,7 @@ public class RouteDelete {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "route_id", unique = true)
+    @Column(name = "route_id")
     private String routeId;
 
     @Column(name = "route_no")

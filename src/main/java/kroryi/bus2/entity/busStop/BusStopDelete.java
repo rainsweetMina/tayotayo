@@ -18,7 +18,7 @@ public class BusStopDelete {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "bs_id", unique = true)
+    @Column(name = "bs_id")
     private String bsId;
 
     @Column(name = "bs_nm")

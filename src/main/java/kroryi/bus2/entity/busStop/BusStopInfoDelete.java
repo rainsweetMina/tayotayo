@@ -23,9 +23,9 @@ public class BusStopInfoDelete {
     @Column(name = "bs_id")
     private String bsId; // BusStop의 bsId와 동일, PK로 사용
 
-    @OneToOne
-    @JoinColumn(name = "bs_id", referencedColumnName = "bs_id", insertable = false, updatable = false)
-    private BusStopDelete busStop; // 연결된 기본 정류장 엔티티
+//    @OneToOne
+//    @JoinColumn(name = "bs_id", referencedColumnName = "bs_id", insertable = false, updatable = false)
+//    private BusStopDelete busStop; // 연결된 기본 정류장 엔티티
 
     @Column(name = "m_id")
     private String mId;
