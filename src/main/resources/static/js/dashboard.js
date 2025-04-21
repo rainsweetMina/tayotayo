@@ -80,37 +80,54 @@ fetch('/api/admin/metrics/response-time/hourly')
 // 5. Chart.js 그리기 함수 정의
 function drawChart(labels, values) {
     const ctx = document.getElementById('apiResponseChart').getContext('2d');
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: ['00:00', '01:00', '02:00', '03:00'],
             datasets: [{
                 label: '응답 속도 (ms)',
-                data: values,
-                fill: false,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                tension: 0.3,
-                spanGaps: false // ❗ null값 구간은 선 끊기게!
+                data: [10, 30, 100, 40],
+                backgroundColor: 'rgba(0, 153, 255, 0.2)',
+                borderColor: '#007bff',
+                borderWidth: 2,
+                pointBackgroundColor: '#007bff',
+                pointRadius: 4,
+                tension: 0.3
             }]
         },
         options: {
-            responsive: false,
+            responsive: true,
             plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ctx.raw !== null ? `${ctx.raw.toFixed(2)} ms` : '데이터 없음'
+                legend: {
+                    labels: {
+                        color: '#333',
+                        font: { size: 13 }
                     }
+                },
+                title: {
+                    display: true,
+                    text: 'API 응답 속도 추이',
+                    color: '#222',
+                    font: { size: 16 }
                 }
             },
             scales: {
+                x: {
+                    ticks: { color: '#444' },
+                    grid: { color: '#ddd' }
+                },
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'ms' }
-                },
-                x: {
-                    title: { display: true, text: '시간 (hour)' }
+                    ticks: { color: '#444' },
+                    grid: { color: '#eee' },
+                    title: {
+                        display: true,
+                        text: 'ms',
+                        color: '#666'
+                    }
                 }
             }
         }
     });
+
 }

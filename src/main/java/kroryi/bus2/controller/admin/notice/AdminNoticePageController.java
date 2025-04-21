@@ -1,4 +1,4 @@
-package kroryi.bus2.controller.notice;
+package kroryi.bus2.controller.admin.notice;
 
 
 import jakarta.validation.Valid;
