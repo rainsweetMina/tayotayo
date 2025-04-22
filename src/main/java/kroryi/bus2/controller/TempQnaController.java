@@ -1,5 +1,6 @@
 package kroryi.bus2.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import kroryi.bus2.dto.qna.QnaListDTO;
 import kroryi.bus2.dto.qna.QnaQuestionRequestDTO;
 import kroryi.bus2.entity.Qna;
@@ -9,6 +10,7 @@ import kroryi.bus2.repository.jpa.QnaRepository;
 import kroryi.bus2.repository.jpa.UserRepository;
 import kroryi.bus2.service.QnaQuestionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,10 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping
@@ -32,12 +31,15 @@ public class TempQnaController {
 
     // Q&A 리스트 페이지
     @GetMapping("/qna/list")
-    public String showQnaList(Model model) {
-        List<QnaListDTO> qnaList = qnaQuestionService.getAllQna().stream()
-                .sorted(Comparator.comparing(QnaListDTO::getCreatedAt).reversed())
-                .collect(Collectors.toList());
-        model.addAttribute("qnaList", qnaList);
-        return "/qna/qnaList"; // 타임리프 템플릿 경로
+    public String showQnaList(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(required = false) String keyword,
+                              @RequestParam(required = false, defaultValue = "title")String field,
+                              Model model) {
+        Page<QnaListDTO> qnaPage = qnaQuestionService.getQnaPage(keyword, field, page); // 서비스 수정 필요
+        model.addAttribute("qnaPage", qnaPage);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("field", field);
+        return "/qna/qnaList";
     }
 
     // 질문 페이지
@@ -98,6 +100,7 @@ public class TempQnaController {
     }
 
     // 관리자 답변
+    @Hidden
     @PostMapping("/qna/answer/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String saveAnswer(@PathVariable Long id, @RequestParam String answer) {

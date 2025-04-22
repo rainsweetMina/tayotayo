@@ -3,6 +3,7 @@ package kroryi.bus2.repository.jpa;
 import kroryi.bus2.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -23,4 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     Optional<User> findByUsername(String username);
+
+    // 유저 이름 검색용 (qnaList.html에 사용)
+    List<User> findByUsernameContaining(String keyword);
 }

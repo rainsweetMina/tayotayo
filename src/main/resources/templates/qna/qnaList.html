@@ -25,6 +25,25 @@
                 <h2>Q&A 리스트</h2>
             </div>
 
+            <!-- 🔍 검색창 -->
+            <form method="get" action="/qna/list" class="d-flex align-items-center mb-3">
+                <select name="field" class="form-select form-select-sm me-2" style="width: 120px;">
+                    <option th:value="title" th:selected="${field == 'title'}">제목</option>
+                    <option th:value="all" th:selected="${field == 'all'}">제목+내용</option>
+                    <option th:value="user" th:selected="${field == 'user'}">작성자</option>
+                </select>
+
+                <input type="text" name="keyword" class="form-control form-control-sm me-2"
+                       placeholder="검색어 입력" th:value="${keyword}" style="max-width: 250px;">
+                <div>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">검색</button>
+                    <button type="reset" class="btn btn-outline-secondary btn-sm" onclick="location.href='/qna/list'">
+                        초기화
+                    </button>
+                </div>
+            </form>
+
+            <!-- 📋 QnA 테이블 -->
             <table class="table table-bordered table-hover text-center align-middle">
                 <thead class="table-light">
                 <tr>
@@ -35,7 +54,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="qna : ${qnaList}">
+                <tr th:each="qna : ${qnaPage.content}">
                     <td th:text="${qna.id}"></td>
                     <td class="text-start">
                         <a th:href="@{'/qna/view/' + ${qna.id}}">
@@ -46,13 +65,67 @@
                     </td>
                     <td th:text="${qna.username}"></td>
                     <td th:text="${#temporals.format(qna.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-
                 </tr>
                 </tbody>
             </table>
+
+            <!-- ⏩ 페이징 -->
+            <nav th:if="${qnaPage.totalPages > 1}">
+                <ul class="pagination justify-content-center">
+
+                    <!-- 현재 페이지 기준으로 시작 페이지와 끝 페이지 계산 -->
+                    <th:block th:with="
+            startPage=${(qnaPage.number / 10) * 10},
+            endPage=${(startPage + 9 < qnaPage.totalPages) ? startPage + 9 : qnaPage.totalPages - 1}
+        ">
+
+                        <!-- 이전 버튼 -->
+                        <li class="page-item" th:classappend="${startPage == 0} ? 'disabled'">
+                            <a class="page-link"
+                               href="javascript:void(0);"
+                               th:onclick="'goPage(' + (${startPage - 1}) + ')'">이전</a>
+                        </li>
+
+                        <!-- 페이지 번호들 -->
+                        <li class="page-item"
+                            th:each="pageNum : ${#numbers.sequence(startPage, endPage)}"
+                            th:classappend="${pageNum == qnaPage.number} ? 'active'">
+                            <a class="page-link"
+                               href="javascript:void(0);"
+                               th:onclick="'goPage(' + ${pageNum} + ')'"
+                               th:text="${pageNum + 1}"></a>
+                        </li>
+
+                        <!-- 다음 버튼 -->
+                        <li class="page-item" th:classappend="${endPage + 1 >= qnaPage.totalPages} ? 'disabled'">
+                            <a class="page-link"
+                               href="javascript:void(0);"
+                               th:onclick="'goPage(' + (${endPage + 1}) + ')'">다음</a>
+                        </li>
+
+                    </th:block>
+                </ul>
+            </nav>
+
+            <div class="d-flex justify-content-end mt-3" th:if="${#authorization.expression('isAuthenticated()')}">
                 <a href="/qna/question" class="btn btn-primary">등록</a>
+            </div>
+
         </div>
     </section>
+    <script>
+        function goPage(page) {
+            const keyword = document.querySelector('input[name="keyword"]').value.trim();
+            const field = document.querySelector('select[name="field"]').value;
+
+            let url = `/qna/list?page=${page}`;
+            if (keyword) {
+                url += `&keyword=${encodeURIComponent(keyword)}&field=${field}`;
+            }
+
+            window.location.href = url;
+        }
+    </script>
 
 </div>
 
