@@ -41,6 +41,8 @@ public class ApiKey {
 
     private LocalDateTime createdAt;
 
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

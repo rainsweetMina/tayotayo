@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>비공개 알림</title>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const msg = /*[[${popupMessage}]]*/ "알 수 없는 오류입니다.";
+        alert(msg);
+        history.back();
+        /*]]>*/
+    </script>
+</head>
+<body></body>
+</html>

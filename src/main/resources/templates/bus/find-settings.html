@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>길찾기 후보 정류장 탐색 거리 설정</title>
+
+</head>
+
+<div layout:fragment="content" style="">
+
+  <style>
+
+
+  </style>
+
+<body>
+
+<h2>🧭 길찾기 설정: 후보 정류장 탐색 반경 및 정류장 별 소요시간 설정</h2>
+
+<form id="settingsForm">
+  <label for="startDistance">출발지 반경 (미터)</label>
+  <input type="number" id="startDistance" name="startDistance" min="100" max="2000" required>
+
+  <label for="endDistance">도착지 반경 (미터)</label>
+  <input type="number" id="endDistance" name="endDistance"  min="100" max="2000" required><br>
+
+  <label for="timeFactor">정류장당 예상 시간 (분)</label>
+  <input type="number" id="timeFactor" name="timeFactor" min="1" max="10" step="0.1" required><br>
+  <p>* 설정 별 기본값은 출발지 300미터 도착지 300미터 정류장당 예상 시간은 2.5분</p>
+
+  <hr>
+
+  <button type="submit">💾 저장</button>
+</form>
+
+
+
+<p id="status" style="margin-top:1rem; color: green;"></p>
+
+<script>
+  document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+
+    const startDistance = document.getElementById("startDistance").value;
+    const endDistance = document.getElementById("endDistance").value;
+    const timeFactor = document.getElementById("timeFactor").value;
+
+    const payload = {
+      startDistance: parseInt(startDistance),
+      endDistance: parseInt(endDistance),
+      timeFactor: parseFloat(timeFactor)
+    };
+
+    try {
+      const res = await fetch("/api/bus/path-settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        document.getElementById("status").textContent = "✅ 설정이 저장되었습니다.";
+      } else {
+        document.getElementById("status").textContent = "❌ 저장 실패";
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById("status").textContent = "❌ 오류 발생";
+    }
+  });
+</script>
+<script>
+  window.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const res = await fetch("/api/bus/path-settings");
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById("startDistance").value = data.startDistance;
+        document.getElementById("endDistance").value = data.endDistance;
+        document.getElementById("timeFactor").value = data.timeFactor;
+      } else {
+        console.warn("기본 설정 불러오기 실패");
+      }
+    } catch (e) {
+      console.error("기본 설정 로딩 오류:", e);
+    }
+  });
+</script>
+</body>
+</div>
+</html>

@@ -3,7 +3,6 @@ package kroryi.bus2.handler;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -11,26 +10,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    // 400 - 잘못된 요청
     @ExceptionHandler(IllegalArgumentException.class)
-    public String handleIllegalArgumentException(IllegalArgumentException e, Model model) {
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("IllegalArgumentException: {}", e.getMessage());
-        model.addAttribute("error", e.getMessage());
-        return "error/common-error";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public String handleException(Exception e, Model model) {
-////        log.error("Exception: {}", e.getMessage());
-//        log.error("Exception: {}", e);
-//        model.addAttribute("error", "오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-//        return "error/common-error";
-//    }
-
+    // 500 - 서버 오류
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
-        log.error("Exception occurred", e); // ✅ 전체 스택트레이스 포함
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
-}
-
-
+    public ResponseEntity<String> handleGlobalException(Exception e) {
+        log.error("Unhandled Exception: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다1.");
+    }
 }

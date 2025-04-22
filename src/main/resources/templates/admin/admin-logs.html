@@ -1,77 +1,53 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{admin_page_test/admin_layout/layout.html}" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>관리자 작업 로그</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-        }
-        th {
-            background-color: #f5f5f5;
-        }
-        .pagination {
-            margin-top: 1rem;
-        }
-        .pagination button {
-            margin: 0 2px;
-            padding: 6px 12px;
-        }
-        button.active {
-            font-weight: bold;
-            background-color: #e0e0e0;
-        }
-
-    </style>
 </head>
+
 <body>
+<div layout:fragment="content" class="p-4">
 
-<h1>🛡️ 관리자 작업 로그</h1>
+    <h2>🛡️ 관리자 작업 로그</h2>
 
-<table>
-    <thead>
-    <tr>
-        <th>시간</th>
-        <th>관리자</th>
-        <th>행동</th>
-        <th>대상</th>
-        <th>Before</th>
-        <th>After</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="log : ${logs}">
-        <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
-        <td th:text="${log.adminId}"></td>
-        <td th:text="${log.action}"></td>
-        <td th:text="${log.target}"></td>
-        <td><pre th:text="${log.beforeValue}">-</pre></td>
-        <td><pre th:text="${log.afterValue}">-</pre></td>
-    </tr>
-    </tbody>
-</table>
+    <table class="table table-bordered text-center">
+        <thead class="table-light">
+        <tr>
+            <th>시간</th>
+            <th>관리자</th>
+            <th>행동</th>
+            <th>대상</th>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="log : ${logs}">
+            <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td th:text="${log.adminId}"></td>
+            <td th:text="${log.action}"></td>
+            <td th:text="${log.target}"></td>
+            <td><pre th:text="${log.beforeValue}">-</pre></td>
+            <td><pre th:text="${log.afterValue}">-</pre></td>
+        </tr>
+        </tbody>
+    </table>
 
-<div>
-  <span th:if="${currentPage > 0}">
-    <a th:href="@{/admin/logs(page=${currentPage - 1})}">이전</a>
-  </span>
+    <!-- 페이징 -->
+    <div class="mt-3">
+        <span th:if="${currentPage > 0}">
+            <a th:href="@{/admin/logs(page=${currentPage - 1})}">이전</a>
+        </span>
+        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:href="@{/admin/logs(page=${i})}" th:text="${i + 1}"></a>
+        </span>
+        <span th:if="${currentPage + 1 < totalPages}">
+            <a th:href="@{/admin/logs(page=${currentPage + 1})}">다음</a>
+        </span>
+    </div>
 
-    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-    <a th:href="@{/admin/logs(page=${i})}" th:text="${i + 1}"></a>
-  </span>
-
-    <span th:if="${currentPage + 1 < totalPages}">
-    <a th:href="@{/admin/logs(page=${currentPage + 1})}">다음</a>
-  </span>
 </div>
-
-
-
 </body>
 </html>

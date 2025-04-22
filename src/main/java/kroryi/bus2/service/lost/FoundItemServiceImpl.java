@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.dto.lost.FoundItemAdminResponseDTO;
+import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO;
 import kroryi.bus2.dto.lost.FoundItemResponseDTO;
 import kroryi.bus2.entity.lost.*;
@@ -297,6 +298,26 @@ public class FoundItemServiceImpl implements FoundItemService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 습득물이 존재하지 않거나 숨김/삭제되었습니다."));
         return FoundItemResponseDTO.fromEntity(item);
     }
+    @Override
+    public List<FoundItemListResponseDTO> getFoundItemsForPublic() {
+        return foundItemRepository.findAllByIsHiddenFalseAndIsDeletedFalse()
+                .stream()
+                .map(item -> new FoundItemListResponseDTO(
+                        item.getId(),
+                        item.getItemName(),
+                        item.getBusCompany(),
+                        item.getBusNumber(),
+                        item.getFoundPlace(),
+                        item.getFoundTime() != null ? item.getFoundTime().toLocalDate() : null,
+                        item.getContent(),
+                        item.getStorageLocation(),
+                        item.getHandlerContact(),
+                        item.getHandlerEmail(),
+                        item.getStatus()
+                ))
+                .toList();
+    }
+
 
 
 }

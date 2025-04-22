@@ -1,16 +1,14 @@
 package kroryi.bus2.config.security;
 
+import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.handler.CustomLoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AccountExpiredException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.*;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,117 +16,105 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-//@EnableMethodSecurity // ✅ 메서드 수준 권한 체크 활성화
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // ✅ 소셜 로그인 사용자 정보 처리 서비스 주입
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService;
-
-    // ✅ 일반 로그인 사용자 정보 서비스 주입
     private final UserDetailsService userDetailsService;
-
-    // ✅ 로그인 성공 시 사용자 권한에 따라 분기 처리하는 핸들러
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
+    private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
 
-    // ✅ 비밀번호 암호화를 위한 BCryptPasswordEncoder Bean 등록
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // ✅ 스프링 시큐리티 설정
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder());
+        return builder.build();
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .userDetailsService(userDetailsService)
-//                // ✅ CSRF 보호 비활성화 (개발 시 또는 API 서버에서는 보통 비활성화)
-                .csrf(AbstractHttpConfigurer::disable)
-                .headers(headers -> headers
-                        .frameOptions(frame -> frame.disable()) // 👈 iframe 허용
-                )
+                .csrf(csrf -> csrf.disable())  // CSRF 보호 비활성화
 
-                // ✅ URL 접근 권한 설정
+                // 기본적으로 모든 요청은 인증 없이 접근 가능
                 .authorizeHttpRequests(auth -> auth
-                                // ✅ 로그인, 회원가입, 정적 리소스 등은 모두 허용
-                                .requestMatchers(
-                                        "/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**",
-                                        "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                                        "/swagger-resources/**", "/webjars/**"
-                                ).permitAll()
-                                .requestMatchers("/api/**").permitAll() // 예시
-
-                                // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
-//                    .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                                // ✅ 마이페이지는 USER 권한만 접근 가능
-//                    .requestMatchers("/mypage/**").hasRole("USER")
-
-                                // ✅ 그 외는 모두 허용
-                                .anyRequest().permitAll()
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()  // 로그인, 회원가입, 정적 리소스, 소셜 로그인 허용
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()  // Swagger UI 허용
+                        .requestMatchers(HttpMethod.GET, "/api/**").authenticated()  // GET 요청은 인증만 필요
+                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")  // POST 요청은 ADMIN만 가능
+                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")  // DELETE 요청은 ADMIN만 가능
+                        .anyRequest().permitAll()  // 그 외 모든 요청 허용
                 )
 
-                // ✅ 폼 로그인 설정
+                // 폼 로그인 설정
                 .formLogin(form -> form
-                        .loginPage("/login")                     // 로그인 페이지 경로 지정
-                        .loginProcessingUrl("/login")            // 로그인 form 전송 처리 URL
-                        .successHandler(customLoginSuccessHandler) // ✅ 로그인 성공 시 사용자 역할에 따라 분기
-                        .failureHandler((request, response, exception) -> { // 로그인 실패 핸들러
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .successHandler(customLoginSuccessHandler)  // 로그인 성공 처리
+                        .failureHandler((request, response, exception) -> {
                             String errorCode = "error";
                             if (exception instanceof BadCredentialsException) {
-                                errorCode = "bad_credentials";
+                                errorCode = "bad_credentials";  // 잘못된 자격 증명
                             } else if (exception instanceof DisabledException) {
-                                errorCode = "disabled";
+                                errorCode = "disabled";  // 비활성화된 계정
                             } else if (exception instanceof LockedException) {
-                                errorCode = "locked";
+                                errorCode = "locked";  // 잠긴 계정
                             } else if (exception instanceof AccountExpiredException) {
-                                errorCode = "expired";
+                                errorCode = "expired";  // 만료된 계정
                             }
-                            response.sendRedirect("/login?errorCode=" + errorCode);
+                            response.sendRedirect("/login?errorCode=" + errorCode);  // 로그인 실패시 에러 코드 전달
                         })
-                        .permitAll()
+                        .permitAll()  // 로그인 페이지는 모두 접근 가능
                 )
 
-                // ✅ OAuth2 (소셜 로그인) 설정
+                // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login") // 로그인 페이지 경로
+                        .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService) // OAuth2 사용자 서비스 설정
+                                .userService(customOAuth2UserService)  // OAuth2 사용자 정보 처리
                         )
-                        .successHandler(customLoginSuccessHandler) // ✅ 소셜 로그인 성공 후 처리
-                        .failureHandler((request, response, exception) -> { // 실패 시 메시지 인코딩하여 전달
+                        .successHandler(customLoginSuccessHandler)  // 로그인 성공 처리
+                        .failureHandler((request, response, exception) -> {
                             exception.printStackTrace();
                             String encodedMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("/login?error=" + encodedMessage);
+                            response.sendRedirect("/login?error=" + encodedMessage);  // OAuth2 로그인 실패시 에러 메시지 전달
                         })
                 )
 
-                // ✅ 자동 로그인 (Remember-Me) 설정
+                // 자동 로그인 설정 (Remember Me)
                 .rememberMe(remember -> remember
-                        .key("remember-me-key")                     // 고유 키 설정
-                        .tokenValiditySeconds(7 * 24 * 60 * 60)     // 7일 유지
-                        .rememberMeParameter("remember-me")         // 파라미터 이름
-                        .userDetailsService(userDetailsService)     // 사용자 정보 서비스 설정
+                        .key("remember-me-key")  // Remember Me 토큰 키
+                        .tokenValiditySeconds(7 * 24 * 60 * 60)  // 7일 동안 유효
+                        .rememberMeParameter("remember-me")  // Remember Me 파라미터 이름
+                        .userDetailsService(userDetailsService)  // 사용자 세부 정보 서비스 설정
                 )
 
-                // ✅ 로그아웃 설정
+                // 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutUrl("/logout")                       // 로그아웃 URL
-                        .invalidateHttpSession(true)                // 세션 무효화
-                        .clearAuthentication(true)                  // 인증 정보 제거
-                        .deleteCookies("JSESSIONID")                // 쿠키 제거
-                        .logoutSuccessUrl("/login?logout")          // 로그아웃 후 이동 경로
-                        .permitAll()
+                        .logoutUrl("/logout")
+                        .invalidateHttpSession(true)  // 세션 무효화
+                        .clearAuthentication(true)  // 인증 정보 삭제
+                        .deleteCookies("JSESSIONID")  // 쿠키 삭제
+                        .logoutSuccessUrl("/login?logout")  // 로그아웃 후 리다이렉트 URL
+                        .permitAll()  // 로그아웃 페이지는 모두 접근 가능
                 );
 
+        // API 키 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 추가
+        http.addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+        return http.build();  // 설정된 필터 체인 반환
     }
-
-
 }

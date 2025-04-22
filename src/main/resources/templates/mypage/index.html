@@ -3,17 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <title>마이페이지</title>
+<!--    드롭다운 css-->
+    <style>
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            z-index: 1;
+            padding: 5px;
+            white-space: nowrap;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content a {
+            display: block;
+            text-decoration: none;
+            color: black;
+        }
+        .dropdown-content a:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
 <h1>마이페이지</h1>
 
 <nav style="margin-bottom: 20px;">
     <strong>메뉴</strong><br/>
+
     <a href="/mypage/favorites">즐겨찾기</a> |
-    <a href="/mypage/lost-report">분실물 신고</a> |
+
+    <!-- ✅ 분실물 센터: hover 드롭다운 -->
+    <div class="dropdown">
+        <span style="cursor: pointer; font-weight: bold;">분실물 센터 ▾</span>
+        <div class="dropdown-content">
+            <a href="/mypage/lost">📝 분실물 신고</a>
+            <a href="/mypage/found">📋 습득물 목록</a>
+        </div>
+    </div> |
+
     <a href="/mypage/qna">질문/답변</a> |
     <a href="/mypage/apikey-request">API 키 발급</a> |
-    <a href="/mypage/recent-searches">최근 검색 내역</a>
 </nav>
 
 <!-- 성공 메시지 -->
@@ -22,12 +58,9 @@
 <!-- 사용자 정보 -->
 <p th:if="${user != null}">안녕하세요, <span th:text="${user.username}">사용자</span>님!</p>
 <p th:if="${user != null}">아이디: <span th:text="${user.userId}"></span></p>
-<!--<p th:if="${user != null}"><strong>아이디:</strong> <span th:text="${user.userId}"></span></p>-->
 <p th:if="${user != null}"><strong>이메일:</strong> <span th:text="${user.email}"></span></p>
 <p th:if="${user != null}"><strong>이름:</strong> <span th:text="${user.username}"></span></p>
 <p th:if="${user != null}">전화번호: <span th:text="${user.phoneNumber}"></span></p>
-<!--<p th:if="${user != null}"><strong>전화번호:</strong> <span th:text="${user.phoneNumber}"></span></p>-->
-
 
 <hr/>
 
@@ -39,5 +72,6 @@
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <button type="submit" style="color: red;">회원 탈퇴</button>
 </form>
+
 </body>
 </html>

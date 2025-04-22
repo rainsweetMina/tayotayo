@@ -15,6 +15,7 @@ public class LostItemRequestDTO {
     private String title;
     private String content;
     private String busNumber;
+    private String busCompany;
     private LocalDateTime lostTime;
     private Long reporterId; // 일반회원의 user.id
 

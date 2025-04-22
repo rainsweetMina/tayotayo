@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>분실물 신고</title>
+</head>
+<body>
+<h2>🚌 분실물 신고</h2>
+<p>버스에서 분실하신 물건을 신고해주세요</p>
+
+<!-- 📄 분실물 목록 -->
+<table border="1" style="width: 100%; margin-top: 20px; border-collapse: collapse; text-align: center;">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>분실물</th>
+        <th>내용물</th>
+        <th>분실일</th>
+        <th>버스회사<br>노선번호</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${lostItems}">
+        <td th:text="${item.id}">번호</td>
+        <td th:text="${item.title}">지갑</td>
+        <td th:text="${#strings.abbreviate(item.content, 30)}">내용 요약</td>
+        <td th:text="${#temporals.format(item.lostTime, 'yyyy-MM-dd')}">2025-04-21</td>
+        <td>
+            <span th:text="${item.busCompany}">버스회사</span><br>
+            <span th:text="${item.busNumber}">123</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- ➕ 등록 버튼 -->
+<button type="button" onclick="toggleForm()" style="margin-top: 20px;">+ 분실물 등록</button>
+
+<!-- 📋 분실물 등록 폼 -->
+<form id="lostForm" th:action="@{/mypage/lost}" method="post" style="display:none; margin-top: 15px;">
+    <div>
+        <label>분실물: <input type="text" name="title" required></label>
+    </div>
+    <div>
+        <label>내용: <textarea name="content" required></textarea></label>
+    </div>
+    <div>
+        <label>버스회사: <input type="text" name="busCompany" required></label>
+    </div>
+    <div>
+        <label>버스번호: <input type="text" name="busNumber" required></label>
+    </div>
+    <div>
+        <label>분실일시: <input type="datetime-local" name="lostTime"></label>
+    </div>
+    <button type="submit" style="margin-top: 10px;">제출</button>
+</form>
+
+<script>
+    function toggleForm() {
+        const form = document.getElementById('lostForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+</body>
+</html>

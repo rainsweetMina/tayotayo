@@ -2,6 +2,7 @@ package kroryi.bus2.service.lost;
 
 import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.lost.FoundItemAdminResponseDTO;
+import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO;
 import kroryi.bus2.dto.lost.FoundItemResponseDTO;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +48,7 @@ public interface FoundItemService {
     List<FoundItemResponseDTO> getVisibleFoundItemsForUser();
     FoundItemResponseDTO getFoundItemDetailForUser(Long id);
 
+    List<FoundItemListResponseDTO> getFoundItemsForPublic();
 
 
 }

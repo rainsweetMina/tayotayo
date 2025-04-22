@@ -14,6 +14,7 @@ public class AdUpdateRequestDTO {
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private Long companyId; // 광고회사 ID (선택)
+    private boolean showPopup; // ✅ 추가됨
 
 }
 

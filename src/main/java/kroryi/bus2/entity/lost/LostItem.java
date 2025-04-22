@@ -26,6 +26,8 @@ public class LostItem extends BaseTimeEntity {
     private String title;        // 분실물 제목
     private String content;      // 분실 내용
     private String busNumber;    // 버스 번호
+    private String busCompany; // 버스회사
+
 
     private LocalDateTime lostTime; // 분실 시간
 

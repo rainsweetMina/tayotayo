@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "버스 정류장 조회", description = "")
+@Tag(name = "버스-정류장-조회", description = "")
 @RestController
 @RequestMapping("/api/bus-info")
 @RequiredArgsConstructor

@@ -13,11 +13,9 @@ public class LostItemListResponseDTO {
     private String title;
     private String busNumber;
     private LocalDateTime lostTime;
-    private boolean matched;
-
-    private boolean visible; // ✅ 추가해야 함
-    private boolean deleted; // ✅ 추가해야 함
-    private LocalDateTime createdAt; // ✅ 추가해야 함
-    private LocalDateTime updatedAt; // ✅ 추가해야 함
+    private String content;
+    private String busCompany;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
 

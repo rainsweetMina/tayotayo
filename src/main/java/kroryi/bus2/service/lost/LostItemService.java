@@ -35,6 +35,7 @@ public class LostItemService {
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .busNumber(dto.getBusNumber())
+                .busCompany(dto.getBusCompany())
                 .lostTime(dto.getLostTime() != null ? dto.getLostTime() : LocalDateTime.now())
                 .reporter(reporter)
                 .matched(false)
@@ -55,17 +56,15 @@ public class LostItemService {
     }
 
     public List<LostItemListResponseDTO> getAllLostItems() {
-        return lostItemRepository.findAllByVisibleTrue().stream()
+        return lostItemRepository.findAll().stream()
+                .filter(item -> item.isVisible() && !item.isDeleted()) // ✅ 조건 추가
                 .map(item -> LostItemListResponseDTO.builder()
                         .id(item.getId())
                         .title(item.getTitle())
+                        .content(item.getContent())
                         .busNumber(item.getBusNumber())
+                        .busCompany(item.getBusCompany())
                         .lostTime(item.getLostTime())
-                        .matched(item.isMatched())
-                        .visible(item.isVisible())
-                        .deleted(item.isDeleted())
-                        .createdAt(item.getCreatedAt())
-                        .updatedAt(item.getUpdatedAt())
                         .build())
                 .toList();
     }
@@ -82,7 +81,8 @@ public class LostItemService {
                     return LostItemAdminResponseDTO.builder()
                             .id(lost.getId())
                             .title(lost.getTitle())
-                            .busNumber(lost.getBusNumber()) // 여기 확인
+                            .busNumber(lost.getBusNumber())
+                            .busCompany(lost.getBusCompany())
                             .memberId(lost.getReporter().getId())
                             .deleted(lost.isDeleted())
                             .visible(lost.isVisible())
@@ -149,6 +149,7 @@ public class LostItemService {
                 .title(item.getTitle())
                 .content(item.getContent())
                 .busNumber(item.getBusNumber())
+                .busCompany(item.getBusCompany())
                 .lostTime(item.getLostTime())
                 .visible(item.isVisible())
                 .deleted(item.isDeleted())

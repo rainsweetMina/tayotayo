@@ -1,47 +1,40 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>관리자 대시보드</title>
+    <title>API Key DashBoard</title>
     <meta charset="UTF-8">
 </head>
 <body>
-<h1>🔐 관리자 대시보드</h1>
+<h1>API Key DashBoard</h1>
 
-<p>환영합니다, <span th:text="${#authentication.name}">관리자</span>!</p>
-
-<hr/>
-
-<h3>📋 메뉴</h3>
-<ul>
-    <li><a th:href="@{/admin/api-keys}">API 키 목록 보기</a></li>
-    <li><a th:href="@{/admin/api-keys/new}">새 API 키 발급</a></li>
-    <li><a th:href="@{/logout}">로그아웃</a></li>
-</ul>
+<!--<p>환영합니다, <span th:text="${#authentication.name}">관리자</span>님!</p>-->
 
 <hr/>
 
-<h3>최근 발급된 API 키</h3>
-<table border="1">
+<h3>📋 전체 API Key 목록</h3>
+<table>
     <thead>
     <tr>
         <th>ID</th>
-        <th>이름</th>
+        <th>API Key</th>
+        <th>상태</th>
         <th>발급일</th>
         <th>만료일</th>
-        <th>상태</th>
-        <th>상태 변경</th>
+        <th>관리</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="key : ${recentKeys}">
         <td th:text="${key.id}"></td>
-        <td th:text="${key.name}"></td>
+        <td th:text="${key.apikey}"></td>
+        <td th:text="${key.status}"></td>
         <td th:text="${#temporals.format(key.issuedAt, 'yyyy-MM-dd HH:mm')}"></td>
         <td th:text="${#temporals.format(key.expiresAt, 'yyyy-MM-dd HH:mm')}"></td>
-        <td th:text="${key.active ? '활성' : '비활성'}"></td>
         <td>
-            <form th:action="@{/admin/api-keys/{id}/toggle(id=${key.id})}" method="post">
-                <button type="submit" th:text="${key.active ? '비활성화' : '활성화'}"></button>
+            <form th:action="@{/admin/apikey/{id}/toggle(id=${key.id})}" method="post">
+                <button type="submit"
+                        th:text="${key.active ? '비활성화' : '활성화'}">
+                </button>
             </form>
         </td>
     </tr>
