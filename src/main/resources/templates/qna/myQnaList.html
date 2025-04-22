@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>Q&A 리스트 페이지</title>
+    <style>
+        a {
+            text-decoration: none;
+        }
+
+        .status-icon {
+            margin-left: 6px;
+        }
+    </style>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+        <table class="table table-sm table-hover align-middle text-center" style="width: 850px;">
+            <thead class="table-light small">
+            <tr>
+                <th style="width: 50px;">ID</th>
+                <th>제목</th>
+                <th style="width: 150px;">작성일</th>
+            </tr>
+            </thead>
+            <tbody class="small">
+            <tr th:each="qna : ${myQnaList}" th:data-id="${qna.id}" onclick="toggleAnswer(this)">
+                <td th:text="${qna.id}"></td>
+                <td>
+                    <span th:text="${qna.title}"></span>
+                </td>
+                <td th:text="${#temporals.format(qna.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            <tr th:each="qna : ${myQnaList}" th:id="'content-' + ${qna.id}" style="display: none;" class="bg-light">
+                <td colspan="3" class="p-2 small">
+                    <strong>내용:</strong>
+                    <div th:text="${qna.content}"></div>
+                    <div th:if="${qna.answer}" class="mt-2">
+                        <strong>답변:</strong>
+                        <div th:text="${qna.answer}"></div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+    <script>
+        function toggleAnswer(row) {
+            const id = row.dataset.id;
+            const newContentRow = document.getElementById('content-' + id);
+
+            // 기존 열린 답변 닫기
+            document.querySelectorAll('tr[id^="content-"]').forEach(row => {
+                if (row !== newContentRow) {
+                    row.style.display = 'none';
+                }
+            });
+
+            // 새로 클릭한 답변 토글
+            newContentRow.style.display = newContentRow.style.display === 'none' ? 'table-row' : 'none';
+        }
+    </script>
+
+</div>
+
+</html>

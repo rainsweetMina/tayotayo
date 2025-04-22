@@ -48,7 +48,7 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
     Page<Qna> findByTitleContainingAndIsDeletedFalse(String keyword, Pageable pageable);
 
     // 제목+내용 검색
-    Page<Qna> findByTitleContainingOrContentContainingAndIsDeletedFalse(String title, String content, Pageable pageable);
+    Page<Qna> findByIsDeletedFalseAndTitleContainingOrContentContaining(String title, String content, Pageable pageable);
 
     // 작성자 ID 목록으로 검색
     Page<Qna> findByMemberIdInAndIsDeletedFalse(List<Long> memberIds, Pageable pageable);

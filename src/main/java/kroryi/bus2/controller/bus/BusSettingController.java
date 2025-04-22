@@ -26,7 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-@Tag(name = "버스 길찾기 정보 설정", description = "")
+@Tag(name = "버스-길찾기-정보-설정", description = "")
 @RestController
 @RequestMapping("/api/bus")
 @RequiredArgsConstructor

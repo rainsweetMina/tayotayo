@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Tag(name = "관리자 공지사항", description = "")
+@Tag(name = "관리자-공지사항", description = "")
 @RestController
 @RequestMapping("/api/admin/notices")
 @RequiredArgsConstructor
