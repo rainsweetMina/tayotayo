@@ -23,7 +23,10 @@ public class AppConfig {
         return GroupedOpenApi.builder()
                 .group("0_Default")
                 .pathsToExclude("/api/bus/**" , "/api/ad/**")
-                .packagesToExclude("kroryi.bus2.controller.board", "kroryi.bus2.controller.bus","kroryi.bus2.controller.admin","kroryi.bus2.controller.mypage")
+                .packagesToExclude("kroryi.bus2.controller.board",
+                        "kroryi.bus2.controller.bus",
+                        "kroryi.bus2.controller.admin",
+                        "kroryi.bus2.controller.mypage")
                 .build();
     }
 
