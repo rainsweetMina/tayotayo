@@ -144,17 +144,38 @@ public class FoundItemServiceImpl implements FoundItemService {
         // 1. 기본 정보 수정
         item.update(dto);
 
-        // 2. 상태 업데이트
-        if (dto.getStatus() == FoundStatus.RETURNED && !item.isMatched()) {
-            item.setMatched(true);
+        // 2. 상태 업데이트 및 회수 처리 기록
+        log.info("[DEBUG] 수정 요청 상태 = {}, matched = {}", dto.getStatus(), item.isMatched());
+        if (dto.getStatus() == FoundStatus.RETURNED) {
+            if (!item.isMatched()) {
+                item.setMatched(true);
+            }
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            User handler = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException("로그인된 사용자를 찾을 수 없습니다."));
+
+            // 이미 매칭 기록이 있으면 중복 방지
+            boolean alreadyMatched = matchRepository.existsByFoundItemId(item.getId());
+            if (!alreadyMatched) {
+                LostFoundMatch match = new LostFoundMatch();
+                match.setFoundItem(item);
+                match.setMatchedBy(handler);
+                match.setMatchedAt(LocalDateTime.now());
+                matchRepository.save(match);
+                log.info("[DEBUG] 매칭 기록 저장 완료 (RETURNED): found_item_id = {}, handler_id = {}", item.getId(), handler.getId());
+            } else {
+                log.info("[DEBUG] 이미 매칭 기록 존재: found_item_id = {}", item.getId());
+            }
         }
+
 
         // 3. 이미지 교체 처리
         if (image != null && !image.isEmpty()) {
-            // 기존 이미지 삭제
             Photo oldPhoto = item.getPhoto();
             if (oldPhoto != null) {
-                String oldPath = "uploads/found/" + oldPhoto.getUrl(); // ✅ 경로 포함
+                String oldPath = "uploads/found/" + oldPhoto.getUrl();
                 try {
                     Files.deleteIfExists(Paths.get(oldPath));
                     item.setPhoto(null);
@@ -165,7 +186,6 @@ public class FoundItemServiceImpl implements FoundItemService {
                 }
             }
 
-            // 새 이미지 저장
             try {
                 String originalFilename = image.getOriginalFilename();
                 String ext = "";
@@ -182,7 +202,7 @@ public class FoundItemServiceImpl implements FoundItemService {
                 Files.copy(image.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
                 Photo newPhoto = Photo.builder()
-                        .url(storedFileName)  // ✅ 파일명만 저장
+                        .url(storedFileName)
                         .foundItem(item)
                         .build();
 
@@ -234,33 +254,41 @@ public class FoundItemServiceImpl implements FoundItemService {
     @Override
     @Transactional
     public void matchFoundItem(Long foundItemId, Long lostItemId, Long handlerId) {
-        boolean alreadyMatched = matchRepository.existsByFoundItemIdAndLostItemId(foundItemId, lostItemId);
-        if (alreadyMatched) {
-            throw new IllegalArgumentException("이미 매칭된 항목입니다.");
-        }
-
-        boolean lostMatched = matchRepository.existsByLostItemId(lostItemId);
-        if (lostMatched) {
-            throw new IllegalStateException("이미 다른 습득물과 매칭된 분실물입니다.");
-        }
-
         FoundItem foundItem = foundItemRepository.findById(foundItemId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 습득물 ID입니다."));
-        LostItem lostItem = lostItemRepository.findById(lostItemId)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 분실물 ID입니다."));
         User handler = userRepository.findById(handlerId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
         LostFoundMatch match = new LostFoundMatch();
         match.setFoundItem(foundItem);
-        match.setLostItem(lostItem);
         match.setMatchedBy(handler);
         match.setMatchedAt(LocalDateTime.now());
 
-        matchRepository.save(match);
+        if (lostItemId != null) {
+            LostItem lostItem = lostItemRepository.findById(lostItemId)
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 분실물 ID입니다."));
+
+            boolean alreadyMatched = matchRepository.existsByFoundItemIdAndLostItemId(foundItemId, lostItemId);
+            if (alreadyMatched) {
+                throw new IllegalArgumentException("이미 매칭된 항목입니다.");
+            }
+
+            boolean lostMatched = matchRepository.existsByLostItemId(lostItemId);
+            if (lostMatched) {
+                throw new IllegalStateException("이미 다른 습득물과 매칭된 분실물입니다.");
+            }
+
+            lostItem.setMatched(true);
+            lostItemRepository.save(lostItem);
+            match.setLostItem(lostItem);
+        }
+
+        foundItem.setMatched(true);
         foundItem.matchAndComplete();
+        matchRepository.save(match);
         foundItemRepository.save(foundItem);
     }
+
 
     // ✅ 관리자용 전체 조회
     @Override
