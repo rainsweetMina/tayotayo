@@ -113,8 +113,8 @@ public class FoundItemPageController {
     public String matchWithLostItem(
             @PathVariable Long foundItemId, // ✅ 경로와 일치
             @RequestParam(required = false) Long lostItemId) {
-        if (foundItemId == null || lostItemId == null) {
-            throw new IllegalArgumentException("ID 값이 비어있습니다.");
+        if (foundItemId == null) {
+            throw new IllegalArgumentException("습득물 ID가 비어있습니다.");
         }
 
         foundItemService.matchFoundItem(foundItemId, lostItemId);

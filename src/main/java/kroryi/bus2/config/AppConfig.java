@@ -22,20 +22,22 @@ public class AppConfig {
     public GroupedOpenApi defaultGroup() {
         return GroupedOpenApi.builder()
                 .group("0_Default")
-                .pathsToExclude("/api/bus/**" , "/api/ad/**")
+                .pathsToExclude()
                 .packagesToExclude("kroryi.bus2.controller.board",
                         "kroryi.bus2.controller.bus",
+                        "kroryi.bus2.controller.ad",
+                        "kroryi.bus2.controller.lost",
+                        "kroryi.bus2.controller.qna",
                         "kroryi.bus2.controller.admin",
                         "kroryi.bus2.controller.mypage")
                 .build();
     }
 
-
     @Bean
-    public GroupedOpenApi userApi() {
+    public GroupedOpenApi adGroup() {
         return GroupedOpenApi.builder()
                 .group("Ad")
-                .pathsToMatch("/api/ad/**")
+                .packagesToScan("kroryi.bus2.controller.ad")
                 .build();
     }
 
@@ -68,6 +70,22 @@ public class AppConfig {
         return GroupedOpenApi.builder()
                 .group("mypage")
                 .packagesToScan("kroryi.bus2.controller.mypage")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi lostGroup() {
+        return GroupedOpenApi.builder()
+                .group("LostFound")
+                .packagesToScan("kroryi.bus2.controller.lost")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi qnaGroup() {
+        return GroupedOpenApi.builder()
+                .group("Qna")
+                .packagesToScan("kroryi.bus2.controller.qna")
                 .build();
     }
 
