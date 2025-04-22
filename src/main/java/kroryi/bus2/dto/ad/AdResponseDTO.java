@@ -22,6 +22,9 @@ public class AdResponseDTO {
     private String contactNumber;
     private String email;
 
+    private int extensionCount; // ✅ 광고연장횟수
+
+
 
 
 
