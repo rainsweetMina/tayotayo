@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
-        import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.net.URLEncoder;
@@ -52,23 +53,25 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 // Swagger → API 키 인증 순으로 필터 적용
-                .addFilterBefore(swaggerAuthFilter, BasicAuthenticationFilter.class)
-                .addFilterBefore(apiKeyAuthenticationFilter, BasicAuthenticationFilter.class)
+                .addFilterBefore(swaggerAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
+// -------------------- swagger 보안 (우선제외시킴)
+//                .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 회원가입, 정적 자원 등 허용
                         .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**", "/api/public/**", "/api/bus/**").permitAll()
 
-
                         // Swagger는 인증만 되면 접근 가능
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").authenticated()
 
+                        // -------------------- swagger 보안 (우선제외시킴)
                         // API 요청 권한 설정
-                        .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
 
                         // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")

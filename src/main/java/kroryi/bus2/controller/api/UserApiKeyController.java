@@ -59,4 +59,26 @@ public class UserApiKeyController {
         response.setApiKey(apiKey.getApiKey());
         return ResponseEntity.ok(response);
     }
+
+    // ✅ 사용자 API 키 발급 요청 기록 조회
+    @GetMapping("/mypage/apikey-request")
+    public ResponseEntity<ApiKeyResponseDTO> getUserApiKeyRequest(@RequestParam Long userId) {
+        User user = userService.getUserById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // 사용자 없으면 404 반환
+        }
+
+        ApiKey apiKey = apiKeyService.getApiKeyRequestForUser(user);  // 사용자가 발급 요청한 API 키 조회
+        if (apiKey == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // 요청한 기록 없으면 404 반환
+        }
+
+        ApiKeyResponseDTO response = new ApiKeyResponseDTO();
+        response.setId(apiKey.getId());
+        response.setName(apiKey.getName());
+        response.setActive(apiKey.isActive());
+        response.setApiKey(apiKey.getApiKey());
+        return ResponseEntity.ok(response);  // 요청 기록이 있으면 반환
+    }
+
 }

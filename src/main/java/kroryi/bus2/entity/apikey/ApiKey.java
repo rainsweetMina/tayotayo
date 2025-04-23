@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import kroryi.bus2.entity.user.User;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -74,4 +75,8 @@ public class ApiKey {
     public void addCallbackUrl(String callbackUrl) {
         this.callbackUrl = callbackUrl;
     }
+
+    @CreatedDate
+    @Column(name = "created_date", nullable = false, updatable = false)
+    private LocalDateTime createdDate;
 }
