@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/layout.html}" lang="ko">
+<head>
+    <link rel="stylesheet" th:href="@{/css/routeMap.css}">
+    <title>Q&A 리스트 페이지</title>
+    <style>
+        .status-icon {
+            margin-left: 6px;
+        }
+
+        .content-box {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .question-row {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<th:block layout:fragment="sidebar"></th:block>
+
+<div layout:fragment="content">
+    <section>
+    <div class="container mt-5" style="max-width: 900px;">
+        <h4 class="mb-4">📋 내 Q&A 목록</h4>
+
+        <div th:each="qna : ${myQnaList}" class="qna-card">
+            <!-- 질문 박스 -->
+            <div class="border rounded p-3 mb-1 question-box" th:data-id="${qna.id}" onclick="toggleQna(this)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong th:text="${qna.title}" style="color: #555555"></strong>
+                        <span th:if="${qna.status.name() == 'ANSWERED'}" class="text-success ms-2">💬</span>
+                    </div>
+                    <small th:text="${#temporals.format(qna.createdAt, 'yyyy-MM-dd HH:mm')}"></small>
+                </div>
+            </div>
+
+            <!-- 내용/답변 박스 (초기 숨김) -->
+            <div class="card border-light shadow-sm" th:id="'content-' + ${qna.id}" style="display: none;">
+                <div class="card-body">
+                    <p class="mb-1"><strong>📝 질문 내용</strong></p>
+                    <p class="ms-2" th:text="${qna.content}"></p>
+
+                    <div th:if="${qna.answer}" class="mt-3">
+                        <p class="mb-1"><strong class="text-success">💡 관리자 답변</strong></p>
+                        <p class="ms-2" th:text="${qna.answer}"></p>
+                    </div>
+
+                    <hr class="my-2">
+                    <small class="text-muted">수정일: <span
+                            th:text="${#temporals.format(qna.updatedAt, 'yyyy-MM-dd HH:mm')}"></span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+
+    <script>
+        function toggleQna(clickedBox) {
+            const id = clickedBox.dataset.id;
+            const target = document.getElementById('content-' + id);
+
+            // 모든 답변 박스 숨기기
+            document.querySelectorAll('[id^="content-"]').forEach(box => {
+                if (box !== target) box.style.display = 'none';
+            });
+
+            // 현재 클릭한 답변만 토글
+            target.style.display = target.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</div>
+</html>

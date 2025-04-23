@@ -2,6 +2,8 @@ package kroryi.bus2.repository.jpa;
 
 import kroryi.bus2.entity.Qna;
 import kroryi.bus2.entity.QnaStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,6 +40,18 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
 
     // 숨김 처리된 QnA 수
     long countByVisibleFalse();
+
+    // 삭제되지 않은 데이터만 조회
+    Page<Qna> findByIsDeletedFalse(Pageable pageable);
+
+    // 제목 검색
+    Page<Qna> findByTitleContainingAndIsDeletedFalse(String keyword, Pageable pageable);
+
+    // 제목+내용 검색
+    Page<Qna> findByIsDeletedFalseAndTitleContainingOrContentContaining(String title, String content, Pageable pageable);
+
+    // 작성자 ID 목록으로 검색
+    Page<Qna> findByMemberIdInAndIsDeletedFalse(List<Long> memberIds, Pageable pageable);
 
 
 

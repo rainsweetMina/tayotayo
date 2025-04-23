@@ -1,15 +1,14 @@
-package kroryi.bus2.controller;
+package kroryi.bus2.controller.qna;
 
 import kroryi.bus2.dto.qna.QnaListDTO;
-import kroryi.bus2.dto.qna.QnaQuestionRequestDTO;
 import kroryi.bus2.entity.Qna;
 import kroryi.bus2.entity.QnaStatus;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.QnaRepository;
 import kroryi.bus2.repository.jpa.UserRepository;
-import kroryi.bus2.service.QnaQuestionService;
+import kroryi.bus2.service.QnaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,31 +16,31 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping
 @RequiredArgsConstructor
-public class TempQnaController {
-    private final QnaQuestionService qnaQuestionService;
+public class QnaController {
+    private final QnaService qnaService;
     private final QnaRepository qnaRepository;
     private final UserRepository userRepository;
 
     // Q&A 리스트 페이지
     @GetMapping("/qna/list")
-    public String showQnaList(Model model) {
-        List<QnaListDTO> qnaList = qnaQuestionService.getAllQna().stream()
-                .sorted(Comparator.comparing(QnaListDTO::getCreatedAt).reversed())
-                .collect(Collectors.toList());
-        model.addAttribute("qnaList", qnaList);
-        return "/qna/qnaList"; // 타임리프 템플릿 경로
+    public String showQnaList(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(required = false) String keyword,
+                              @RequestParam(required = false, defaultValue = "title")String field,
+                              Model model) {
+        Page<QnaListDTO> qnaPage = qnaService.getQnaPage(keyword, field, page); // 서비스 수정 필요
+        model.addAttribute("qnaPage", qnaPage);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("field", field);
+        return "/qna/qnaList";
     }
 
     // 질문 페이지
-    @GetMapping("/qna/question")
+    @GetMapping("/qna/form")
     public String showQuestion() {
         return "/qna/qnaForm";
     }
@@ -108,37 +107,16 @@ public class TempQnaController {
         return "redirect:/qna/view/" + id;
     }
 
-    // 수정 페이지 API
-    @PostMapping("/api/qna-edit/{id}")
-    @ResponseBody
-    public ResponseEntity<Void> updateQna(
-            @PathVariable Long id,
-            @RequestBody QnaQuestionRequestDTO dto,
-            Authentication authentication) {
-        qnaQuestionService.updateQuestion(id, dto, authentication);
-        return ResponseEntity.ok().build();
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mypage/qna")
+    public String showMyQnaList(Model model, Authentication auth) {
+        String userId = auth.getName();
+        User user = userRepository.findByUserId(userId).orElseThrow();
+        List<Qna> myQna = qnaRepository.findByMemberIdAndIsDeletedFalseOrderByCreatedAtDesc(user.getId());
+
+        model.addAttribute("myQnaList", myQna);
+        return "/qna/myQnaList";
     }
 
-    // 질문 등록 API
-    @PostMapping("/api/qna-form")
-    @ResponseBody
-    public ResponseEntity<String> createQuestion(@RequestBody QnaQuestionRequestDTO dto){
-        qnaQuestionService.createQuestion(dto);
-        return ResponseEntity.ok().build();
-    }
-
-    // Q&A 조회 API
-    @GetMapping("/api/qna-list")
-    @ResponseBody
-    public List<QnaListDTO> getQnaListApi() {
-        return qnaQuestionService.getAllQna();
-    }
-
-    @DeleteMapping("/api/qna-view/{id}")
-    @ResponseBody
-    public ResponseEntity<Void> deleteQna(@PathVariable Long id, Authentication authentication) {
-        qnaQuestionService.deleteQuestion(id, authentication);
-        return ResponseEntity.ok().build();
-    }
 
 }

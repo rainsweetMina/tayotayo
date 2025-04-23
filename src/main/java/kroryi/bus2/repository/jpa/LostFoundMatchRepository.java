@@ -11,6 +11,8 @@ public interface LostFoundMatchRepository extends JpaRepository<LostFoundMatch, 
     long countByMatchedByNotNull();   // matchedBy을 기준으로 매칭된 건수 세기
     boolean existsByFoundItemIdAndLostItemId(Long foundItemId, Long lostItemId);
     boolean existsByLostItemId(Long lostItemId);
+    boolean existsByFoundItemId(Long foundItemId);
+
 
 
 }

@@ -63,7 +63,7 @@
         function deleteQna(id) {
             if (!confirm("정말 삭제하시겠습니까?")) return;
 
-            fetch(`/api/qna-view/${id}`, {
+            fetch(`/api/qna/view/${id}`, {
                 method: "DELETE"
             })
                 .then(res => {

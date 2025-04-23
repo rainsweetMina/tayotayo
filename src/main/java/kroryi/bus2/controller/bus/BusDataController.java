@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-@Tag(name = "공공데이터 버스 기초 정보", description = "")
+@Tag(name = "공공데이터-버스-기초-정보", description = "")
 @RestController
 @RequestMapping("/api/bus")
 @RequiredArgsConstructor
