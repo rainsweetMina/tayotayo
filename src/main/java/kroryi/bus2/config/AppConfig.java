@@ -22,12 +22,16 @@ public class AppConfig {
     public GroupedOpenApi defaultGroup() {
         return GroupedOpenApi.builder()
                 .group("0_Default")
-                .pathsToExclude("/api/bus/**")
-                .packagesToExclude("kroryi.bus2.controller.board", "kroryi.bus2.controller.bus", "kroryi.bus2.controller.admin"
-                        , "kroryi.bus2.controller.mypage", "kroryi.bus2.controller.ad", "kroryi.bus2.controller.lost","kroryi.bus2.controller.qna")
+                .pathsToExclude()
+                .packagesToExclude("kroryi.bus2.controller.board",
+                        "kroryi.bus2.controller.bus",
+                        "kroryi.bus2.controller.ad",
+                        "kroryi.bus2.controller.lost",
+                        "kroryi.bus2.controller.qna",
+                        "kroryi.bus2.controller.admin",
+                        "kroryi.bus2.controller.mypage")
                 .build();
     }
-
 
     @Bean
     public GroupedOpenApi adGroup() {
@@ -38,7 +42,7 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi boardGroup() {
+    public GroupedOpenApi boardGroup(){
         return GroupedOpenApi.builder()
                 .group("Board")
                 .packagesToScan("kroryi.bus2.controller.board")
@@ -46,7 +50,7 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi busGroup() {
+    public GroupedOpenApi busGroup(){
         return GroupedOpenApi.builder()
                 .group("Bus")
                 .packagesToScan("kroryi.bus2.controller.bus")
@@ -54,7 +58,7 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi adminGroup() {
+    public GroupedOpenApi adminGroup(){
         return GroupedOpenApi.builder()
                 .group("Admin")
                 .packagesToScan("kroryi.bus2.controller.admin")
@@ -62,7 +66,7 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi mypageGroup() {
+    public GroupedOpenApi mypageGroup(){
         return GroupedOpenApi.builder()
                 .group("mypage")
                 .packagesToScan("kroryi.bus2.controller.mypage")

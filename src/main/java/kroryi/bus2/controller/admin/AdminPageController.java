@@ -48,14 +48,14 @@ public class AdminPageController {
 
 
     // 관리자 페이지 레이아웃
-    @GetMapping("/admin_page_test")
+    @GetMapping("/dashboard")
     public String AdminPageTest() {
         return "admin_page_test/dashboardTest";
     }
 
 
     // 스웨거 페이지 레이아웃
-    @GetMapping("/swagger_page_test")
+    @GetMapping("/swagger_page")
     public String SwaggerPageTest() {
         return "custom_swagger/customSwagger";
     }

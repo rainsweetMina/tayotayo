@@ -53,10 +53,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()  // 로그인, 회원가입, 정적 리소스, 소셜 로그인 허용
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()  // Swagger UI 허용
-                        .requestMatchers(HttpMethod.GET, "/api/**").authenticated()  // GET 요청은 인증만 필요
-                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")  // POST 요청은 ADMIN만 가능
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")  // DELETE 요청은 ADMIN만 가능
-                        .anyRequest().permitAll()  // 그 외 모든 요청 허용
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/mypage/**").hasRole("USER")
+                        .anyRequest()
+                        .permitAll()  // 그 외 모든 요청 허용
                 )
 
                 // 폼 로그인 설정
