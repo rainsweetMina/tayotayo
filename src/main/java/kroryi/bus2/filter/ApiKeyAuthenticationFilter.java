@@ -32,22 +32,42 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        // Swagger UI 관련 경로는 필터 제외
-//        return path.startsWith("/swagger-ui")
-//                || path.startsWith("/v3/api-docs")
-//                || path.startsWith("/swagger-resources")
-//                || path.startsWith("/webjars")
-//                || path.startsWith("/csrf")
-//                || path.startsWith("/error")
-//                || path.startsWith("/login")  // 로그인 경로도 제외
-//                || path.startsWith("/register");  // 회원가입 경로도 제외
-        return true;
+        // Swagger UI에서 호출된 요청인지 확인
+        if (path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars")
+                || path.startsWith("/favicon")) {
+            return true;  // 필터 제외
+        }
+
+        // Swagger UI에서 API 호출인 경우만 필터 적용
+        String referer = request.getHeader("Referer");
+        return referer == null || !referer.contains("/swagger-ui");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
+        // ✅ Swagger UI에서 API 호출인 경우만 필터 작동 (Referer에 swagger-ui 포함된 경우)
+        String referer = request.getHeader("Referer");
+        boolean isSwaggerRequest = referer != null && referer.contains("/swagger-ui");
+
+        if (!isSwaggerRequest) {
+            chain.doFilter(request, response);  // Swagger가 아닌 일반 요청은 필터 통과
+            return;
+        }
+
+        // ✅ 이미 로그인된 사용자가 ROLE_ADMIN 이면 API 키 없이도 통과
+        var currentAuth = SecurityContextHolder.getContext().getAuthentication();
+        if (currentAuth != null && currentAuth.isAuthenticated() &&
+                currentAuth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 🔒 Swagger 요청인데 API 키 없음 → 401
         String apiKey = getApiKeyFromRequest(request);
 
         // API 키가 없으면 401 Unauthorized 응답
@@ -70,12 +90,20 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             authorities = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
-        // 인증 객체 생성 후 SecurityContext에 설정
-        ApiKeyAuthenticationToken authToken = new ApiKeyAuthenticationToken(apiKey, authorities);
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        // 👇 기존 인증 백업
+        var originalAuthentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 필터 체인 진행
-        chain.doFilter(request, response);
+        try {
+            // 👇 현재 요청에만 임시 인증 설정
+            ApiKeyAuthenticationToken authToken = new ApiKeyAuthenticationToken(apiKey, authorities);
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            chain.doFilter(request, response);
+
+        } finally {
+            // 👇 기존 인증 복구 (세션 덮어쓰기 방지)
+            SecurityContextHolder.getContext().setAuthentication(originalAuthentication);
+        }
     }
 
     private String getApiKeyFromRequest(HttpServletRequest request) {
