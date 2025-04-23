@@ -1,4 +1,4 @@
-package kroryi.bus2.controller.api;
+package kroryi.bus2.controller.admin.notice;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

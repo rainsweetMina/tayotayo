@@ -1,4 +1,4 @@
-package kroryi.bus2.controller.admin;
+package kroryi.bus2.controller.admin.monitoring;
 
 import kroryi.bus2.entity.AdminAuditLog;
 import kroryi.bus2.repository.jpa.AdminAuditLogRepository;

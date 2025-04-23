@@ -28,7 +28,8 @@ public class AppConfig {
                         "kroryi.bus2.controller.ad",
                         "kroryi.bus2.controller.lost",
                         "kroryi.bus2.controller.qna",
-                        "kroryi.bus2.controller.admin",
+                        "kroryi.bus2.controller.admin.notice",
+                        "kroryi.bus2.controller.admin.monitoring",
                         "kroryi.bus2.controller.mypage")
                 .build();
     }
@@ -66,11 +67,18 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi adminGroup(){
+    public GroupedOpenApi noticeGroup(){
         return GroupedOpenApi.builder()
-                .group("Admin")
-                .pathsToMatch("/api/admin/**")
-                .pathsToExclude("/api/admin/lost/**")
+                .group("Notice")
+                .packagesToScan("kroryi.bus2.controller.admin.notice")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi monitoringGroup(){
+        return GroupedOpenApi.builder()
+                .group("Monitoring")
+                .packagesToScan("kroryi.bus2.controller.admin.monitoring")
                 .build();
     }
 
