@@ -1,68 +1,121 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{custom_swagger/swagger_layout/layout.html}" lang="ko">
+<html lang="ko" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>커스텀 스웨거</title>
-<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />-->
     <link rel="stylesheet" href="/webjars/swagger-ui/swagger-ui.css" />
-
 </head>
 <body>
 <div layout:fragment="content">
+    <!-- Swagger UI가 삽입될 위치 -->
     <div class="swagger-container">
-<!--        <h1 style="text-align: center; margin: 10px">🧭 API 문서 - Swagger UI</h1>-->
-
-        <!-- Swagger UI 들어가는 영역 -->
         <div id="swagger-ui"></div>
     </div>
-
-    <!-- Swagger UI 스크립트 -->
-<!--    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>-->
-<!--    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>-->
-    <script src="/webjars/swagger-ui/swagger-ui-bundle.js"></script>
-    <script src="/webjars/swagger-ui/swagger-ui-standalone-preset.js"></script>
-    <script>
-        console.log("🔥 Swagger 시작");
-
-        const ui = SwaggerUIBundle({
-            urls: [
-                { url: "https://localhost:8081/v3/api-docs/0_Default", name: "0_Default" },
-                { url: "https://localhost:8081/v3/api-docs/Bus", name: "Bus" },
-                { url: "https://localhost:8081/v3/api-docs/Ad", name: "Ad" },
-                { url: "https://localhost:8081/v3/api-docs/Board", name: "Board" }
-            ],
-            urlsPrimaryName: "Bus", // ✅ 반드시 Bus로 맞춰야 함 (name 값과 동일)
-            dom_id: '#swagger-ui',
-            layout: "StandaloneLayout",
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIStandalonePreset
-            ],
-            deepLinking: true,
-            docExpansion: "none",
-            validatorUrl: null
-        });
-
-        // const ui = SwaggerUIBundle({
-        //
-        //     url: "https://localhost:8081/v3/api-docs/Bus",
-        //     dom_id: '#swagger-ui',
-        //     layout: "BaseLayout",
-        //     presets: [
-        //         SwaggerUIBundle.presets.apis,
-        //         SwaggerUIStandalonePreset
-        //     ],
-        //     deepLinking: true,
-        //     docExpansion: "none",
-        //     validatorUrl: null // 🔥 이거 추가!
-        //
-        // });
-
-        console.log("✅ Swagger 호출됨");
-    </script>
-
 </div>
+
+<script src="/webjars/swagger-ui/swagger-ui-bundle.js"></script>
+<script src="/webjars/swagger-ui/swagger-ui-standalone-preset.js"></script>
+<script>
+    console.log("🔥 Swagger 시작");
+
+    const ui = SwaggerUIBundle({
+        urls: [
+            { url: "https://localhost:8081/v3/api-docs/0_Default", name: "0_Default" },
+            { url: "https://localhost:8081/v3/api-docs/Bus", name: "Bus" },
+            { url: "https://localhost:8081/v3/api-docs/Ad", name: "Ad" },
+            { url: "https://localhost:8081/v3/api-docs/Board", name: "Board" }
+        ],
+        urlsPrimaryName: "Bus",
+        dom_id: '#swagger-ui',
+        layout: "StandaloneLayout",
+        presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+        ],
+        deepLinking: true,
+        docExpansion: "none",
+        validatorUrl: null,
+
+        // ✅ 스웨거 요청에는 API-KEY 헤더 추가
+        requestInterceptor: (req) => {
+            req.headers['API-KEY'] = 'your-api-key';  // 실제 API 키로 교체
+            req.headers['X-SWAGGER'] = 'true';  // Swagger 요청을 구분할 수 있는 헤더
+            return req;
+        }
+    });
+
+    console.log("✅ Swagger 호출됨");
+</script>
 </body>
 </html>
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      layout:decorate="~{custom_swagger/swagger_layout/layout.html}" lang="ko">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>커스텀 스웨거</title>-->
+<!--&lt;!&ndash;    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />&ndash;&gt;-->
+<!--    <link rel="stylesheet" href="/webjars/swagger-ui/swagger-ui.css" />-->
+
+<!--</head>-->
+<!--<body>-->
+<!--<div layout:fragment="content">-->
+<!--    <div class="swagger-container">-->
+<!--&lt;!&ndash;        <h1 style="text-align: center; margin: 10px">🧭 API 문서 - Swagger UI</h1>&ndash;&gt;-->
+
+<!--        &lt;!&ndash; Swagger UI 들어가는 영역 &ndash;&gt;-->
+<!--        <div id="swagger-ui"></div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Swagger UI 스크립트 &ndash;&gt;-->
+<!--&lt;!&ndash;    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>&ndash;&gt;-->
+<!--&lt;!&ndash;    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>&ndash;&gt;-->
+<!--    <script src="/webjars/swagger-ui/swagger-ui-bundle.js"></script>-->
+<!--    <script src="/webjars/swagger-ui/swagger-ui-standalone-preset.js"></script>-->
+<!--    <script>-->
+<!--        console.log("🔥 Swagger 시작");-->
+
+<!--        const ui = SwaggerUIBundle({-->
+<!--            urls: [-->
+<!--                { url: "https://localhost:8081/v3/api-docs/0_Default", name: "0_Default" },-->
+<!--                { url: "https://localhost:8081/v3/api-docs/Bus", name: "Bus" },-->
+<!--                { url: "https://localhost:8081/v3/api-docs/Ad", name: "Ad" },-->
+<!--                { url: "https://localhost:8081/v3/api-docs/Board", name: "Board" }-->
+<!--            ],-->
+<!--            urlsPrimaryName: "Bus", // ✅ 반드시 Bus로 맞춰야 함 (name 값과 동일)-->
+<!--            dom_id: '#swagger-ui',-->
+<!--            layout: "StandaloneLayout",-->
+<!--            presets: [-->
+<!--                SwaggerUIBundle.presets.apis,-->
+<!--                SwaggerUIStandalonePreset-->
+<!--            ],-->
+<!--            deepLinking: true,-->
+<!--            docExpansion: "none",-->
+<!--            validatorUrl: null-->
+<!--        });-->
+
+<!--        // const ui = SwaggerUIBundle({-->
+<!--        //-->
+<!--        //     url: "https://localhost:8081/v3/api-docs/Bus",-->
+<!--        //     dom_id: '#swagger-ui',-->
+<!--        //     layout: "BaseLayout",-->
+<!--        //     presets: [-->
+<!--        //         SwaggerUIBundle.presets.apis,-->
+<!--        //         SwaggerUIStandalonePreset-->
+<!--        //     ],-->
+<!--        //     deepLinking: true,-->
+<!--        //     docExpansion: "none",-->
+<!--        //     validatorUrl: null // 🔥 이거 추가!-->
+<!--        //-->
+<!--        // });-->
+
+<!--        console.log("✅ Swagger 호출됨");-->
+<!--    </script>-->
+
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->

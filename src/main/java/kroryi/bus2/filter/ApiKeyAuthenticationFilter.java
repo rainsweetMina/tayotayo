@@ -18,67 +18,68 @@ import java.util.List;
 @Component
 public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String API_KEY_HEADER = "API-KEY";
     private final ApiKeyService apiKeyService;
+    private static final String API_KEY_HEADER = "API-KEY";
 
     public ApiKeyAuthenticationFilter(ApiKeyService apiKeyService) {
         this.apiKeyService = apiKeyService;
     }
 
-    /**
-     * Swagger UI와 관련된 경로 및 기타 허용 경로는 필터 적용 제외
-     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        // Swagger UI 관련 경로는 필터 제외
-//        return path.startsWith("/swagger-ui")
-//                || path.startsWith("/v3/api-docs")
-//                || path.startsWith("/swagger-resources")
-//                || path.startsWith("/webjars")
-//                || path.startsWith("/csrf")
-//                || path.startsWith("/error")
-//                || path.startsWith("/login")  // 로그인 경로도 제외
-//                || path.startsWith("/register");  // 회원가입 경로도 제외
-        return true;
+        // 필터 제외 경로 목록
+        String[] excludedPaths = {
+                "/swagger-ui", "/v3/api-docs", "/swagger-resources", "/webjars",
+                "/csrf", "/error", "/login", "/logout", "/register", "/bus",
+                "/mypage", "/admin", "/api/public/**", "/api/bus/**"
+        };
+
+//        // 경로가 API 경로일 때 필터를 적용하도록 설정
+//        if (path.startsWith("/api/")) {
+//            return false; // /api/** 경로는 필터가 동작하도록 설정
+//        }
+
+        // 위의 제외 경로 목록에 포함되는 경우 필터를 적용하지 않음
+        for (String excludedPath : excludedPaths) {
+            if (path.startsWith(excludedPath)) {
+                return true;
+            }
+        }
+
+        return false;
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        String apiKey = getApiKeyFromRequest(request);
-
-        // API 키가 없으면 401 Unauthorized 응답
+        String apiKey = request.getHeader(API_KEY_HEADER);
         if (!StringUtils.hasText(apiKey)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Missing API Key");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Unauthorized: API Key missing\"}");
             return;
         }
 
-        // API 키가 유효하지 않으면 401 Unauthorized 응답
         if (!apiKeyService.isValidApiKey(apiKey)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid API Key");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Unauthorized: Invalid API Key\"}");
             return;
         }
 
-        // 권한 설정: 기본은 ROLE_USER, 관리자는 ROLE_ADMIN
         List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
         if (apiKeyService.isAdminApiKey(apiKey)) {
             authorities = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
-        // 인증 객체 생성 후 SecurityContext에 설정
         ApiKeyAuthenticationToken authToken = new ApiKeyAuthenticationToken(apiKey, authorities);
+        authToken.setAuthenticated(true);
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        // 필터 체인 진행
         chain.doFilter(request, response);
-    }
-
-    private String getApiKeyFromRequest(HttpServletRequest request) {
-        return request.getHeader(API_KEY_HEADER);
     }
 }

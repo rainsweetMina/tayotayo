@@ -12,8 +12,8 @@
     <h3>발급된 API 키</h3>
     <p><strong>API 키:</strong> <span th:text="${apiKey.apikey}">API 키 없음</span></p>
     <p><strong>상태:</strong> <span th:text="${apiKey.status}">상태 없음</span></p>
-    <p><strong>만료일:</strong> <span th:text="${#temporals.format(apiKey.expiresAt, 'yyyy-MM-dd HH:mm')}">없음</span></p>
-    <p><strong>허용된 IP:</strong> <span th:text="${apiKey.allowedIp}">없음</span></p>
+<!--    <p><strong>만료일:</strong> <span th:text="${#temporals.format(apiKey.expiresAt, 'yyyy-MM-dd HH:mm')}">없음</span></p>-->
+<!--    <p><strong>허용된 IP:</strong> <span th:text="${apiKey.allowedIp}">없음</span></p>-->
 
     <div th:if="${apiKey.callbackUrls != null and !apiKey.callbackUrls.isEmpty()}">
         <h4>Callback URLs</h4>

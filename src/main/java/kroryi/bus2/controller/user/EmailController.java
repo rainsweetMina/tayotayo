@@ -1,4 +1,4 @@
-package kroryi.bus2.controller.api;
+package kroryi.bus2.controller.user;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;

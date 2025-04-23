@@ -1,19 +1,20 @@
 package kroryi.bus2.controller.mypage;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.Table;
 import jakarta.validation.Valid;
-import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
 import kroryi.bus2.dto.lost.FoundItemResponseDTO;
 import kroryi.bus2.dto.lost.LostItemListResponseDTO;
 import kroryi.bus2.dto.lost.LostItemRequestDTO;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
-import kroryi.bus2.entity.apikey.ApiKey;
-import kroryi.bus2.entity.mypage.FavoriteBusStop;
-import kroryi.bus2.entity.mypage.FavoriteRoute;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
-import kroryi.bus2.service.apikey.ApiKeyService;
 import kroryi.bus2.service.lost.FoundItemServiceImpl;
 import kroryi.bus2.service.lost.LostItemService;
 import kroryi.bus2.service.user.UserService;
@@ -31,27 +32,23 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Log4j2
 @Controller
+@Hidden
 @RequiredArgsConstructor
 @RequestMapping("/mypage")
 public class MyPageController {
 
     private final UserService userService;
-    private final ApiKeyService apiKeyService;
     private final LostItemService lostItemService;
     private final FoundItemServiceImpl foundItemServiceImpl;
-
 
     private String extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Object principal = auth.getPrincipal();
 
-        if (principal instanceof CustomOAuth2User customUser) {
-            return customUser.getUserId();
-        } else if (principal instanceof UserDetails userDetails) {
+        if (principal instanceof UserDetails userDetails) {
             return userDetails.getUsername();
         } else if (principal instanceof OAuth2User oAuth2User) {
             Map<String, Object> attributes = oAuth2User.getAttributes();
@@ -63,14 +60,13 @@ public class MyPageController {
         return "admin"; // 기본값으로 admin을 리턴
     }
 
-    private User getCurrentUser(Principal principal) {
-        if (principal == null) {
-            throw new IllegalStateException("사용자가 로그인되지 않았습니다.");
-        }
-        return userService.findByUserId(principal.getName());
-    }
-
     // 마이페이지 메인
+    @Operation(summary = "마이페이지 메인", description = "현재 로그인된 사용자의 마이페이지 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공적으로 마이페이지 정보를 조회했습니다."),
+            @ApiResponse(responseCode = "401", description = "로그인되지 않은 사용자입니다."),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없습니다.")
+    })
     @GetMapping("")
     public String myPage(Model model) {
         String userId = extractUserId();
@@ -91,6 +87,11 @@ public class MyPageController {
     }
 
     // 비밀번호 변경 폼
+    @Operation(summary = "비밀번호 변경 폼", description = "비밀번호 변경 폼을 표시합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호 변경 폼을 성공적으로 표시했습니다."),
+            @ApiResponse(responseCode = "401", description = "로그인되지 않은 사용자입니다.")
+    })
     @GetMapping("/password")
     public String showChangePasswordForm(Model model) {
         model.addAttribute("changePasswordDTO", new ChangePasswordDTO());
@@ -98,6 +99,11 @@ public class MyPageController {
     }
 
     // 비밀번호 변경 처리
+    @Operation(summary = "비밀번호 변경 처리", description = "사용자의 비밀번호를 변경합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비밀번호가 성공적으로 변경되었습니다."),
+            @ApiResponse(responseCode = "400", description = "비밀번호 변경 오류")
+    })
     @PostMapping("/password")
     public String changePassword(@Valid @ModelAttribute ChangePasswordDTO dto, Model model) {
         String userId = extractUserId();
@@ -136,6 +142,11 @@ public class MyPageController {
     }
 
     // 회원 정보 수정 폼
+    @Operation(summary = "회원 정보 수정 폼", description = "사용자의 정보를 수정할 수 있는 폼을 표시합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보 수정 폼을 성공적으로 표시했습니다."),
+            @ApiResponse(responseCode = "401", description = "로그인되지 않은 사용자입니다.")
+    })
     @GetMapping("/modify")
     public String showModifyForm(Model model) {
         String userId = extractUserId();
@@ -163,6 +174,11 @@ public class MyPageController {
     }
 
     // 회원 정보 수정 처리
+    @Operation(summary = "회원 정보 수정 처리", description = "사용자의 정보를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 정보가 성공적으로 수정되었습니다."),
+            @ApiResponse(responseCode = "400", description = "회원 정보 수정 오류")
+    })
     @PostMapping("/modify")
     public String modifyUser(@Valid @ModelAttribute ModifyUserDTO dto,
                              Model model,
@@ -187,34 +203,24 @@ public class MyPageController {
         }
     }
 
-    // 회원 탈퇴
-    @PostMapping("/withdraw")
-    public String withdraw(RedirectAttributes redirectAttributes) {
-        String userId = extractUserId();
-        if (userId == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            userService.deleteByUserId(userId); // 탈퇴 처리
-            SecurityContextHolder.clearContext();
-            redirectAttributes.addFlashAttribute("success", "회원 탈퇴가 완료되었습니다.");
-            return "redirect:/login?withdraw";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "회원 탈퇴 중 오류가 발생했습니다.");
-            return "redirect:/mypage";
-        }
-    }
-
-
     // ✅ 일반회원 마이페이지: 분실물 목록 및 등록 화면
+    @Operation(summary = "분실물 목록 조회", description = "사용자의 분실물 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "분실물 목록 조회 성공")
+    })
     @GetMapping("/lost")
     public String userLostItems(Model model) {
         List<LostItemListResponseDTO> lostItems = lostItemService.getAllLostItems();
         model.addAttribute("lostItems", lostItems);
-        return "/mypage/mypage-lost"; //
+        return "/mypage/mypage-lost";
     }
-    //분실물 등록 처리
+
+    // 분실물 등록 처리
+    @Operation(summary = "분실물 등록", description = "새로운 분실물을 등록합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "분실물이 성공적으로 등록되었습니다."),
+            @ApiResponse(responseCode = "400", description = "분실물 등록 오류")
+    })
     @PostMapping("/lost")
     public String registerLostItem(LostItemRequestDTO dto) {
         String userId = extractUserId();
@@ -223,19 +229,16 @@ public class MyPageController {
         lostItemService.saveLostItem(dto);
         return "redirect:/mypage/lost";
     }
-    //습득물 목록
+
+    // 습득물 목록
+    @Operation(summary = "습득물 목록 조회", description = "사용자가 조회할 수 있는 습득물 목록을 표시합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "습득물 목록 조회 성공")
+    })
     @GetMapping("/found")
     public String foundListForUser(Model model) {
         List<FoundItemResponseDTO> foundItems = foundItemServiceImpl.getVisibleFoundItemsForUser();
         model.addAttribute("foundItems", foundItems);
         return "mypage/mypage-found"; // ✅ Thymeleaf 파일명
     }
-
-
-
-
-
-
-
-
 }

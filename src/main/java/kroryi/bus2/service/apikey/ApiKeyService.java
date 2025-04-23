@@ -39,19 +39,24 @@ public class ApiKeyService {
      * 새로운 API 키 발급
      * @param name API 키 이름
      * @param allowedIp 허용된 IP
+     * @param user 발급 대상 사용자
      * @return 발급된 API 키
      */
     @Transactional
-    public ApiKey issueApiKey(String name, String allowedIp) {
+    public ApiKey issueApiKey(String name, String allowedIp, User user) {
         // API 키 생성
         ApiKey apiKey = ApiKey.builder()
                 .apikey(UUID.randomUUID().toString())  // 랜덤 API 키 생성
                 .name(name)
                 .allowedIp(allowedIp)
+                .user(user)  // 사용자 정보 추가
                 .expiresAt(LocalDateTime.now().plusDays(defaultExpirationDays))  // 기본 만료일 설정
+                .status(ApiKeyStatus.PENDING)  // 기본 상태는 PENDING
+                .createdAt(LocalDateTime.now())  // 생성일자 설정
                 .build();
 
-        return apiKeyRepository.save(apiKey);  // DB에 저장 후 반환
+        // API 키를 DB에 저장하고 반환
+        return apiKeyRepository.save(apiKey);
     }
 
     /**
