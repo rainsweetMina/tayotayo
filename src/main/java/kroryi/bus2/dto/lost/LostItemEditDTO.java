@@ -7,22 +7,16 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class LostItemResponseDTO {
+public class LostItemEditDTO {
     private Long id;
     private String title;
     private String content;
     private String busNumber;
     private String busCompany;
     private LocalDateTime lostTime;
-    private Long memberId; // User id만 사용
-    private boolean matched;
-    private boolean visible;
-    private boolean deleted;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
 

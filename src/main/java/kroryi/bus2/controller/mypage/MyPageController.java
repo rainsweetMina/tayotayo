@@ -2,10 +2,7 @@ package kroryi.bus2.controller.mypage;
 
 import jakarta.validation.Valid;
 import kroryi.bus2.config.security.CustomOAuth2User;
-import kroryi.bus2.dto.lost.FoundItemListResponseDTO;
-import kroryi.bus2.dto.lost.FoundItemResponseDTO;
-import kroryi.bus2.dto.lost.LostItemListResponseDTO;
-import kroryi.bus2.dto.lost.LostItemRequestDTO;
+import kroryi.bus2.dto.lost.*;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
 import kroryi.bus2.entity.apikey.ApiKey;
@@ -230,12 +227,47 @@ public class MyPageController {
         model.addAttribute("foundItems", foundItems);
         return "mypage/mypage-found"; // ✅ Thymeleaf 파일명
     }
+    @GetMapping("/lost/view/{id}")
+    public String viewLostItem(@PathVariable Long id, Model model) {
+        LostItemResponseDTO dto = lostItemService.getLostItemById(id);
+        model.addAttribute("lostItem", dto);
+        return "mypage/mypageLostdetail";
+    }
+    @GetMapping("/lost/edit/{id}")
+    public String editLostItemForm(@PathVariable Long id, Model model) {
+        LostItemResponseDTO dto = lostItemService.getLostItemById(id);
+        LostItemEditDTO editDTO = LostItemEditDTO.builder()
+                .id(dto.getId())
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .busNumber(dto.getBusNumber())
+                .busCompany(dto.getBusCompany())
+                .lostTime(dto.getLostTime())
+                .build();
 
+        model.addAttribute("lostItem", editDTO);
+        return "mypage/mypageLostEdit";
+    }
 
+    @PostMapping("/lost/edit/{id}")
+    public String updateLostItem(@PathVariable Long id,
+                                 @ModelAttribute LostItemEditDTO dto) {
+        LostItemRequestDTO requestDTO = LostItemRequestDTO.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .busNumber(dto.getBusNumber())
+                .busCompany(dto.getBusCompany())
+                .lostTime(dto.getLostTime())
+                .build();
 
-
-
-
-
+        lostItemService.updateLostItem(id, requestDTO);
+        return "redirect:/mypage/lost/view/" + id;
+    }
+    @PostMapping("/lost/delete/{id}")
+    public String deleteLostItem(@PathVariable Long id) {
+        lostItemService.deleteLostItem(id); // 이 메서드는 soft delete 혹은 삭제 처리
+        return "redirect:/mypage/lost";
+    }
 
 }
+

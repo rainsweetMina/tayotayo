@@ -43,7 +43,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@Tag(name = "사용자 버스 정보 서칭", description = "")
+@Tag(name = "사용자-버스-정보-서칭", description = "")
 @RestController
 @RequestMapping("/api/bus")
 @RequiredArgsConstructor

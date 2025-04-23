@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "분실물-일반", description = "일반 회원 전용 분실물 API")
+@Tag(name = "분실물-일반", description = "")
 @RestController
 @RequestMapping("/api/lost")
 @RequiredArgsConstructor

@@ -22,7 +22,10 @@
     <tbody>
     <tr th:each="item : ${lostItems}">
         <td th:text="${item.id}">번호</td>
-        <td th:text="${item.title}">지갑</td>
+        <!-- ✅ 제목 클릭 시 상세페이지로 이동 -->
+        <td>
+            <a th:href="@{/mypage/lost/view/{id}(id=${item.id})}" th:text="${item.title}">분실물</a>
+        </td>
         <td th:text="${#strings.abbreviate(item.content, 30)}">내용 요약</td>
         <td th:text="${#temporals.format(item.lostTime, 'yyyy-MM-dd')}">2025-04-21</td>
         <td>

@@ -136,6 +136,7 @@ public class LostItemService {
                 .title(item.getTitle())
                 .content(item.getContent())
                 .busNumber(item.getBusNumber())
+                .busCompany(item.getBusCompany())
                 .lostTime(item.getLostTime())
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
@@ -171,6 +172,20 @@ public class LostItemService {
                 .matchedCount(matchedCount)
                 .unmatchedCount(unmatchedCount)
                 .build();
+    }
+    @Transactional
+    @AdminAudit(action = "분실물 수정", target = "LostItem")
+    public void updateLostItem(Long id, LostItemRequestDTO dto) {
+        LostItem item = lostItemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("해당 분실물을 찾을 수 없습니다."));
+
+        item.setTitle(dto.getTitle());
+        item.setContent(dto.getContent());
+        item.setBusCompany(dto.getBusCompany());
+        item.setBusNumber(dto.getBusNumber());
+        item.setLostTime(dto.getLostTime() != null ? dto.getLostTime() : item.getLostTime());
+
+        item.setUpdatedAt(LocalDateTime.now()); // ✅ updatedAt 수동 갱신 (Auditing 적용 시 생략 가능)
     }
 
 

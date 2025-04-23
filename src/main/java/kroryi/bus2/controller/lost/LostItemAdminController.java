@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "분실물-관리", description = "관리자 전용 분실물 API")
+@Tag(name = "분실물-관리", description = "")
 @RestController
 @RequestMapping("/api/admin/lost")
 @RequiredArgsConstructor
