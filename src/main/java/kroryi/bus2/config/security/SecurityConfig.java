@@ -63,15 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**", "/api/public/**", "/api/bus/**").permitAll()
 
                         // Swagger는 인증만 되면 접근 가능
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").authenticated()
-
-                        // -------------------- swagger 보안 (우선제외시킴)
-                        // API 요청 권한 설정
-//                        .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER", "ADMIN")
-//                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
 
                         // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")

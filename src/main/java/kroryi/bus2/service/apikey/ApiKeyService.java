@@ -218,10 +218,9 @@ public class ApiKeyService {
         return "admin-api-key".equals(apiKey); // 예시로 "admin-api-key"가 관리자 키라고 가정
     }
 
-    // 사용자에 대한 API 키 발급 요청 기록 조회
     public ApiKey getApiKeyRequestForUser(User user) {
-        // API 키 발급 요청이 여러 개 있을 수 있으므로 첫 번째 요청 기록을 반환하는 예시입니다.
-        // 필요에 따라 여러 요청 기록을 반환하거나 조건을 수정할 수 있습니다.
-        return apiKeyRepository.findFirstByUserOrderByCreatedDateDesc(user);
+        // 예시: user 기준으로 apiKey 하나 조회 (상황에 따라 쿼리 수정)
+        return apiKeyRepository.findFirstByUser(user)
+                .orElse(null);
     }
 }

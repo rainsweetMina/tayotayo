@@ -75,8 +75,4 @@ public class ApiKey {
     public void addCallbackUrl(String callbackUrl) {
         this.callbackUrl = callbackUrl;
     }
-
-    @CreatedDate
-    @Column(name = "created_date", nullable = false, updatable = false)
-    private LocalDateTime createdDate;
 }
