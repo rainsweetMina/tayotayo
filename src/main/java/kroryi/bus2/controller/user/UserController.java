@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.user;
 
+import jakarta.servlet.http.HttpSession;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginFormDTO;
 import kroryi.bus2.service.user.EmailService;
@@ -26,7 +27,8 @@ public class UserController {
     @GetMapping("/login")
     public String login(@RequestParam(value = "errorCode", required = false) String errorCode,
                         @RequestParam(value = "logout", required = false) String logout,
-                        Model model) {
+                        @RequestParam(value = "redirect", required = false) String redirect,
+                        Model model, HttpSession httpsession) {
         log.info("로그인 페이지 요청");
         log.info("logout: {}", logout);
 
@@ -43,6 +45,12 @@ public class UserController {
                 default               -> "로그인 중 오류가 발생했습니다.";
             };
             model.addAttribute("errorMessage", errorMessage);
+        }
+
+        // 🔁 redirect 파라미터가 있으면 세션에 저장
+        if (redirect != null && !redirect.isBlank()) {
+            httpsession.setAttribute("redirectAfterLogin", redirect);
+            log.info("리다이렉트 대상 저장: {}", redirect);
         }
 
         model.addAttribute("loginForm", new LoginFormDTO());

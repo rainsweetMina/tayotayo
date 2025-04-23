@@ -6,12 +6,19 @@
     <link rel="stylesheet" th:href="@{/css/routeMap.css}">
     <title>Q&A 리스트 페이지</title>
     <style>
-        a {
-            text-decoration: none;
-        }
-
         .status-icon {
             margin-left: 6px;
+        }
+
+        .content-box {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .question-row {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -20,52 +27,54 @@
 
 <div layout:fragment="content">
     <section>
-        <table class="table table-sm table-hover align-middle text-center" style="width: 850px;">
-            <thead class="table-light small">
-            <tr>
-                <th style="width: 50px;">ID</th>
-                <th>제목</th>
-                <th style="width: 150px;">작성일</th>
-            </tr>
-            </thead>
-            <tbody class="small">
-            <tr th:each="qna : ${myQnaList}" th:data-id="${qna.id}" onclick="toggleAnswer(this)">
-                <td th:text="${qna.id}"></td>
-                <td>
-                    <span th:text="${qna.title}"></span>
-                </td>
-                <td th:text="${#temporals.format(qna.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-            </tr>
-            <tr th:each="qna : ${myQnaList}" th:id="'content-' + ${qna.id}" style="display: none;" class="bg-light">
-                <td colspan="3" class="p-2 small">
-                    <strong>내용:</strong>
-                    <div th:text="${qna.content}"></div>
-                    <div th:if="${qna.answer}" class="mt-2">
-                        <strong>답변:</strong>
-                        <div th:text="${qna.answer}"></div>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-    <script>
-        function toggleAnswer(row) {
-            const id = row.dataset.id;
-            const newContentRow = document.getElementById('content-' + id);
+    <div class="container mt-5" style="max-width: 900px;">
+        <h4 class="mb-4">📋 내 Q&A 목록</h4>
 
-            // 기존 열린 답변 닫기
-            document.querySelectorAll('tr[id^="content-"]').forEach(row => {
-                if (row !== newContentRow) {
-                    row.style.display = 'none';
-                }
+        <div th:each="qna : ${myQnaList}" class="qna-card">
+            <!-- 질문 박스 -->
+            <div class="border rounded p-3 mb-1 question-box" th:data-id="${qna.id}" onclick="toggleQna(this)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong th:text="${qna.title}" style="color: #555555"></strong>
+                        <span th:if="${qna.status.name() == 'ANSWERED'}" class="text-success ms-2">💬</span>
+                    </div>
+                    <small th:text="${#temporals.format(qna.createdAt, 'yyyy-MM-dd HH:mm')}"></small>
+                </div>
+            </div>
+
+            <!-- 내용/답변 박스 (초기 숨김) -->
+            <div class="card border-light shadow-sm" th:id="'content-' + ${qna.id}" style="display: none;">
+                <div class="card-body">
+                    <p class="mb-1"><strong>📝 질문 내용</strong></p>
+                    <p class="ms-2" th:text="${qna.content}"></p>
+
+                    <div th:if="${qna.answer}" class="mt-3">
+                        <p class="mb-1"><strong class="text-success">💡 관리자 답변</strong></p>
+                        <p class="ms-2" th:text="${qna.answer}"></p>
+                    </div>
+
+                    <hr class="my-2">
+                    <small class="text-muted">수정일: <span
+                            th:text="${#temporals.format(qna.updatedAt, 'yyyy-MM-dd HH:mm')}"></span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+
+    <script>
+        function toggleQna(clickedBox) {
+            const id = clickedBox.dataset.id;
+            const target = document.getElementById('content-' + id);
+
+            // 모든 답변 박스 숨기기
+            document.querySelectorAll('[id^="content-"]').forEach(box => {
+                if (box !== target) box.style.display = 'none';
             });
 
-            // 새로 클릭한 답변 토글
-            newContentRow.style.display = newContentRow.style.display === 'none' ? 'table-row' : 'none';
+            // 현재 클릭한 답변만 토글
+            target.style.display = target.style.display === 'none' ? 'block' : 'none';
         }
     </script>
-
 </div>
-
 </html>

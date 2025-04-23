@@ -107,8 +107,8 @@
                 </ul>
             </nav>
 
-            <div class="d-flex justify-content-end mt-3" th:if="${#authorization.expression('isAuthenticated()')}">
-                <a href="/qna/form" class="btn btn-primary">등록</a>
+            <div class="d-flex justify-content-end mt-3">
+                <a href="javascript:void(0);" class="btn btn-primary" onclick="handleQnaForm()">등록</a>
             </div>
 
         </div>
@@ -124,6 +124,18 @@
             }
 
             window.location.href = url;
+        }
+
+        function handleQnaForm() {
+            /* 타임리프로 인증 여부 확인 */
+            const isLoggedIn = [[${#authorization.expression('isAuthenticated()')}]];
+
+            if (isLoggedIn) {
+                window.location.href = "/qna/form";
+            } else {
+                const returnUrl = encodeURIComponent("/qna/form");
+                window.location.href = `/login?redirect=${returnUrl}`;
+            }
         }
     </script>
 
