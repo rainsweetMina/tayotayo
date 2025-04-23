@@ -96,7 +96,8 @@ function drawChart(labels, values) {
             }]
         },
         options: {
-            responsive: true,
+            responsive: false,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     labels: {
