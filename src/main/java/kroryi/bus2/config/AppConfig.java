@@ -64,7 +64,7 @@ public class AppConfig {
         return GroupedOpenApi.builder()
                 .group("Admin")
                 .pathsToMatch("/api/admin/**")
-                .pathsToExclude("/api/admin/lost")
+                .pathsToExclude("/api/admin/lost/**")
                 .build();
     }
 
