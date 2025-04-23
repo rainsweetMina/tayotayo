@@ -19,9 +19,9 @@ public class AuditLogCleaner {
 
     private final AdminAuditLogRepository adminAuditLogRepository;
 
-    // 매일 자정에 실행됨
+    // 매일 자정에 실행됨 임시로 09:15에 지워지게 설정
     @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 15 9 * * *")
     public void deleteOldLogs() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(1);
         int deleted = adminAuditLogRepository.deleteByTimestampBefore(cutoff);

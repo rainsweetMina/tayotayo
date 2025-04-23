@@ -22,8 +22,8 @@ public class AppConfig {
     public GroupedOpenApi defaultGroup() {
         return GroupedOpenApi.builder()
                 .group("0_Default")
-                .pathsToExclude("/api/bus/**" , "/api/ad/**")
-                .packagesToExclude("kroryi.bus2.controller.board", "kroryi.bus2.controller.bus","kroryi.bus2.controller.admin","kroryi.bus2.controller.mypage", "kroryi.bus2.controller.admin")
+                .pathsToExclude("/api/bus/**" , "/api/ad/**", "/api/admin/**")
+                .packagesToExclude("kroryi.bus2.controller.board", "kroryi.bus2.controller.bus","kroryi.bus2.controller.admin","kroryi.bus2.controller.mypage")
                 .build();
     }
 
@@ -63,7 +63,8 @@ public class AppConfig {
     public GroupedOpenApi adminGroup(){
         return GroupedOpenApi.builder()
                 .group("Admin")
-                .packagesToScan("kroryi.bus2.controller.admin")
+                .pathsToMatch("/api/admin/**")
+                .pathsToExclude("/api/admin/lost")
                 .build();
     }
 
