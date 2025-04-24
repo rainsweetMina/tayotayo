@@ -1,5 +1,6 @@
-package kroryi.bus2.controller.api;
+package kroryi.bus2.controller.redis;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.service.admin.DayStatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+@Tag(name = "일일 통계", description = "Redis를 이용한 일일 통계 API")
 @RestController
 @RequestMapping("/stats")
 public class DayStatsController {

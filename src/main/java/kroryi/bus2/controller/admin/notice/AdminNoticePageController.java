@@ -1,6 +1,7 @@
 package kroryi.bus2.controller.admin.notice;
 
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;
 import kroryi.bus2.dto.notice.UpdateNoticeRequestDTO;
@@ -13,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +28,7 @@ public class AdminNoticePageController {
 
     private final NoticeService noticeService;
 
+    @Hidden
     @PostMapping(value = "/api/admin/notices", consumes = "multipart/form-data")
     @ResponseBody
     public ResponseEntity<Void> createNotice(@RequestPart("notice") @Valid CreateNoticeRequestDTO dto,

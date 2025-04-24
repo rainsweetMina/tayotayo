@@ -28,13 +28,14 @@
 
         const ui = SwaggerUIBundle({
             urls: [
-                { url: "https://localhost:8081/v3/api-docs/all", name: "All" },
+                { url: "https://localhost:8081/v3/api-docs/All", name: "All" },
                 { url: "https://localhost:8081/v3/api-docs/Bus", name: "Bus" },
                 { url: "https://localhost:8081/v3/api-docs/Ad", name: "Ad" },
                 { url: "https://localhost:8081/v3/api-docs/Board", name: "Board" },
                 { url: "https://localhost:8081/v3/api-docs/LostFound", name: "LostFound" },
                 { url: "https://localhost:8081/v3/api-docs/Qna", name: "Qna" },
-                { url: "https://localhost:8081/v3/api-docs/Admin", name: "Admin" }
+                { url: "https://localhost:8081/v3/api-docs/Notice", name: "Notice" },
+                { url: "https://localhost:8081/v3/api-docs/Monitoring", name: "Monitoring" }
             ],
             urlsPrimaryName: "Bus", // ✅ 반드시 Bus로 맞춰야 함 (name 값과 동일)
             dom_id: '#swagger-ui',

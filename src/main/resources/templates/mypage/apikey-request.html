@@ -10,10 +10,8 @@
 <!-- 발급된 API 키 정보 출력 -->
 <div th:if="${apiKey != null}">
     <h3>발급된 API 키</h3>
-    <p><strong>API 키:</strong> <span th:text="${apiKey.apikey}">API 키 없음</span></p>
+    <p><strong>API 키:</strong> <span th:text="${apiKey.getApiKey()}">API 키 없음</span></p>
     <p><strong>상태:</strong> <span th:text="${apiKey.status}">상태 없음</span></p>
-    <p><strong>만료일:</strong> <span th:text="${#temporals.format(apiKey.expiresAt, 'yyyy-MM-dd HH:mm')}">없음</span></p>
-    <p><strong>허용된 IP:</strong> <span th:text="${apiKey.allowedIp}">없음</span></p>
 
     <div th:if="${apiKey.callbackUrls != null and !apiKey.callbackUrls.isEmpty()}">
         <h4>Callback URLs</h4>
@@ -32,8 +30,7 @@
 <!-- API 키 신청 폼 (키가 없거나 상태가 PENDING인 경우에만 노출) -->
 <div th:if="${apiKey == null or (apiKey.status != null and apiKey.status == 'PENDING')}">
     <form th:action="@{/mypage/apikey-request}" method="post">
-<!--        <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
-        <label for="description">API 키 설명 (선택):</label>
+        <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <input type="text" id="description" name="description" placeholder="예: 정류장 조회용 키"><br><br>
         <button type="submit">신청하기</button>
     </form>

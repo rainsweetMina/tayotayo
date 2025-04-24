@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import kroryi.bus2.entity.user.User;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,6 +42,9 @@ public class ApiKey {
 
     private LocalDateTime createdAt;
 
+    @Column(name = "callback_url")
+    private String callbackUrl;
+
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -56,4 +60,19 @@ public class ApiKey {
     @OneToMany(mappedBy = "apiKey", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ApiKeyCallbackUrl> callbackUrls = new ArrayList<>();
+
+    // Active 상태를 반환하는 메서드 추가
+    public boolean isActive() {
+        return active != null && active;
+    }
+
+    // apikey 필드를 반환하는 getApiKey() 메서드 추가
+    public String getApiKey() {
+        return apikey;
+    }
+
+    // 또는 addCallbackUrl 메서드 추가
+    public void addCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
+    }
 }

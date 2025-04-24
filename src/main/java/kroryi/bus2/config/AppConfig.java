@@ -22,13 +22,14 @@ public class AppConfig {
     public GroupedOpenApi defaultGroup() {
         return GroupedOpenApi.builder()
                 .group("0_Default")
-                .pathsToExclude("/api/admin/**")
+                .pathsToExclude("/api/admin/**","/api/user/**")
                 .packagesToExclude("kroryi.bus2.controller.board",
                         "kroryi.bus2.controller.bus",
                         "kroryi.bus2.controller.ad",
                         "kroryi.bus2.controller.lost",
                         "kroryi.bus2.controller.qna",
-                        "kroryi.bus2.controller.admin",
+                        "kroryi.bus2.controller.admin.notice",
+                        "kroryi.bus2.controller.admin.monitoring",
                         "kroryi.bus2.controller.mypage")
                 .build();
     }
@@ -66,18 +67,25 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi adminGroup(){
+    public GroupedOpenApi noticeGroup(){
         return GroupedOpenApi.builder()
-                .group("Admin")
-                .pathsToMatch("/api/admin/**")
-                .pathsToExclude("/api/admin/lost/**")
+                .group("Notice")
+                .packagesToScan("kroryi.bus2.controller.admin.notice")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi monitoringGroup(){
+        return GroupedOpenApi.builder()
+                .group("Monitoring")
+                .packagesToScan("kroryi.bus2.controller.admin.monitoring")
                 .build();
     }
 
     @Bean
     public GroupedOpenApi mypageGroup(){
         return GroupedOpenApi.builder()
-                .group("mypage")
+                .group("MyPage")
                 .packagesToScan("kroryi.bus2.controller.mypage")
                 .build();
     }
@@ -95,6 +103,14 @@ public class AppConfig {
         return GroupedOpenApi.builder()
                 .group("Qna")
                 .packagesToScan("kroryi.bus2.controller.qna")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi userGroup(){
+        return GroupedOpenApi.builder()
+                .group("User")
+                .pathsToMatch("/api/user/**")
                 .build();
     }
 

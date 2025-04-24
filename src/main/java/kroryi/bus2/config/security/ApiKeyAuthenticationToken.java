@@ -11,7 +11,7 @@ public class ApiKeyAuthenticationToken extends AbstractAuthenticationToken {
     public ApiKeyAuthenticationToken(String apiKey, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         this.apiKey = apiKey;
-        setAuthenticated(true); // API 키가 유효하면 인증된 상태로 설정
+        // 인증 여부는 이 시점에서 true로 설정하지 않고, 필터나 서비스에서 인증이 완료된 후에 설정하도록 변경
     }
 
     public String getApiKey() {
@@ -26,5 +26,10 @@ public class ApiKeyAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public Object getPrincipal() {
         return apiKey;
+    }
+
+    // 인증 상태 설정 메서드 추가
+    public void setAuthenticatedStatus(boolean isAuthenticated) {
+        setAuthenticated(isAuthenticated);
     }
 }
