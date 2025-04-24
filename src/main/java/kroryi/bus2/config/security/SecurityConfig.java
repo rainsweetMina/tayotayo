@@ -70,7 +70,7 @@ public class SecurityConfig {
 
                         // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
 //                        .requestMatchers("/admin/**").hasRole("ADMIN")
-
+                        .requestMatchers("/**").permitAll()
 
                         // 그 외 요청은 모두 인증 필요
                         .anyRequest().authenticated()
