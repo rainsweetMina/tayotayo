@@ -78,6 +78,8 @@ public class QnaAdminService {
         Qna qna = qnaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 QnA를 찾을 수 없습니다."));
         qna.setAnswer(answer); // ✅ 답변 저장
+        qna.setStatus(QnaStatus.ANSWERED); // ✅ 상태변경
+
         qnaRepository.save(qna);
     }
 

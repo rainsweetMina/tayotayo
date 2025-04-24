@@ -97,7 +97,6 @@ public class AppConfig {
                 .pathsToMatch("/api/user/**")
                 .build();
     }
-
     // Swagger UI에서 API 경로 설정
     @Bean
     public GroupedOpenApi publicApi() {
@@ -106,4 +105,6 @@ public class AppConfig {
                 .pathsToMatch("/api/**")  // /api/로 시작하는 경로에 Swagger UI 적용
                 .build();
     }
+
+
 }
