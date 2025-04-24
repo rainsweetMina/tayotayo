@@ -20,6 +20,13 @@
             display: block;
             margin-top: 14px;
         }
+        .weatherBox {
+            width: 150px; /* 예: 고정 너비 지정 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: right;
+        }
     </style>
     <!-- 관리자 출력 -->
     <span sec:authorize="hasAuthority('ROLE_ADMIN')">🙆‍♂️ 관리자 계정입니다</span>
@@ -29,10 +36,49 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <a class="navbar-brand" href="#">뻐어스</a>
-            <!--날씨-->
+
+            <ul class="navbar-nav d-flex flex-row gap-3">
+
+                <!-- 드롭다운 1 -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-expanded="false">
+                        버스 이용 안내
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
+                        <li><a class="dropdown-item" th:href="@{/fare}">버스 요금</a></li>
+                        <li><a class="dropdown-item" th:href="@{/schedule}">버스 운행 시간표</a></li>
+                        <li><a class="dropdown-item" th:href="@{/low-schedule}">저상버스 운행 시간표</a></li>
+                        <li><a class="dropdown-item" th:href="@{/bus-info}">정류장 조회</a></li>
+                        <li><a class="dropdown-item" th:href="@{/bus-company}">버스 회사 조회</a></li>
+                    </ul>
+                </li>
+
+                <!-- 드롭다운 2 -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdownMenuLink2" data-bs-toggle="dropdown" aria-expanded="false">
+                        분실물 센터
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
+                        <li><a class="dropdown-item" th:href="@{/lost-found}">분실물 조회</a></li>
+                    </ul>
+                </li>
+
+                <!-- 드롭다운 3 -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdownMenuLink3" data-bs-toggle="dropdown" aria-expanded="false">
+                        알림 마당
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink3">
+                        <li><a class="dropdown-item" th:href="@{/notice}">공지사항</a></li>
+                        <li><a class="dropdown-item" th:href="@{/qna/list}">Q&A</a></li>
+                    </ul>
+                </li>
+
+            </ul>
 
             <ul class="navbar-nav">
 
+                <!--날씨-->
                 <li class="weatherBox" style="align-content: center;">
                     <span id="weatherData" class="visible" style="color: #a5a5a5;"></span>
                 </li>
