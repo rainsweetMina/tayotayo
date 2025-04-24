@@ -43,5 +43,5 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Long> {
 
     boolean existsByApikey(String apikey);
 
-
+    Optional<ApiKey> findFirstByUser(User user);
 }

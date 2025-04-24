@@ -39,19 +39,24 @@ public class ApiKeyService {
      * 새로운 API 키 발급
      * @param name API 키 이름
      * @param allowedIp 허용된 IP
+     * @param user 발급 대상 사용자
      * @return 발급된 API 키
      */
     @Transactional
-    public ApiKey issueApiKey(String name, String allowedIp) {
+    public ApiKey issueApiKey(String name, String allowedIp, User user) {
         // API 키 생성
         ApiKey apiKey = ApiKey.builder()
                 .apikey(UUID.randomUUID().toString())  // 랜덤 API 키 생성
                 .name(name)
                 .allowedIp(allowedIp)
+                .user(user)  // 사용자 정보 추가
                 .expiresAt(LocalDateTime.now().plusDays(defaultExpirationDays))  // 기본 만료일 설정
+                .status(ApiKeyStatus.PENDING)  // 기본 상태는 PENDING
+                .createdAt(LocalDateTime.now())  // 생성일자 설정
                 .build();
 
-        return apiKeyRepository.save(apiKey);  // DB에 저장 후 반환
+        // API 키를 DB에 저장하고 반환
+        return apiKeyRepository.save(apiKey);
     }
 
     /**
@@ -211,5 +216,11 @@ public class ApiKeyService {
         // 실제 관리자 API 키 확인 로직
         // 예시로 특정 API 키가 관리자인지 확인하는 조건을 추가
         return "admin-api-key".equals(apiKey); // 예시로 "admin-api-key"가 관리자 키라고 가정
+    }
+
+    public ApiKey getApiKeyRequestForUser(User user) {
+        // 예시: user 기준으로 apiKey 하나 조회 (상황에 따라 쿼리 수정)
+        return apiKeyRepository.findFirstByUser(user)
+                .orElse(null);
     }
 }

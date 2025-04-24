@@ -1,6 +1,6 @@
 package kroryi.bus2.controller.ad;
 
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import kroryi.bus2.dto.ad.AdCompanyDropdownDTO;
@@ -27,7 +27,7 @@ public class AdCompanyController {
 
     // 광고회사 등록
     @Operation(summary = "광고회사 등록", description = "새로운 광고회사를 등록합니다.")
-    @ApiResponse(code = 200, message = "등록 성공")
+    @ApiResponse(responseCode = "200", description = "등록 성공")
     @PostMapping
     public ResponseEntity<AdCompany> register(@RequestBody AdCompanyRequestDTO dto) {
         AdCompany created = adCompanyService.registerCompany(dto);
