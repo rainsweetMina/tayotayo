@@ -65,13 +65,10 @@ fetch('/api/admin/metrics/response-time/hourly')
         return res.json();
     })
     .then(data => {
-        const dataMap = Object.fromEntries(data.map(d => [d.date, d.averageResponseTime]));
+      const labels = data.map(d => d.date);
+      const values = data.map(d => d.averageResponseTime);
 
-        // 3. 라벨과 매칭하여 null/값 배열 생성
-        const alignedValues = fixedLabels.map(label => dataMap[label] ?? null);
-
-        // 4. 그래프 그리기
-        drawChart(fixedLabels, alignedValues);
+      drawChart(labels, values);
     })
     .catch(err => {
         console.error("응답속도 차트 로딩 실패", err.message);
@@ -83,7 +80,7 @@ function drawChart(labels, values) {
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['00:00', '01:00', '02:00', '03:00'],
+            labels: labels,
             datasets: [{
                 label: '응답 속도 (ms)',
                 data: [10, 30, 100, 40],
