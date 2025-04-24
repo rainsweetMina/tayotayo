@@ -109,4 +109,8 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         return true;
     }
+
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId).orElse(null);  // ID로 사용자 조회, 없으면 null 반환
+    }
 }

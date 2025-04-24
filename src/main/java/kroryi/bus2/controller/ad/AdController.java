@@ -1,8 +1,9 @@
 package kroryi.bus2.controller.ad;
 
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.dto.ad.*;
 import kroryi.bus2.entity.ad.Ad;
@@ -30,8 +31,8 @@ public class AdController {
     // ✅ 광고 등록 - FormData 방식 (JSON DTO + 이미지 파일)
     @Operation(summary = "광고 등록", description = "FormData 방식으로 광고 정보를 등록합니다. 이미지 파일과 JSON DTO를 함께 전송합니다.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "광고 등록 성공"),
-            @ApiResponse(code = 400, message = "요청 형식 오류 또는 유효성 실패")
+            @ApiResponse(responseCode = "200", description = "광고 등록 성공"),
+            @ApiResponse(responseCode = "400", description = "요청 형식 오류 또는 유효성 실패")
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Ad> createAd(
@@ -45,8 +46,8 @@ public class AdController {
     // ✅ 광고 수정 - FormData 방식 (JSON DTO + 이미지 파일)
     @Operation(summary = "광고 수정", description = "기존 광고 정보를 수정합니다. 이미지 파일은 선택적으로 포함할 수 있습니다.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "수정 성공"),
-            @ApiResponse(code = 404, message = "해당 ID의 광고를 찾을 수 없음")
+            @ApiResponse(responseCode = "200", description = "수정 성공"),
+            @ApiResponse(responseCode = "404", description = "해당 ID의 광고를 찾을 수 없음")
     })
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Ad> updateAdWithImage(

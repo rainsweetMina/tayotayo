@@ -15,13 +15,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.HashMap;
 import java.util.Map;
 
-@Log4j2
 @Controller
 @RequiredArgsConstructor
+@Log4j2
 public class UserController {
 
     private final UserService userService;
-    private final EmailService emailService;
 
     // 로그인 페이지
     @GetMapping("/login")
@@ -56,8 +55,7 @@ public class UserController {
         model.addAttribute("loginForm", new LoginFormDTO());
         return "user/login";
     }
-
-    // 회원가입 페이지
+    // 회원가입 폼
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         if (!model.containsAttribute("joinRequestDTO")) {
@@ -77,7 +75,6 @@ public class UserController {
 
             userService.join(jdto);
             return "redirect:/login?registerSuccess=true";
-
         } catch (Exception e) {
             log.error("회원가입 오류: {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -85,24 +82,5 @@ public class UserController {
             redirectAttributes.addFlashAttribute("joinRequestDTO", jdto);
             return "redirect:/register";
         }
-    }
-
-    // 이메일 인증 코드 전송
-    @ResponseBody
-    @GetMapping("/email/send")
-    public String sendEmailVerificationCode(@RequestParam String email) {
-        emailService.sendVerificationCode(email);
-        return "인증 코드 전송 완료";
-    }
-
-    // 이메일 인증 코드 검증
-    @ResponseBody
-    @GetMapping("/email/verify")
-    public Map<String, Object> verifyEmailCode(@RequestParam String email,
-                                               @RequestParam String code) {
-        boolean result = emailService.verifyCode(email, code);
-        Map<String, Object> response = new HashMap<>();
-        response.put("verified", result);
-        return response;
     }
 }

@@ -1,9 +1,7 @@
 package kroryi.bus2.controller.mypage;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.mypage.FavoriteBusStop;
 import kroryi.bus2.entity.mypage.FavoriteRoute;
@@ -24,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "마이페이지 즐겨찾기 API", description = "정류장 및 노선 즐겨찾기 추가/삭제/조회 기능을 제공합니다.")
 @RestController
 @RequestMapping("/api/mypage")
 @RequiredArgsConstructor
@@ -37,13 +36,8 @@ public class MypageFavoriteController {
     private final FavoriteService favoriteService;
 
     // 정류장 추가
-    @ApiOperation(value = "정류장 즐겨찾기 추가", notes = "사용자가 특정 정류장을 즐겨찾기에 추가합니다.")
+    @Operation(summary = "정류장 즐겨찾기 추가", description = "사용자가 특정 정류장을 즐겨찾기에 추가합니다.")
     @PostMapping("/favorite/bus-stop")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "정류장이 즐겨찾기에 추가되었습니다."),
-            @ApiResponse(code = 400, message = "잘못된 요청입니다."),
-            @ApiResponse(code = 404, message = "정류장 또는 사용자가 존재하지 않습니다.")
-    })
     public ResponseEntity<String> addFavoriteBusStop(@RequestParam String userId, @RequestParam String bsId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -60,20 +54,15 @@ public class MypageFavoriteController {
     }
 
     // 정류장 삭제
-    @ApiOperation(value = "정류장 즐겨찾기 삭제", notes = "사용자가 특정 정류장을 즐겨찾기에서 삭제합니다.")
+    @Operation(summary = "정류장 즐겨찾기 삭제", description = "사용자가 특정 정류장을 즐겨찾기에서 삭제합니다.")
     @DeleteMapping("/favorite/bus-stop")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "정류장이 즐겨찾기에서 삭제되었습니다."),
-            @ApiResponse(code = 400, message = "잘못된 요청입니다."),
-            @ApiResponse(code = 404, message = "정류장 또는 사용자가 존재하지 않습니다.")
-    })
     public ResponseEntity<String> removeFavoriteBusStop(@RequestParam String userId, @RequestParam String bsId) {
         try {
             User user = userRepository.findByUserId(userId)
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
             // 즐겨찾기에서 해당 정류장 삭제
-             int deletedCount = favoriteBusStopRepository.deleteByUserUserIdAndBsId(userId, bsId);
+            int deletedCount = favoriteBusStopRepository.deleteByUserUserIdAndBsId(userId, bsId);
 
             if (deletedCount == 0) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 정류장은 즐겨찾기에서 삭제된 상태이거나 존재하지 않습니다.");
@@ -86,12 +75,8 @@ public class MypageFavoriteController {
     }
 
     // 정류장 목록 조회
-    @ApiOperation(value = "정류장 즐겨찾기 목록 조회", notes = "사용자가 즐겨찾는 정류장 목록을 조회합니다.")
+    @Operation(summary = "정류장 즐겨찾기 목록 조회", description = "사용자가 즐겨찾는 정류장 목록을 조회합니다.")
     @GetMapping("/favorite/bus-stop")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "정류장 목록이 정상적으로 조회되었습니다."),
-            @ApiResponse(code = 404, message = "사용자가 존재하지 않거나 즐겨찾기가 없습니다.")
-    })
     public ResponseEntity<List<FavoriteBusStop>> getFavoriteBusStops(@RequestParam String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -105,13 +90,8 @@ public class MypageFavoriteController {
     }
 
     // 노선 추가
-    @ApiOperation(value = "노선 즐겨찾기 추가", notes = "사용자가 특정 노선을 즐겨찾기에 추가합니다.")
+    @Operation(summary = "노선 즐겨찾기 추가", description = "사용자가 특정 노선을 즐겨찾기에 추가합니다.")
     @PostMapping("/favorite/route")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "노선이 즐겨찾기에 추가되었습니다."),
-            @ApiResponse(code = 400, message = "잘못된 요청입니다."),
-            @ApiResponse(code = 404, message = "노선 또는 사용자가 존재하지 않습니다.")
-    })
     public ResponseEntity<String> addFavoriteRoute(@RequestParam String userId, @RequestParam String routeId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -128,13 +108,8 @@ public class MypageFavoriteController {
     }
 
     // 노선 삭제
-    @ApiOperation(value = "노선 즐겨찾기 삭제", notes = "사용자가 특정 노선을 즐겨찾기에서 삭제합니다.")
+    @Operation(summary = "노선 즐겨찾기 삭제", description = "사용자가 특정 노선을 즐겨찾기에서 삭제합니다.")
     @DeleteMapping("/favorite/route")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "노선이 즐겨찾기에서 삭제되었습니다."),
-            @ApiResponse(code = 400, message = "잘못된 요청입니다."),
-            @ApiResponse(code = 404, message = "노선 또는 사용자가 존재하지 않습니다.")
-    })
     public ResponseEntity<String> removeFavoriteRoute(@RequestParam String userId, @RequestParam String routeId) {
         try {
             User user = userRepository.findByUserId(userId)
@@ -154,12 +129,8 @@ public class MypageFavoriteController {
     }
 
     // 노선 목록 조회
-    @Operation(summary = "전체 노선 불러오기", description = "페이징 + 검색이 추가된 전체 노선 게시판")
+    @Operation(summary = "노선 즐겨찾기 목록 조회", description = "사용자가 즐겨찾는 노선 목록을 조회합니다.")
     @GetMapping("/favorite/route")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "노선 목록이 정상적으로 조회되었습니다."),
-            @ApiResponse(code = 404, message = "사용자가 존재하지 않거나 즐겨찾기가 없습니다.")
-    })
     public ResponseEntity<List<FavoriteRoute>> getFavoriteRoutes(@RequestParam String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -173,6 +144,7 @@ public class MypageFavoriteController {
     }
 
     // 즐겨찾기 정류장 + 노선 통합 조회
+    @Operation(summary = "노선,정류장 통합 조회", description = "사용자가 즐겨찾는 정류장,노선 목록을 통합 조회합니다.")
     @GetMapping("/favorite/all")
     public ResponseEntity<Map<String, List<?>>> getFavoriteBusStopsByUserId(@RequestParam String userId) {
         Map<String, List<?>> favorites = favoriteService.getFavoriteWithInfoByUserId(userId);
