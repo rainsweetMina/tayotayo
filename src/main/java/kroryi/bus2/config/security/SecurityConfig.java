@@ -60,16 +60,17 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 회원가입, 정적 자원 등 허용
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**", "/api/public/**", "/api/bus/**").permitAll()
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
 
                         // Swagger는 인증만 되면 접근 가능
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+                        // ✅ 마이페이지는 USER 권한만 접근 가능
+//                        .requestMatchers("/mypage/**").hasRole("USER")
 
                         // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // ✅ 마이페이지는 USER 권한만 접근 가능
-                        .requestMatchers("/mypage/**").hasRole("USER")
 
                         // 그 외 요청은 모두 인증 필요
                         .anyRequest().authenticated()
