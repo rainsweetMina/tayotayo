@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
-@Tag(name = "습득물-일반", description = "일반 회원 전용 습득물 열람 API")
+@Tag(name = "습득물-일반", description = "")
 @RestController
 @RequestMapping("/api/found")
 @RequiredArgsConstructor

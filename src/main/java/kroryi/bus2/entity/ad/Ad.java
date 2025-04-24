@@ -51,6 +51,9 @@ public class Ad {
     @Column(nullable = false)
     private boolean showPopup;
 
+    @Column(nullable = false)
+    private int extensionCount = 0; // ✅ 광고 연장 횟수
+
 
 }
 

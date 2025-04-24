@@ -106,6 +106,11 @@ public class AdService {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고를 찾을 수 없습니다."));
 
+        // ✅ 연장일 경우 extensionCount 증가
+        if (dto.getEndDateTime().isAfter(ad.getEndDateTime())) {
+            ad.setExtensionCount(ad.getExtensionCount() + 1);
+        }
+
         ad.setTitle(dto.getTitle());
         ad.setLinkUrl(dto.getLinkUrl());
         ad.setStartDateTime(dto.getStartDateTime());
@@ -127,6 +132,7 @@ public class AdService {
         return adRepository.save(ad);
     }
 
+
     public AdResponseDTO getAdById(Long id) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 광고가 존재하지 않습니다."));
@@ -144,6 +150,7 @@ public class AdService {
                 .startDateTime(ad.getStartDateTime())
                 .endDateTime(ad.getEndDateTime())
                 .status(ad.getStatus() != null ? ad.getStatus() : "UNKNOWN")
+                .extensionCount(ad.getExtensionCount()) // 광고연장횟수
                 .company(company != null ? AdCompanyDTO.builder()
                         .id(company.getId())
                         .name(company.getName())

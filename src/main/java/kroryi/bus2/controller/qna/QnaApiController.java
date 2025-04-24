@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Q&A-관리", description = "")
+@Tag(name = "질문-관리", description = "")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/qna")

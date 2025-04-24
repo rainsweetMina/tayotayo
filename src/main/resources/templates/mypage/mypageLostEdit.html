@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>분실물 수정</title>
+</head>
+<body class="container mt-4">
+<h2>📌 분실물 수정</h2>
+
+<form th:action="@{/mypage/lost/edit/{id}(id=${lostItem.id})}"
+      th:object="${lostItem}" method="post">
+    <div class="mb-3">
+        <label class="form-label">분실물명</label>
+        <input type="text" class="form-control" th:field="*{title}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">분실일</label>
+        <input type="datetime-local" class="form-control" th:field="*{lostTime}" required>
+
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">버스회사</label>
+        <input type="text" class="form-control" th:field="*{busCompany}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">노선번호</label>
+        <input type="text" class="form-control" th:field="*{busNumber}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">내용</label>
+        <textarea class="form-control" th:field="*{content}" rows="3"></textarea>
+    </div>
+
+    <div class="text-end">
+        <a th:href="@{/mypage/lost}" class="btn btn-secondary">취소</a>
+        <button type="submit" class="btn btn-success">저장</button>
+    </div>
+</form>
+</body>
+</html>

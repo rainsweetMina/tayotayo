@@ -12,10 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("companyForm").addEventListener("submit", handleCompanySubmit);
 });
 
-// ✅ 광고 등록/수정 (FormData 방식으로 변경됨)
+// ✅ 광고 등록/수정/연장 (통합 처리)
 function handleAdSubmit(e) {
     e.preventDefault();
     const id = document.getElementById("adId").value;
+    const mode = document.getElementById("adSubmitBtn").textContent;
 
     const adDTO = {
         title: document.getElementById("title").value,
@@ -42,11 +43,16 @@ function handleAdSubmit(e) {
         document.getElementById("adId").value = "";
         document.getElementById("adSubmitBtn").textContent = "등록";
         document.getElementById("adEditStatus").style.display = "none";
+
+        // ✅ 필드 재활성화
+        document.getElementById("startDateTime").readOnly = false;
+        document.getElementById("companySelect").disabled = false;
+
         loadAds();
     });
 }
 
-// ✅ 광고 수정 모드 (기존 그대로 유지하되 imageUrl 제거됨)
+// ✅ 광고 수정
 function editAd(id) {
     fetch(`/api/ad/${id}`)
         .then(res => res.json())
@@ -60,7 +66,33 @@ function editAd(id) {
             document.getElementById("showPopup").checked = ad.showPopup || false;
 
             document.getElementById("adSubmitBtn").textContent = "수정";
+            document.getElementById("adEditStatus").textContent = "(수정 중)";
             document.getElementById("adEditStatus").style.display = "inline";
+
+            document.getElementById("startDateTime").readOnly = false;
+            document.getElementById("companySelect").disabled = false;
+        });
+}
+
+// ✅ 광고 연장
+function extendAd(id) {
+    fetch(`/api/ad/${id}`)
+        .then(res => res.json())
+        .then(ad => {
+            document.getElementById("adId").value = ad.id;
+            document.getElementById("title").value = ad.title;
+            document.getElementById("linkUrl").value = ad.linkUrl;
+            document.getElementById("startDateTime").value = formatDateForInput(ad.startDateTime);
+            document.getElementById("endDateTime").value = formatDateForInput(ad.endDateTime);
+            document.getElementById("companySelect").value = ad.companyId || "";
+            document.getElementById("showPopup").checked = ad.showPopup || false;
+
+            document.getElementById("adSubmitBtn").textContent = "연장하기";
+            document.getElementById("adEditStatus").textContent = "(연장 중)";
+            document.getElementById("adEditStatus").style.display = "inline";
+
+            document.getElementById("startDateTime").readOnly = true; // ✅ 시작일 고정
+            document.getElementById("companySelect").disabled = true; // ✅ 회사 고정
         });
 }
 
@@ -69,6 +101,7 @@ function deleteAd(id) {
     if (!confirm("광고를 삭제하시겠습니까?")) return;
     fetch(`/api/ad/${id}`, { method: "DELETE" }).then(loadAds);
 }
+
 
 // ✅ 광고 목록 불러오기
 function loadAds() {
@@ -97,15 +130,17 @@ function loadAds() {
                     <td>${ad.startDateTime?.slice(0, 10) || '-'}</td>
                     <td>${ad.endDateTime?.slice(0, 10) || '-'}</td>
                     <td>${statusText}</td>
-                    <td><button onclick="editAd(${ad.id})">수정</button></td>
-                    <td><button onclick="deleteAd(${ad.id})">삭제</button></td>
+                    <td>${ad.extensionCount || 0}회</td> <!-- ✅ 연장횟수 -->
+                    <td><button onclick="editAd(${ad.id})" class="btn btn-sm btn-outline-primary">수정</button></td>
+                    <td><button onclick="extendAd(${ad.id})" class="btn btn-sm btn-outline-warning">연장</button></td>
+                    <td><button onclick="deleteAd(${ad.id})" class="btn btn-sm btn-outline-danger">삭제</button></td>
                 `;
                 tbody.appendChild(row);
             });
         });
 }
 
-// ✅ 광고회사 관련 함수 (기존과 동일)
+// ✅ 광고회사 관련
 function loadAdCompanies() {
     fetch("/api/ad-company")
         .then(res => res.json())

@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
-@Tag(name = "습득물-관리", description = "관리자 전용 습득물 관리 API")
+@Tag(name = "습득물-관리", description = "")
 @RestController
 @RequestMapping("/api/admin/found")
 @RequiredArgsConstructor

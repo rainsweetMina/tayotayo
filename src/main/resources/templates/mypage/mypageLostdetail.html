@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>분실물 상세보기</title>
+</head>
+<body class="container mt-4">
+<h2>분실물 신고</h2>
+<p>버스에서 분실하신 물건을 신고해 주세요</p>
+
+<table class="table table-bordered mt-4">
+  <tr><th>분실물</th><td th:text="${lostItem.title}">기타</td></tr>
+  <tr><th>분실일</th><td th:text="${#temporals.format(lostItem.lostTime, 'yyyy.MM.dd')}">2025.04.19</td></tr>
+  <tr><th>버스회사</th><td th:text="${lostItem.busCompany}">북구3</td></tr>
+  <tr><th>노선번호</th><td th:text="${lostItem.busNumber}">북구3</td></tr>
+  <tr><th>내용</th><td th:text="${lostItem.content}">내용 없음</td></tr>
+</table>
+
+<div class="mt-3 text-end">
+  <a th:href="@{/mypage/lost}" class="btn btn-primary">목록</a>
+  <a th:href="@{/mypage/lost/edit/{id}(id=${lostItem.id})}" class="btn btn-warning">수정</a>
+  <form th:action="@{/mypage/lost/delete/{id}(id=${lostItem.id})}" method="post" style="display:inline;">
+    <button type="submit" class="btn btn-danger">삭제</button>
+  </form>
+</div>
+</body>
+</html>

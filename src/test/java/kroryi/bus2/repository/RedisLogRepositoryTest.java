@@ -1,7 +1,6 @@
 package kroryi.bus2.repository;
 
 import kroryi.bus2.entity.RedisLog;
-import kroryi.bus2.repository.jpa.JpaRedisLogRepository;
 import kroryi.bus2.service.admin.RedisLogService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RedisLogRepositoryTest {
 
-    @Autowired
-    JpaRedisLogRepository jpaRedisLogRepository;
     @Autowired
     RedisLogService redisLogService;
 

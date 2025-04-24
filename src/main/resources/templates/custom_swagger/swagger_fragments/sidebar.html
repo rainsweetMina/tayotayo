@@ -29,19 +29,70 @@
         .sticky-sidebar a:hover {
             color: #007bff;
         }
+
+        .sidebar-group {
+            margin-bottom: 20px;
+        }
+
+        .group-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
     </style>
 
     <div class="sticky-sidebar">
-        <ul>
-            <li><a href="#" onclick="scrollToSection('lost-item-admin-controller')">🚌 버스 컨트롤러</a></li>
-            <hr>
-            <li><a href="#" onclick="scrollToSection('버스-노선-시간표')">🚏 버스 노선 시간표</a></li>
-            <li><a href="#" onclick="scrollToSection('시간표-정류장-지정')">🚏 시간표 정류장 지정</a></li>
-            <li><a href="#" onclick="scrollToSection('버스-요금-정보')">🚏 버스 요금 정보</a></li>
-            <li><a href="#" onclick="scrollToSection('버스-회사-정보')">🚏 버스 회사 정보</a></li>
-            <li><a href="#" onclick="scrollToSection('버스-정류장-조회')">🚏 버스 정류장 조회</a></li>
-            <!-- 다른 메뉴도 추가 가능 -->
-        </ul>
+        <!-- 🚌 Bus 영역 -->
+        <div class="sidebar-group">
+            <div class="group-title">🚌 Bus</div>
+            <ul>
+                <li><a href="#" onclick="scrollToSection('버스-정류장-정보')"> 정류장 정보</a></li>
+                <li><a href="#" onclick="scrollToSection('버스-노선-정보')"> 노선 정보</a></li>
+                <li><a href="#" onclick="scrollToSection('버스-길찾기-정보-설정')"> 길찾기 정보 설정</a></li>
+                <li><a href="#" onclick="scrollToSection('공공데이터-버스-기초-정보')"> 공공데이터 기초 정보</a></li>
+                <li><a href="#" onclick="scrollToSection('사용자-버스-정보-서칭')"> 사용자 정보 서칭</a></li>
+            </ul>
+        </div>
+
+        <!-- 📢 광고 영역 -->
+        <div class="sidebar-group">
+            <div class="group-title">📢 Ad</div>
+            <ul>
+                <li><a href="#" onclick="scrollToSection('광고-관리')"> 광고 관리</a></li>
+                <li><a href="#" onclick="scrollToSection('광고-회사-관리')"> 광고 회사 관리</a></li>
+            </ul>
+        </div>
+
+        <!-- 🗂 Board 영역 -->
+        <div class="sidebar-group">
+            <div class="group-title">🗂 Board</div>
+            <ul>
+                <li><a href="#" onclick="scrollToSection('버스-노선-시간표')"> 노선 시간표</a></li>
+                <li><a href="#" onclick="scrollToSection('시간표-정류장-지정')"> 정류장 지정</a></li>
+                <li><a href="#" onclick="scrollToSection('버스-요금-정보')"> 요금 정보</a></li>
+                <li><a href="#" onclick="scrollToSection('버스-회사-정보')"> 회사 정보</a></li>
+                <li><a href="#" onclick="scrollToSection('버스-정류장-조회')"> 정류장 조회</a></li>
+            </ul>
+        </div>
+
+        <!-- 📦 LostFound 영역 -->
+        <div class="sidebar-group">
+            <div class="group-title">📦 LostFound</div>
+            <ul>
+                <li><a href="#" onclick="scrollToSection('습득물-관리')"> 습득물 관리</a></li>
+                <li><a href="#" onclick="scrollToSection('분실물-관리')"> 분실물 관리</a></li>
+                <li><a href="#" onclick="scrollToSection('분실물-일반')"> 분실물(일반회원)</a></li>
+                <li><a href="#" onclick="scrollToSection('습득물-일반')"> 습득물(일반회원)</a></li>
+            </ul>
+        </div>
+
+        <!-- ❓ Q&A 영역 -->
+        <div class="sidebar-group">
+            <div class="group-title">❓ Qna</div>
+            <ul>
+                <li><a href="#" onclick="scrollToSection('질문-관리')"> 질문 관리</a></li>
+            </ul>
+        </div>
     </div>
 
     <script>
@@ -55,10 +106,10 @@
                     el.click();
                 }
                 setTimeout(() => {
-                    el.scrollIntoView({behavior: 'smooth', block: 'start'});
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 300);
             } else {
-                alert('해당 태그를 찾을 수 없습니다.');
+                alert('해당 태그를 찾을 수 없습니다.\n정의가 맞는지 확인해주세요.');
             }
         }
     </script>

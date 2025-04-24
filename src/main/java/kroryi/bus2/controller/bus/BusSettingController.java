@@ -35,6 +35,7 @@ public class BusSettingController {
 
     private final PathSettingService pathSettingService;
 
+    @Operation(summary = "버스 경로 탐색 반경 및 시간 가중치 수정", description = "시작 반경, 도착 반경, 시간 가중치를 수정합니다.")
     @PostMapping("/path-settings")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateSettings(@RequestBody PathSettingDTO dto) {
@@ -43,6 +44,7 @@ public class BusSettingController {
         return ResponseEntity.ok("✅ 거리 설정이 갱신되었습니다");
     }
 
+    @Operation(summary = "현재 설정된 탐색 반경 및 시간 가중치 조회", description = "설정된 시작 반경, 도착 반경, 시간 가중치 정보를 조회합니다.")
     @GetMapping("/path-settings")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PathSettingDTO> getCurrentSettings() {
