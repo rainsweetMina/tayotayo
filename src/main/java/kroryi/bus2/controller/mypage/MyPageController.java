@@ -7,17 +7,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
+import kroryi.bus2.config.security.CustomOAuth2User;
+import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.dto.lost.*;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
+import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
+import kroryi.bus2.service.apikey.ApiKeyService;
 import kroryi.bus2.service.lost.FoundItemServiceImpl;
 import kroryi.bus2.service.lost.LostItemService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -29,10 +34,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+@Hidden
 @Log4j2
 @Controller
-@Hidden
 @RequiredArgsConstructor
 @RequestMapping("/mypage")
 public class MyPageController {
@@ -40,12 +46,15 @@ public class MyPageController {
     private final UserService userService;
     private final LostItemService lostItemService;
     private final FoundItemServiceImpl foundItemServiceImpl;
+    private final ApiKeyService apiKeyService;
 
     private String extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Object principal = auth.getPrincipal();
 
-        if (principal instanceof UserDetails userDetails) {
+        if (principal instanceof CustomOAuth2User customUser) {
+            return customUser.getUserId();
+        } else if (principal instanceof UserDetails userDetails) {
             return userDetails.getUsername();
         } else if (principal instanceof OAuth2User oAuth2User) {
             Map<String, Object> attributes = oAuth2User.getAttributes();
@@ -81,6 +90,44 @@ public class MyPageController {
         model.addAttribute("user", user);
 
         return "mypage/index";
+    }
+
+    // GET: 발급된 API 키 확인 페이지
+    @Operation(summary = "API 키 조회 페이지", description = "로그인한 사용자의 API 키를 확인할 수 있는 페이지입니다.")
+    @GetMapping("/apikey")
+    public String showApiKey(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            log.warn("🛑 사용자 정보가 없습니다.");
+            return "redirect:/login";
+        }
+
+        User user = userDetails.getUser();
+        ApiKey apiKey = apiKeyService.getApiKeyForUser(user);
+
+        model.addAttribute("apiKey", apiKey);
+        model.addAttribute("parameterName", "Your Parameter Value"); // 원하는 값 넣기
+        return "mypage/apikey-request";
+    }
+    // API 키 발급 페이지
+    @GetMapping("/apikey-request")
+    public String showApiKeyRequestForm(Model model) {
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        // API 키 발급 로직 (예시)
+        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
+        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
+
+        if (apiKeyOpt.isPresent()) {
+            model.addAttribute("apiKey", apiKeyOpt.get());
+        } else {
+            model.addAttribute("apiKey", null);
+            model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
+        }
+
+        return "mypage/apikey-request"; // 'apikey-request.html'로 이동
     }
 
     // 비밀번호 변경 폼

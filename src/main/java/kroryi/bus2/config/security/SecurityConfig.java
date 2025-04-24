@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .addFilterBefore(swaggerAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
 // -------------------- swagger 보안 (우선제외시킴)
-//                .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 회원가입, 정적 자원 등 허용

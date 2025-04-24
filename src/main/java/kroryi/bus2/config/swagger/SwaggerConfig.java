@@ -40,7 +40,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("v1")  // API 버전 설정
+                .group("All")  // API 버전 설정
                 .pathsToMatch("/api/**")  // /api/로 시작하는 경로에 Swagger UI 적용
                 .build();
     }
