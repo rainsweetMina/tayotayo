@@ -35,6 +35,4 @@ public class SwaggerConfig {
                         .description("API 키 인증 기반 공공데이터 API 문서입니다."))
                 .addSecurityItem(new io.swagger.v3.oas.models.security.SecurityRequirement().addList("ApiKeyAuth"));
     }
-
-
 }

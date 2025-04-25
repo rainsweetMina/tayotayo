@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.dto.apiKey.CreateApiKeyRequestDTO;
-import kroryi.bus2.dto.apikey.ApiKeyResponseDTO;
+import kroryi.bus2.dto.apiKey.ApiKeyResponseDTO;
 import kroryi.bus2.dto.apiKey.UpdateApiKeyStatusRequestDTO;
 import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.service.apikey.ApiKeyService;
@@ -21,12 +21,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 @Log4j2
 @RequestMapping("/api/admin/apikey")
-@Tag(name = "관리자 API 키 관리", description = "관리자용 API 키 발급 및 관리 기능 제공")
+@Tag(name = "관리자-API키-관리", description = "관리자용 API 키 발급 및 관리 기능 제공")
 public class AdminApiKeyController {
 
     private final ApiKeyRepository apiKeyRepository;
@@ -42,14 +43,29 @@ public class AdminApiKeyController {
         return "api/apiKeyDashboard";
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "API 키 전체 목록 조회 (뷰)", description = "모든 API 키를 조회하는 관리자용 뷰를 반환합니다.")
+    @Operation(summary = "API 키 전체 목록 조회", description = "모든 API 키를 조회하는 관리자용 뷰를 반환합니다.")
     @GetMapping("/list")
-    public String getApiKeyList(Model model) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<ApiKeyResponseDTO>> getApiKeyList() {
         List<ApiKey> apiKeyList = apiKeyRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
-        model.addAttribute("apiKeyList", apiKeyList);
-        return "admin/apikey-list";
+
+        // ApiKey 객체를 ApiKeyResponseDTO로 변환
+        List<ApiKeyResponseDTO> responseList = apiKeyList.stream()
+                .map(apiKey -> {
+                    ApiKeyResponseDTO dto = new ApiKeyResponseDTO();
+                    dto.setId(apiKey.getId());
+                    dto.setName(apiKey.getName());
+                    dto.setApiKey(apiKey.getApiKey());
+                    dto.setActive(apiKey.isActive());
+                    dto.setCreatedAt(apiKey.getCreatedAt());
+                    dto.setExpiresAt(apiKey.getExpiresAt());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
     }
+
 
     @Operation(summary = "단일 API 키 조회", description = "지정한 ID에 해당하는 API 키 정보를 반환합니다.")
     @GetMapping("/{id}")
@@ -102,16 +118,22 @@ public class AdminApiKeyController {
                 .map(key -> {
                     key.setActive(request.isActive());
                     apiKeyRepository.save(key);
-                    return ResponseEntity.ok().build();
+                    return ResponseEntity.ok().body("API 키 상태가 변경되었습니다.");
                 })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("API 키를 찾을 수 없습니다."));
     }
+
+
 
     @Operation(summary = "API 키 삭제", description = "지정한 ID의 API 키를 삭제합니다.")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteKey(@PathVariable Long id) {
-        if (!apiKeyRepository.existsById(id)) return ResponseEntity.notFound().build();
+    public ResponseEntity<String> deleteKey(@PathVariable Long id) {
+        if (!apiKeyRepository.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("해당 ID의 API 키를 찾을 수 없습니다.");
+        }
+
         apiKeyRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("API 키가 성공적으로 삭제되었습니다.");
     }
 }
