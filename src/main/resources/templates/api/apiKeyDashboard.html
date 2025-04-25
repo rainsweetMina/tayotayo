@@ -26,7 +26,7 @@
     <tbody>
     <tr th:each="key : ${recentKeys}">
         <td th:text="${key.id}"></td>
-        <td th:text="${key.apikey}"></td>
+        <td th:text="${key.apiKey}"></td>
         <td th:text="${key.status}"></td>
         <td th:text="${#temporals.format(key.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
         <td th:text="${#temporals.format(key.expiresAt, 'yyyy-MM-dd HH:mm')}"></td>
