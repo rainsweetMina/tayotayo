@@ -12,16 +12,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "사용자-관리-API", description = "관리자 전용 사용자 관리 API")
+@Tag(name = "사용자-관리", description = "관리자 전용 사용자 관리 API")
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/management")
 @RequiredArgsConstructor
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
     @Operation(summary = "사용자 목록 조회", description = "전체 사용자 목록 또는 키워드로 검색된 사용자 목록을 반환합니다.")
-    @GetMapping("/users")
+    @GetMapping("/user")
     public List<UserListResponseDTO> userList(@RequestParam(required = false) String keyword) {
         List<User> users = (keyword == null || keyword.isBlank())
                 ? adminUserService.getAllUsers()
@@ -38,7 +38,7 @@ public class AdminUserController {
     }
 
     @Operation(summary = "사용자 권한 변경", description = "특정 사용자의 권한을 변경합니다.")
-    @PostMapping("/users/{userId}/role")
+    @PostMapping("/user/{userId}/role")
     public UserRoleChangeResponseDTO changeUserRole(@PathVariable String userId,
                                                     @RequestParam Role role) {
         adminUserService.changeUserRole(userId, role);

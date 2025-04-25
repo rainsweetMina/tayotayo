@@ -110,7 +110,7 @@ public class UserService {
         return true;
     }
 
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId).orElse(null);  // ID로 사용자 조회, 없으면 null 반환
+    public User getUserByUserId(String userId) {
+        return userRepository.findByUserId(userId).orElse(null);
     }
 }

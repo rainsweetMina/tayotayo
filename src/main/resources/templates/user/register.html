@@ -159,7 +159,7 @@
       return;
     }
 
-    fetch("/email/send?email=" + encodeURIComponent(email))
+    fetch("/api/email/send?email=" + encodeURIComponent(email))
             .then(response => response.text())
             .then(data => {
               document.getElementById("emailSendResult").innerText = "인증 코드가 전송되었습니다.";

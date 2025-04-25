@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.dto.apiKey.CreateApiKeyRequestDTO;
-import kroryi.bus2.dto.apikey.ApiKeyResponseDTO;
+import kroryi.bus2.dto.apiKey.ApiKeyResponseDTO;
 import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.apikey.ApiKeyService;
@@ -26,8 +26,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/user/api-key")
-@Tag(name = "사용자 API 키")
+@RequestMapping("/api/user/apikey")
+@Tag(name = "사용자-API키")
 @Log4j2
 @RequiredArgsConstructor
 public class UserApiKeyController {
@@ -41,53 +41,16 @@ public class UserApiKeyController {
             throw new IllegalStateException("인증되지 않은 사용자입니다.");
         }
 
-        CustomOAuth2User principal = (CustomOAuth2User) authentication.getPrincipal();
-        return principal.getUserId();
-    }
-
-    // GET: 발급된 API 키 확인 페이지
-    @Operation(summary = "API 키 조회 페이지", description = "로그인한 사용자의 API 키를 확인할 수 있는 페이지입니다.")
-    @GetMapping("/apikey")
-    public String showApiKey(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            log.warn("🛑 사용자 정보가 없습니다.");
-            return "redirect:/login";
-        }
-
-        User user = userDetails.getUser();
-        ApiKey apiKey = apiKeyService.getApiKeyForUser(user);
-
-        model.addAttribute("apiKey", apiKey);
-        model.addAttribute("parameterName", "Your Parameter Value"); // 원하는 값 넣기
-        return "mypage/apikey-request";
-    }
-
-    // GET: API 키 신청 폼 페이지
-    @Operation(summary = "API 키 신청 페이지", description = "사용자가 API 키를 신청할 수 있는 폼을 보여줍니다.")
-    @GetMapping("/apikey-request")
-    public String showApiKeyRequestForm(Model model, HttpServletRequest request) {
-        String userId = extractUserId();
-        CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
-        model.addAttribute("_csrf", csrfToken);
-        log.info("✅ /mypage/apikey 요청이 들어왔습니다.");
-        if (userId == null) {
-            return "redirect:/login";
-        }
-
-        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
-        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
-
-        if (apiKeyOpt.isPresent()) {
-            model.addAttribute("apiKey", apiKeyOpt.get());
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof CustomOAuth2User) {
+            return ((CustomOAuth2User) principal).getUserId();
+        } else if (principal instanceof CustomUserDetails) {
+            return ((CustomUserDetails) principal).getUserId();
         } else {
-            model.addAttribute("apiKey", null);
-            model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
+            throw new IllegalStateException("알 수 없는 사용자 유형입니다.");
         }
-
-        return "mypage/apikey-request";
     }
 
-    // POST: API 키 신청 요청
     @Operation(summary = "API 키 신청 처리", description = "사용자가 API 키를 신청합니다. 신청 후 관리자의 승인을 기다려야 합니다.")
     @PostMapping("/apikey-request")
     public String requestApiKey(@AuthenticationPrincipal CustomUserDetails userDetails, RedirectAttributes redirectAttributes) {
@@ -109,7 +72,7 @@ public class UserApiKeyController {
     @Operation(summary = "API 키 발급 요청", description = "사용자가 새로운 API 키 발급을 요청합니다.")
     @PostMapping("/request")
     public ResponseEntity<ApiKeyResponseDTO> requestApiKey(@RequestBody CreateApiKeyRequestDTO request) {
-        User user = userService.getUserById(request.getUserId());
+        User user = userService.getUserByUserId(request.getUserId());
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -124,9 +87,9 @@ public class UserApiKeyController {
     }
 
     @Operation(summary = "발급된 API 키 조회", description = "사용자의 API 키를 조회합니다.")
-    @GetMapping("/GetApiKey")
-    public ResponseEntity<ApiKeyResponseDTO> getUserApiKey(@RequestParam Long userId) {
-        User user = userService.getUserById(userId);
+    @GetMapping("/getApiKey")
+    public ResponseEntity<ApiKeyResponseDTO> getUserApiKey(@RequestParam String userId) {
+        User user = userService.getUserByUserId(userId);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -146,8 +109,8 @@ public class UserApiKeyController {
 
     @Operation(summary = "API 키 발급 요청 기록 조회", description = "사용자가 이전에 요청한 API 키 발급 기록을 조회합니다.")
     @GetMapping("/getApiKeyRequest")
-    public ResponseEntity<ApiKeyResponseDTO> getUserApiKeyRequest(@RequestParam Long userId) {
-        User user = userService.getUserById(userId);
+    public ResponseEntity<ApiKeyResponseDTO> getUserApiKeyRequest(@RequestParam String userId) {
+        User user = userService.getUserByUserId(userId);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }

@@ -35,13 +35,4 @@ public class SwaggerConfig {
                         .description("API 키 인증 기반 공공데이터 API 문서입니다."))
                 .addSecurityItem(new io.swagger.v3.oas.models.security.SecurityRequirement().addList("ApiKeyAuth"));
     }
-
-    // Swagger UI에서 API 경로 설정
-    @Bean
-    public GroupedOpenApi publicApi() {
-        return GroupedOpenApi.builder()
-                .group("All")  // API 버전 설정
-                .pathsToMatch("/api/**")  // /api/로 시작하는 경로에 Swagger UI 적용
-                .build();
-    }
 }

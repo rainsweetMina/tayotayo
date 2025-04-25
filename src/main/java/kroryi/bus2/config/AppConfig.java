@@ -18,21 +18,21 @@ public class AppConfig {
         return new RestTemplate();
     }
 
-    @Bean
-    public GroupedOpenApi defaultGroup() {
-        return GroupedOpenApi.builder()
-                .group("0_Default")
-                .pathsToExclude("/api/admin/**","/api/user/**")
-                .packagesToExclude("kroryi.bus2.controller.board",
-                        "kroryi.bus2.controller.bus",
-                        "kroryi.bus2.controller.ad",
-                        "kroryi.bus2.controller.lost",
-                        "kroryi.bus2.controller.qna",
-                        "kroryi.bus2.controller.admin.notice",
-                        "kroryi.bus2.controller.admin.monitoring",
-                        "kroryi.bus2.controller.mypage")
-                .build();
-    }
+//    @Bean
+//    public GroupedOpenApi defaultGroup() {
+//        return GroupedOpenApi.builder()
+//                .group("0_Default")
+//                .pathsToExclude("/api/admin/**","/api/user/**")
+//                .packagesToExclude("kroryi.bus2.controller.board",
+//                        "kroryi.bus2.controller.bus",
+//                        "kroryi.bus2.controller.ad",
+//                        "kroryi.bus2.controller.lost",
+//                        "kroryi.bus2.controller.qna",
+//                        "kroryi.bus2.controller.admin.notice",
+//                        "kroryi.bus2.controller.admin.monitoring",
+//                        "kroryi.bus2.controller.mypage")
+//                .build();
+//    }
 
     @Bean
     public GroupedOpenApi adminApi() {
@@ -107,10 +107,27 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi userGroup(){
+    public GroupedOpenApi managementGroup(){
         return GroupedOpenApi.builder()
-                .group("User")
-                .pathsToMatch("/api/user/**")
+                .group("Management")
+                .pathsToMatch("/api/management/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi apikeyGroup(){
+        return GroupedOpenApi.builder()
+                .group("ApiKey")
+                .packagesToScan("kroryi.bus2.controller.api")
+                .build();
+    }
+
+    // Swagger UI에서 API 경로 설정
+    @Bean
+    public GroupedOpenApi publicApi() {
+        return GroupedOpenApi.builder()
+                .group("All")  // API 버전 설정
+                .pathsToMatch("/api/**")  // /api/로 시작하는 경로에 Swagger UI 적용
                 .build();
     }
 

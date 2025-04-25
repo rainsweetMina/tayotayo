@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.user;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpSession;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginFormDTO;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.HashMap;
 import java.util.Map;
 
+@Hidden
 @Controller
 @RequiredArgsConstructor
 @Log4j2

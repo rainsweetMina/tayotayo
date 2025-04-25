@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.user;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.internet.AddressException;
@@ -11,11 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Hidden
 @RestController
 @RequiredArgsConstructor
 @Log4j2
 @RequestMapping("/api/user/email")
-@Tag(name = "이메일 인증 API", description = "회원가입 시 이메일 인증 관련 API입니다.")
+@Tag(name = "이메일-인증-API", description = "회원가입 시 이메일 인증 관련 API입니다.")
 public class EmailController {
 
     private final EmailService emailService;
@@ -60,4 +62,23 @@ public class EmailController {
             return false;
         }
     }
+
+    @RestController
+    @RequestMapping
+    public class MailTestController {
+
+        private final EmailService emailService;
+
+        public MailTestController(EmailService emailService) {
+            this.emailService = emailService;
+        }
+
+        @GetMapping("/mail-test")
+        public ResponseEntity<String> sendTestEmail(@RequestParam String email) {
+            emailService.generateAndSendVerificationCode(email);
+            return ResponseEntity.ok("메일 전송 성공!");
+        }
+    }
+
+
 }
