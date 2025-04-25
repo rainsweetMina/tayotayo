@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "마이페이지 즐겨찾기 API", description = "정류장 및 노선 즐겨찾기 추가/삭제/조회 기능을 제공합니다.")
+@Tag(name = "마이페이지-즐겨찾기", description = "정류장 및 노선 즐겨찾기 추가/삭제/조회 기능을 제공합니다.")
 @RestController
 @RequestMapping("/api/mypage")
 @RequiredArgsConstructor
