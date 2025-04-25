@@ -223,4 +223,12 @@ public class ApiKeyService {
         return apiKeyRepository.findFirstByUser(user)
                 .orElse(null);
     }
+
+    @Transactional
+    public void toggleActiveStatus(Long id) {
+        ApiKey apiKey = apiKeyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("API 키를 찾을 수 없습니다: " + id));
+        apiKey.setActive(!apiKey.isActive()); // 활성화 상태 토글
+        apiKeyRepository.save(apiKey);
+    }
 }
