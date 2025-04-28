@@ -327,5 +327,30 @@ public class MyPageController {
         return "redirect:/mypage/lost";
     }
 
+    // API 키 발급 요청 페이지
+    @Operation(summary = "API 키 신청 처리", description = "사용자가 API 키를 신청합니다. 신청 후 관리자의 승인을 기다려야 합니다.")
+    @PostMapping("/apikey-request")
+    public String requestApiKey(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                @RequestParam String type, RedirectAttributes redirectAttributes) {
+        if (userDetails == null) {
+            return "redirect:/login";
+        }
+        try {
+            if ("request".equals(type)) {
+                apiKeyService.requestApiKey(userDetails.getUsername());
+                redirectAttributes.addFlashAttribute("message", "API 키 신청이 완료되었습니다. 관리자의 승인을 기다려주세요.");
+            } else if ("renew".equals(type)) {
+                apiKeyService.renewApiKey(userDetails.getUsername());
+                redirectAttributes.addFlashAttribute("message", "API 키 재발급이 완료되었습니다.");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "잘못된 요청입니다.");
+            }
+        } catch (Exception e) {
+            log.error("API 키 신청 실패", e);
+            redirectAttributes.addFlashAttribute("error", "API 키 신청에 실패했습니다. 다시 시도해주세요.");
+        }
+
+        return "redirect:/mypage/apikey-request"; // 리다이렉트 후 메시지 전달
+    }
 }
 

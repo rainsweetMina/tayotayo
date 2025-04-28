@@ -51,24 +51,6 @@ public class UserApiKeyController {
         }
     }
 
-    @Operation(summary = "API 키 신청 처리", description = "사용자가 API 키를 신청합니다. 신청 후 관리자의 승인을 기다려야 합니다.")
-    @PostMapping("/apikey-request")
-    public String requestApiKey(@AuthenticationPrincipal CustomUserDetails userDetails, RedirectAttributes redirectAttributes) {
-        if (userDetails == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            apiKeyService.requestApiKey(userDetails.getUsername());
-            redirectAttributes.addFlashAttribute("message", "API 키 신청이 완료되었습니다. 관리자의 승인을 기다려주세요.");
-        } catch (Exception e) {
-            log.error("API 키 신청 실패", e);
-            redirectAttributes.addFlashAttribute("error", "API 키 신청에 실패했습니다. 다시 시도해주세요.");
-        }
-
-        return "redirect:/mypage/apikey-request"; // 리다이렉트 후 메시지 전달
-    }
-
     @Operation(summary = "API 키 발급 요청", description = "사용자가 새로운 API 키 발급을 요청합니다.")
     @PostMapping("/request")
     public ResponseEntity<ApiKeyResponseDTO> requestApiKey(@RequestBody CreateApiKeyRequestDTO request) {
