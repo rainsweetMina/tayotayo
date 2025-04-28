@@ -28,14 +28,20 @@
 <div th:if="${error != null}" th:text="${error}" style="color: red;"></div>
 
 <!-- API 키 신청 폼 (키가 없거나 상태가 PENDING인 경우에만 노출) -->
-<div th:if="${apiKey == null or (apiKey.status != null and apiKey.status == 'PENDING')}">
+<div th:if="${apiKey == null or apiKey.status != null}">
     <form th:action="@{/mypage/apikey-request}" method="post">
-        <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <input type="text" id="description" name="description" placeholder="예: 정류장 조회용 키"><br><br>
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input type="hidden" name="type" value="request" />
         <button type="submit">신청하기</button>
     </form>
 </div>
-
+<div th:if="${apiKey != null}">
+    <form th:action="@{/mypage/apikey-request}" method="post">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input type="hidden" name="type" value="renew" />
+        <button type="submit">재발급하기</button>
+    </form>
+</div>
 <!-- 마이페이지로 돌아가기 -->
 <p><a th:href="@{/mypage}">← 마이페이지로 돌아가기</a></p>
 </body>
