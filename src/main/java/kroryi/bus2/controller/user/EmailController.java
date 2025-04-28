@@ -28,7 +28,6 @@ public class EmailController {
         if (!isValidEmail(email)) {
             return ResponseEntity.badRequest().body("유효하지 않은 이메일 주소입니다.");
         }
-
         try {
             emailService.generateAndSendVerificationCode(email);
             return ResponseEntity.ok("인증 코드가 이메일로 전송되었습니다.");
