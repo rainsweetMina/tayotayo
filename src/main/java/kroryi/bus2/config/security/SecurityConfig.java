@@ -66,7 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
                         // ✅ 마이페이지는 USER 권한만 접근 가능
-                        .requestMatchers("/mypage/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/mypage/**").hasRole("USER")
 
                         // ✅ 관리자 전용 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")
