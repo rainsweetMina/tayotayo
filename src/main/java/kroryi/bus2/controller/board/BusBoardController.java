@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -50,6 +51,7 @@ public class BusBoardController {
     @GetMapping("/schedule")
     public String showSchedule(Model model) {
         List<String> routeNos = busScheduleRepository.findDistinctRouteNos();
+        Collections.sort(routeNos);
         model.addAttribute("routeNos", routeNos);
         return "/board/busSchedule";
     }
@@ -66,6 +68,7 @@ public class BusBoardController {
     @GetMapping("/low-schedule")
     public String showLowFloorSchedule(Model model) {
         List<String> routeNos = busScheduleRepository.getRouteNosWithLowBus("D");   // 스케줄 데이터가 있는 노선만 검색
+        Collections.sort(routeNos);
         model.addAttribute("routeNos", routeNos);
         return "/board/lowBusSchedule";
     }
