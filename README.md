@@ -66,6 +66,25 @@ mvn spring-boot:run
 - **POST** `/api/bus/InsertStop`: 정류소 삽입
 - **DELETE** `/api/bus/delete-stop`: 정류소 삭제
 
+### 버스 시간표 관리
+- **GET** `/api/schedules`: 노선 시간표 조회
+- **GET** `/api/lowbus-schedules`: 저상 버스 시간표 조회
+- **POST** `/api/schedule/add`: 시간표 삽입
+- **PUT** `/api/schedule/modify`: 시간표 수정
+- **DELETE** `/api/schedule/delete`: 시간표 삭제
+
+### 노선 맵 정류장 관리
+- **GET** `/api/schedule-headers`: 노선 지정 정류장 조회
+- **POST** `/api/schedule-headers`: 노선 지정 정류장 추가
+- **PUT** `/api/schedule-headers/{id}`: 노선 지정 정류장 수정
+- **DELETE** `/api/schedule-headers/{id}`: 노선 지정 정류장 삭제
+
+### 버스 요금 관리
+- **GET** `/api/fares`: 버스 요금 조회
+- **POST** `/api/fares`: 버스 요금 추가
+- **PUT** `/api/fares/{id}`: 버스 요금 수정
+- **DELETE** `/api/fares/{id}`: 버스 요금 삭제
+
 ### 실시간 데이터
 - WebSocket URL: `ws://localhost:8081/dashboard`
 
