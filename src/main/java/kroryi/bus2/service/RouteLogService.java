@@ -2,8 +2,6 @@ package kroryi.bus2.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kroryi.bus2.repository.jpa.route.RouteRepository;
-import kroryi.bus2.repository.redis.ApiLogRepository;
 import kroryi.bus2.repository.redis.RedisRouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -27,7 +25,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class RouteLogService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
-    private final ApiLogRepository apiLogRepository;
     private final RedisRouteRepository redisRouteRepository;
 
 

@@ -51,15 +51,24 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-## API 그룹별 문서 안내 (Swagger 기준)
 
-- **/api/bus/**: 노선 및 정류소 관리 API
-- **/api/schedule/**: 시간표 및 저상버스 관리 API
-- **/api/fares/**: 요금 정책 관리
-- **/api/admin/**: 관리자 기능 (공지, FAQ, 습득물, 분실물 등)
-- **/api/statistics/**: 대시보드 통계 데이터 제공
-- **/api/logs/**: RedisLog, QueryLog, ApiLog 기록 API
-- **Swagger UI 접속**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+## API 문서 구조
+
+본 프로젝트의 Swagger 문서는 `GroupedOpenApi`를 활용하여 기능별로 명확하게 분리되어 있습니다. 이를 통해 외부 개발자 또는 팀원들이 필요한 API를 쉽게 찾고 테스트할 수 있도록 구성되어 있습니다.
+
+### 주요 그룹
+- **노선/정류소 관리** (`/api/bus/**`)
+- **시간표 및 저상버스 관리** (`/api/schedule/**`)
+- **버스 요금 관리** (`/api/fares/**`)
+- **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
+  - **관리자 기능** (`/api/admin/**`) - 공지사항, 습득물/분실물 관리 등 
+  공지사항 관리 (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
+    ![예시](docs/adminNotice.gif)
+- **로그 기록 조회** (`/api/logs/**`) - Redis, Query, API 로그 조회
+  ![예시](docs/adminLogs.gif)
+
+
+> Swagger UI: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
 ---
 

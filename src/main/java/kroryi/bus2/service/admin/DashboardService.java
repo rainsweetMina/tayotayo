@@ -5,7 +5,6 @@ import kroryi.bus2.dto.lost.LostStatResponseDTO;
 import kroryi.bus2.repository.jpa.FoundItemRepository;
 import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
 import kroryi.bus2.repository.jpa.LostItemRepository;
-import kroryi.bus2.repository.redis.ApiLogRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -29,7 +28,6 @@ public class DashboardService {
 
 
     private final RouteRepository routeRepository;
-    private final ApiLogRepository apiLogRepository;
     private final RedisLogService redisLogService;
 
 
@@ -51,7 +49,6 @@ public class DashboardService {
         Map<String, Object> result = new HashMap<>();
 
         long routeCount = routeRepository.count();
-        long requestCountToday = apiLogRepository.count();
 
         // Redis 상태 정보 가져오기
         Map<String, String> redisStats = redisLogService.getRedisInfo();
@@ -61,7 +58,6 @@ public class DashboardService {
         String connectedClients = redisStats.getOrDefault("connectedClients", "0");
 
         result.put("routesCount", routeCount);
-        result.put("requestToday", requestCountToday);
         result.put("redisUsedMemory", usedMemory);
         result.put("redisMaxMemory", maxMemory);
         result.put("redisConnectedClients", connectedClients);
