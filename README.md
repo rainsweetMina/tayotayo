@@ -51,43 +51,23 @@ mvn clean install
 mvn spring-boot:run
 ```
 
+## API 그룹별 문서 안내 (Swagger 기준)
+
+- **/api/bus/**: 노선 및 정류소 관리 API
+- **/api/schedule/**: 시간표 및 저상버스 관리 API
+- **/api/fares/**: 요금 정책 관리
+- **/api/admin/**: 관리자 기능 (공지, FAQ, 습득물, 분실물 등)
+- **/api/statistics/**: 대시보드 통계 데이터 제공
+- **/api/logs/**: RedisLog, QueryLog, ApiLog 기록 API
+- **Swagger UI 접속**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+
 ---
 
-## 주요 API
-
-### 노선 관리
-- **GET** `/api/bus/routes`: 전체 노선 조회 (페이징 및 검색 지원)
-- **POST** `/api/bus/AddBusRoute`: 새로운 노선 추가
-- **PUT** `/api/bus/UpdateRouteUnified/{routeId}`: 노선 정보 수정
-- **DELETE** `/api/bus/deleteRoute`: 노선 삭제
-
-### 정류소 관리
-- **POST** `/api/bus/AddRouteStopLink`: 경유 정류소 추가
-- **POST** `/api/bus/InsertStop`: 정류소 삽입
-- **DELETE** `/api/bus/delete-stop`: 정류소 삭제
-
-### 버스 시간표 관리
-- **GET** `/api/schedules`: 노선 시간표 조회
-- **GET** `/api/lowbus-schedules`: 저상 버스 시간표 조회
-- **POST** `/api/schedule/add`: 시간표 삽입
-- **PUT** `/api/schedule/modify`: 시간표 수정
-- **DELETE** `/api/schedule/delete`: 시간표 삭제
-
-### 노선 맵 정류장 관리
-- **GET** `/api/schedule-headers`: 노선 지정 정류장 조회
-- **POST** `/api/schedule-headers`: 노선 지정 정류장 추가
-- **PUT** `/api/schedule-headers/{id}`: 노선 지정 정류장 수정
-- **DELETE** `/api/schedule-headers/{id}`: 노선 지정 정류장 삭제
-
-### 버스 요금 관리
-- **GET** `/api/fares`: 버스 요금 조회
-- **POST** `/api/fares`: 버스 요금 추가
-- **PUT** `/api/fares/{id}`: 버스 요금 수정
-- **DELETE** `/api/fares/{id}`: 버스 요금 삭제
-
-### 실시간 데이터
-- WebSocket URL: `ws://localhost:8081/dashboard`
-
+## 관리자 API 사용 안내
+- 관리자 페이지 접근은 `ROLE_ADMIN` 권한을 요구합니다.
+- OAuth2 로그인 후 관리자 권한이 있는 계정만 접근 가능합니다.
+- 주요 기능: 공지사항 등록, 습득물/분실물 처리, 통계 조회, 로그 관리 등
+  
 ---
 
 ## 개발 환경
