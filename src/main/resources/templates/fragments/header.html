@@ -94,7 +94,7 @@
 
                 <!-- 관리자 전용 메뉴 -->
                 <li class="nav-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
-                    <a class="nav-link" th:href="@{/admin}">관리자 페이지</a>
+                    <a class="nav-link" th:href="@{/admin/dashboard}">관리자 페이지</a>
                 </li>
 
                 <!-- 공통 로그아웃 -->

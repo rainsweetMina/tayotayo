@@ -17,7 +17,7 @@ public class AppConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-    
+
     @Bean
     public GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
@@ -91,12 +91,21 @@ public class AppConfig {
     }
 
     @Bean
-    public GroupedOpenApi userGroup(){
+    public GroupedOpenApi managementGroup(){
         return GroupedOpenApi.builder()
-                .group("User")
-                .pathsToMatch("/api/user/**")
+                .group("Management")
+                .pathsToMatch("/api/management/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi apikeyGroup(){
+        return GroupedOpenApi.builder()
+                .group("ApiKey")
+                .packagesToScan("kroryi.bus2.controller.api")
+                .build();
+    }
+
     // Swagger UI에서 API 경로 설정
     @Bean
     public GroupedOpenApi publicApi() {
@@ -105,6 +114,5 @@ public class AppConfig {
                 .pathsToMatch("/api/**")  // /api/로 시작하는 경로에 Swagger UI 적용
                 .build();
     }
-
 
 }

@@ -50,4 +50,8 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public String getUserId() {
+        return user.getUserId(); // 또는 실제 User 객체에서 userId 가져오는 방식에 맞게 수정
+    }
 }

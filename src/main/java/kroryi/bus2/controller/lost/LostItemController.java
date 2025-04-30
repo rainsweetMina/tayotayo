@@ -52,4 +52,19 @@ public class LostItemController {
         LostItemResponseDTO dto = lostItemService.getLostItemById(id);
         return ResponseEntity.ok(dto);
     }
+
+    @Operation(summary = "분실물 수정", description = "일반회원이 등록한 분실물 정보를 수정합니다.")
+    @PutMapping("/api/lost/{id}")
+    public ResponseEntity<Void> updateLostItem(@PathVariable Long id,
+                                               @RequestBody LostItemRequestDTO dto) {
+        lostItemService.updateLostItem(id, dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "분실물 삭제", description = "일반회원이 등록한 분실물을 삭제합니다.")
+    @DeleteMapping("/api/lost/{id}")
+    public ResponseEntity<Void> deleteLostItem(@PathVariable Long id) {
+        lostItemService.deleteLostItem(id); // 내부에서는 soft delete
+        return ResponseEntity.noContent().build();
+    }
 }

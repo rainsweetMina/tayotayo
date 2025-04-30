@@ -37,9 +37,10 @@ public class ApiKeyService {
 
     /**
      * 새로운 API 키 발급
-     * @param name API 키 이름
+     *
+     * @param name      API 키 이름
      * @param allowedIp 허용된 IP
-     * @param user 발급 대상 사용자
+     * @param user      발급 대상 사용자
      * @return 발급된 API 키
      */
     @Transactional
@@ -62,6 +63,7 @@ public class ApiKeyService {
     /**
      * 일반 사용자가 API 키를 신청하는 메서드
      * - 이미 PENDING 또는 APPROVED 상태의 키가 존재하면 신청 불가
+     *
      * @param userId 사용자 ID
      */
     @Transactional
@@ -93,12 +95,30 @@ public class ApiKeyService {
         apiKeyRepository.save(key);  // DB에 저장
     }
 
+    public void renewApiKey(String userId) {
+        // 1. User 객체 먼저 조회
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 2. User 객체로 ApiKey 조회
+        ApiKey apiKey = apiKeyRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalStateException("기존 API 키가 없습니다."));
+
+        // 3. 키 갱신
+        apiKey.setApikey(UUID.randomUUID().toString().replace("-", ""));  // 새 키로 설정
+        apiKey.setStatus(ApiKeyStatus.PENDING); // 다시 승인 대기로
+
+        apiKeyRepository.save(apiKey);
+    }
+
+
     // ====================================
     // 👤 사용자별 API 키 조회
     // ====================================
 
     /**
      * 사용자 ID로 가장 최근의 API 키 조회
+     *
      * @param userId 사용자 ID
      * @return 가장 최근의 API 키 (Optional)
      */
@@ -111,6 +131,7 @@ public class ApiKeyService {
 
     /**
      * 로그인한 사용자(User 객체) 기준으로 가장 최근의 API 키 조회
+     *
      * @param user 사용자 객체
      * @return 가장 최근의 API 키
      */
@@ -126,6 +147,7 @@ public class ApiKeyService {
 
     /**
      * 관리자 페이지에서 모든 API 키 목록을 조회 (내림차순으로 정렬)
+     *
      * @return 모든 API 키 목록
      */
     public List<ApiKey> getAllApiKeys() {
@@ -138,6 +160,7 @@ public class ApiKeyService {
 
     /**
      * API 키 상태를 승인(PENDING → APPROVED) 또는 비승인(승인 취소) 처리
+     *
      * @param id API 키 ID
      * @return 승인된 상태인지 여부 (true: 승인, false: 대기)
      */
@@ -164,6 +187,7 @@ public class ApiKeyService {
 
     /**
      * 사용자가 기존 API 키를 재발급 받는 기능
+     *
      * @param userId 사용자 ID
      * @return 재발급된 API 키
      */
@@ -203,6 +227,7 @@ public class ApiKeyService {
 
     /**
      * API 키 유효성 검사
+     *
      * @param apiKey 검증할 API 키
      * @return 유효한 API 키인지 여부 (미사용 중)
      */
@@ -222,5 +247,13 @@ public class ApiKeyService {
         // 예시: user 기준으로 apiKey 하나 조회 (상황에 따라 쿼리 수정)
         return apiKeyRepository.findFirstByUser(user)
                 .orElse(null);
+    }
+
+    @Transactional
+    public void toggleActiveStatus(Long id) {
+        ApiKey apiKey = apiKeyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("API 키를 찾을 수 없습니다: " + id));
+        apiKey.setActive(!apiKey.isActive()); // 활성화 상태 토글
+        apiKeyRepository.save(apiKey);
     }
 }
