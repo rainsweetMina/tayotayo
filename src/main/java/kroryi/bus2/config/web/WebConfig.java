@@ -25,12 +25,16 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/ds/api/**")
-                .allowedOrigins("https://localhost:8081")
+                .allowedOrigins("https://localhost:8081", "https://192.168.10.47:8081")
                 .allowedMethods("GET", "POST", "DELETE", "PUT")
                 .allowCredentials(true);
 
         registry.addMapping("/v3/api-docs/**")
-                .allowedOrigins("https://localhost:8081")
+                .allowedOrigins("https://localhost:8081", "https://192.168.10.47:8081")
+                .allowedMethods("*");
+
+        registry.addMapping("/swagger-ui/**") // 만약 Swagger UI 경로도 CORS 걸리면 추가
+                .allowedOrigins("https://localhost:8081", "https://192.168.10.47:8081")
                 .allowedMethods("*");
     }
 

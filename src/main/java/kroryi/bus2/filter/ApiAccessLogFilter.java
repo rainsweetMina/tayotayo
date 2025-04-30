@@ -38,19 +38,19 @@ public class ApiAccessLogFilter extends OncePerRequestFilter {
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ADMIN"));
 
-        if (isAdmin) {
-            // 로그 객체 생성
-            ApiAccessLog log = ApiAccessLog.builder()
-                    .uri(request.getRequestURI())
-                    .method(request.getMethod())
-                    .status(response.getStatus())
-                    .durationMs(duration)
-                    .ip(request.getRemoteAddr())
-                    .username(username)
-                    .timestamp(LocalDateTime.now())
-                    .build();
-
-            apiAccessLogRepository.save(log); // DB에 저장
-        }
+//        if (isAdmin) {
+//            // 로그 객체 생성
+//            ApiAccessLog log = ApiAccessLog.builder()
+//                    .uri(request.getRequestURI())
+//                    .method(request.getMethod())
+//                    .status(response.getStatus())
+//                    .durationMs(duration)
+//                    .ip(request.getRemoteAddr())
+//                    .username(username)
+//                    .timestamp(LocalDateTime.now())
+//                    .build();
+//
+////            apiAccessLogRepository.save(log); // DB에 저장
+//        }
     }
 }
