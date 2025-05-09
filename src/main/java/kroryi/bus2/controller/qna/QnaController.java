@@ -36,13 +36,13 @@ public class QnaController {
         model.addAttribute("qnaPage", qnaPage);
         model.addAttribute("keyword", keyword);
         model.addAttribute("field", field);
-        return "/qna/qnaList";
+        return "qna/qnaList";
     }
 
     // 질문 페이지
     @GetMapping("/qna/form")
     public String showQuestion() {
-        return "/qna/qnaForm";
+        return "qna/qnaForm";
     }
 
     // 뷰 페이지
@@ -68,13 +68,13 @@ public class QnaController {
         // 비공개일 경우 접근 제한 처리
         if (qna.isSecret() && !isAuthor && !isAdmin) {
             model.addAttribute("popupMessage", "비공개 글입니다. 열람 권한이 없습니다.");
-            return "/qna/qnaPopupError";
+            return "qna/qnaPopupError";
         }
 
         model.addAttribute("qna", qna);
         model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("isAuthor", isAuthor);
-        return "/qna/qnaView";
+        return "qna/qnaView";
     }
 
     // 수정페이지
@@ -93,7 +93,7 @@ public class QnaController {
         }
 
         model.addAttribute("qna", qna);
-        return "/qna/qnaEdit";
+        return "qna/qnaEdit";
     }
 
     // 관리자 답변
@@ -115,7 +115,7 @@ public class QnaController {
         List<Qna> myQna = qnaRepository.findByMemberIdAndIsDeletedFalseOrderByCreatedAtDesc(user.getId());
 
         model.addAttribute("myQnaList", myQna);
-        return "/qna/myQnaList";
+        return "qna/myQnaList";
     }
 
 

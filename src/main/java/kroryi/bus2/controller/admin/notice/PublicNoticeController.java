@@ -26,7 +26,7 @@ public class PublicNoticeController {
     @GetMapping
     public String getNoticePage(Model model) {
         model.addAttribute("notices", noticeService.getAllNotices());
-        return "/public/notice";
+        return "public/notice";
     }
     //팝업관련
     @GetMapping("/popup")

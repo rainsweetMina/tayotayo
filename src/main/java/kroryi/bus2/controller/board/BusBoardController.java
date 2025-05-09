@@ -36,7 +36,7 @@ public class BusBoardController {
     public String showBusFare(Model model) {
         List<BusFare> fareList = busFareRepository.findAll();
         model.addAttribute("fares", fareList);
-        return "/board/busFare";
+        return "board/busFare";
     }
 
     // 버스 회사 정보 페이지
@@ -44,7 +44,7 @@ public class BusBoardController {
     public String showBusCompany(Model model) {
         List<BusCompany> companyList = busCompanyRepository.findAll();
         model.addAttribute("companies", companyList);
-        return "/board/busCompany";
+        return "board/busCompany";
     }
 
     // 스케줄 데이터 조회
@@ -53,7 +53,7 @@ public class BusBoardController {
         List<String> routeNos = busScheduleRepository.findDistinctRouteNos();
         Collections.sort(routeNos);
         model.addAttribute("routeNos", routeNos);
-        return "/board/busSchedule";
+        return "board/busSchedule";
     }
 
     // 수정 페이지 스케줄 데이터 조회
@@ -61,7 +61,7 @@ public class BusBoardController {
     public String showModifySchedule(Model model) {
         List<String> routeNos = routeRepository.findDistinctRouteNos();
         model.addAttribute("routeNos", routeNos);
-        return "/board/busModifySchedule";
+        return "board/busModifySchedule";
     }
 
     // 저상 버스 시간표 페이지
@@ -70,6 +70,6 @@ public class BusBoardController {
         List<String> routeNos = busScheduleRepository.getRouteNosWithLowBus("D");   // 스케줄 데이터가 있는 노선만 검색
         Collections.sort(routeNos);
         model.addAttribute("routeNos", routeNos);
-        return "/board/lowBusSchedule";
+        return "board/lowBusSchedule";
     }
 }

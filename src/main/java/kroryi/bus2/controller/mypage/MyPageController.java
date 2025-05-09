@@ -256,7 +256,7 @@ public class MyPageController {
     public String userLostItems(Model model) {
         List<LostItemListResponseDTO> lostItems = lostItemService.getAllLostItems();
         model.addAttribute("lostItems", lostItems);
-        return "/mypage/mypage-lost";
+        return "mypage/mypage-lost";
     }
 
     // 분실물 등록 처리
