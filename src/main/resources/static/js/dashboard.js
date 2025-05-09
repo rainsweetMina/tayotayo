@@ -1,5 +1,5 @@
 // WebSocket 연결 설정
-const socket = new WebSocket("wss://localhost:8081/ws/dashboard");
+const socket = new WebSocket("wss://docs.yi.or.kr:8094/ws/dashboard");
 
 socket.onopen = () => {
     console.log("✅ WebSocket 연결 성공!");
