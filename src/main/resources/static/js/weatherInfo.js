@@ -109,7 +109,8 @@ function fetchWeather() {
                 "1": "🌧️",
                 "2": "🌨️",
                 "3": "❄️",
-                "4": "🌦️"
+                "4": "🌦️",
+                "5": "💧"
             };
 
             const weatherSymbol = (pty !== "0" && pty !== "N/A") ? ptyMap[pty] : skyMap[sky] || "❓";
