@@ -13,6 +13,7 @@ services:
     container_name: bus_server
     hostname: bus_app
     volumes:
+      - ./uploads:/apps/uploads 
       - ./build:/opt/tomcat/webapps
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/bus?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true

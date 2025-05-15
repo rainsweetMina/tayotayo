@@ -24,6 +24,12 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/admin";
+    }
+
+
     // 로그인 페이지
     @GetMapping("/login")
     public String login(@RequestParam(value = "errorCode", required = false) String errorCode,
