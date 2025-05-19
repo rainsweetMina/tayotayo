@@ -17,7 +17,7 @@
     <tr>
         <th>ID</th>
         <th>API Key</th>
-        <th>상태</th>
+<!--        <th>상태</th>-->
         <th>발급일</th>
         <th>만료일</th>
         <th>관리</th>
@@ -26,8 +26,8 @@
     <tbody>
     <tr th:each="key : ${recentKeys}">
         <td th:text="${key.id}"></td>
-        <td th:text="${key.apikey}"></td>
-        <td th:text="${key.status}"></td>
+        <td th:text="${key.apiKey}"></td>
+<!--        <td th:text="${key.status}"></td>-->
         <td th:text="${#temporals.format(key.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
         <td th:text="${#temporals.format(key.expiresAt, 'yyyy-MM-dd HH:mm')}"></td>
         <td>

@@ -109,14 +109,20 @@ function fetchWeather() {
                 "1": "🌧️",
                 "2": "🌨️",
                 "3": "❄️",
-                "4": "🌦️"
+                "4": "🌦️",
+                "5": "💧"
             };
 
             const weatherSymbol = (pty !== "0" && pty !== "N/A") ? ptyMap[pty] : skyMap[sky] || "❓";
 
-            const showList = (pty !== "0" && pty !== "N/A")
-                ? [`${temp}℃ ${weatherSymbol}`, `${windDir}풍 ${wind}m/s ${weatherSymbol}`, `강수량: ${rn1} ${weatherSymbol}`]
-                : [`${temp}℃ ${weatherSymbol}`, `${windDir}풍 ${wind}m/s ${weatherSymbol}`];
+             const showList = (vec >= "0" || wind >= "0")
+                ? (pty !== "0" && pty !== "N/A")
+                    ? [`${temp}℃ ${weatherSymbol}`, `${windDir}풍 ${wind}m/s ${weatherSymbol}`, `강수량: ${rn1} ${weatherSymbol}`]
+                    : [`${temp}℃ ${weatherSymbol}`, `${windDir}풍 ${wind}m/s ${weatherSymbol}`]
+                : (pty !== "0" && pty !== "N/A")
+                    ? [`${temp}℃ ${weatherSymbol}`, `강수량: ${rn1} ${weatherSymbol}`]
+                    : [`${temp}℃ ${weatherSymbol}`]
+            ;
 
             const target = document.getElementById("weatherData");
             rotateDisplay(showList, target);
