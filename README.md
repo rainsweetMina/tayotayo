@@ -35,7 +35,7 @@
 
 ### 2. 프로젝트 클론
 ```bash
-git clone https://github.com/heeha153/bus2.git
+git clone https://github.com/rainsweetMina/tayotayo.git
 cd bus2
 ```
 
