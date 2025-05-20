@@ -57,7 +57,9 @@ mvn spring-boot:run
 본 프로젝트의 Swagger 문서는 `GroupedOpenApi`를 활용하여 기능별로 명확하게 분리되어 있습니다. 이를 통해 외부 개발자 또는 팀원들이 필요한 API를 쉽게 찾고 테스트할 수 있도록 구성되어 있습니다.
 
 ### 주요 그룹
-- **노선/정류소 관리** (`/api/bus/**`)
+- **노선/정류소 관리** (`/api/bus/**`) <br/>
+  <a href="https://www.youtube.com/watch?v=0CjTwxoGKzw" target="_blank">
+  <img src="https://img.youtube.com/vi/0CjTwxoGKzw/0.jpg" width="500"/>
 - **시간표 및 저상버스 관리** (`/api/schedule/**`)
 - **버스 요금 관리** (`/api/fares/**`)
 - **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
