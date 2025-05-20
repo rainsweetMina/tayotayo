@@ -57,15 +57,19 @@ mvn spring-boot:run
 본 프로젝트의 Swagger 문서는 `GroupedOpenApi`를 활용하여 기능별로 명확하게 분리되어 있습니다. 이를 통해 외부 개발자 또는 팀원들이 필요한 API를 쉽게 찾고 테스트할 수 있도록 구성되어 있습니다.
 
 ### 주요 그룹
-- **노선/정류소 관리** (`/api/bus/**`)
-- **시간표 및 저상버스 관리** (`/api/schedule/**`)
-- **버스 요금 관리** (`/api/fares/**`)
-- **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
-  - **관리자 기능** (`/api/admin/**`) - 공지사항, 습득물/분실물 관리 등 
-  공지사항 관리 (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
-    ![예시](docs/adminNotice.gif)
+- **관리자 기능** (`/api/admin/**`) - 공지사항, 습득물/분실물 관리 등 
+공지사항 관리 (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
+  ![예시](docs/adminNotice.gif)
 - **로그 기록 조회** (`/api/logs/**`) - Redis, Query, API 로그 조회
   ![예시](docs/adminLogs.gif)
+- **노선/정류소 관리** (`/api/bus/**`)
+  ![예시](docs/busRoute.gif)
+- **시간표 및 저상버스 관리** (`/api/schedule/**`)
+  ![예시](docs/boardSchedule.gif)
+- **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
+  ![예시](docs/boardScheduleHeader.gif)
+- **버스 요금 정보 관리** (`/api/fares/**`) & **버스 회사 정보 관리** (`/api/companies/**`)
+  ![예시](docs/boardFareCompanies.gif)
 
 
 > Swagger UI: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
