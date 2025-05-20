@@ -62,11 +62,11 @@ mvn spring-boot:run
 - **버스 요금 관리** (`/api/fares/**`)
 - **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
   - **관리자 기능** (`/api/admin/**`) - 공지사항, 습득물/분실물 관리 등 
-  공지사항 관리 (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
+    - 공지사항 관리 (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
     ![예시](docs/adminNotice.gif)
-  관리자 로그 기록 조회 (`/api/logs/**`) - admin 계정으로 작업한 로그 조회
+    - 관리자 로그 기록 조회 (`/api/logs/**`) - admin 계정으로 작업한 로그 조회
     ![예시](docs/adminlog.gif)
-  API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
+    - API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
     ![예시](docs/apichart.gif)
 
 
