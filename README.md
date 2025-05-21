@@ -110,7 +110,7 @@ mvn spring-boot:run
 
 ## API 문서 구조
 
-본 프로젝트의 Swagger 문서는 `GroupedOpenApi`를 활용하여 기능별로 명확하게 분리되어 있습니다. 이를 통해 외부 개발자 또는 팀원들이 필요한 API를 쉽게 찾고 테스트할 수 있도록 구성되어 있습니다.
+ 본 프로젝트의 Swagger 문서는 `GroupedOpenApi`를 활용하여 기능별로 명확하게 분리되어 있습니다. 이를 통해 외부 개발자 또는 팀원들이 필요한 API를 쉽게 찾고 테스트할 수 있도록 구성되어 있습니다.
 ---
 ### 주요 그룹
 
@@ -119,11 +119,10 @@ mvn spring-boot:run
     (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
     ![예시](docs/adminNotice.gif)
 
-  ### 2️⃣ Q&A 답변 처리
+### 2️⃣ Q&A 관리자용
 - **경로**:
-    - `PUT /api/qna/{id}/answer`
-    - `PATCH /api/qna/admin/hide/{id}`
-    - `GET /api/qna/admin/stats`
+    - `PUT /api/qna/{id}/answer`, `PATCH /api/qna/admin/hide/{id}`, `GET /api/qna/admin/stats`,`GET /api/qna/admin`
+---
 - **기능**:
     - 사용자 문의에 대한 관리자 답변 등록
     - 비공개 Q&A 숨김 처리
@@ -133,7 +132,7 @@ mvn spring-boot:run
     - 답변 입력과 함께 관리자 정보 자동 연동
     - `isSecret`, `visible` 등을 통한 접근 제어 구현
 
-![Q&A 답변 시연](docs/qna-answer.gif)
+![Q&A 시연](docs/qna-answer.gif)
 
 ---
 
@@ -151,19 +150,21 @@ mvn spring-boot:run
     - 게시글은 등록 후 7일 뒤 자동 숨김 처리 (Scheduler)
     - 매칭 시 상태 자동 변경 ('회수 완료') 및 '신고 없이 수령' 처리도 가능
 
-![매칭 기능 시연](docs/found-match.gif)
+![분실물/습득물 시연](docs/found-match.gif)
 
 
 ---
 
 ### 4️⃣ 광고 등록
-- **경로**: `POST /api/ad`
+- **경로**:
+    - `POST /api/ad`, `PUT /api/ad/{id}`, `DELETE /api/ad/{id}`, ...
+    - `POST /api/ad-company`, `GET /api/ad-company`, ...
 - **기능**: 광고 등록 (배너 / 팝업), 기간 설정, 광고회사 연동
 - **특징**:
     - 팝업 광고는 자동 종료 / 배너 광고는 상태별 필터링
     - 광고회사 드롭다운 연동
 
-![광고 등록 시연](docs/ad-create.gif)
+![광고 시연](docs/ad-create.gif)
 
 ---
 
