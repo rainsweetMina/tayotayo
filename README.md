@@ -167,29 +167,33 @@ mvn spring-boot:run
 
 ---
 
-   - 로그 기록 조회 
-    (`/api/logs/**`) - Redis, Query, API 로그 조회
+- 로그 기록 조회 (`/api/logs/**`) - Redis, Query, API 로그 조회
     ![예시](docs/adminLogs.gif)
+  
+- API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
+    ![예시](docs/apichart.gif)
+
+---
 
 - **노선/정류소 관리** (`/api/bus/**`)
   ![예시](docs/busRoute.gif)
+  
 - **노선/정류소 관리** (`/api/bus/**`) <br/>
   <a href="https://www.youtube.com/watch?v=0CjTwxoGKzw" target="_blank">
   <img src="https://img.youtube.com/vi/0CjTwxoGKzw/0.jpg" width="500"/>
+
+---
+  
+- **버스 요금 정보 관리** (`/api/fares/**`) & **버스 회사 정보 관리** (`/api/companies/**`)
+  ![예시](docs/boardFareCompanies.gif)
   
 - **시간표 및 저상버스 관리** (`/api/schedule/**`)
-- 
-- **버스 요금 관리** (`/api/fares/**`)
-- 
   ![예시](docs/boardSchedule.gif)
+  
 - **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
-  - **관리자 기능** (`/api/admin/**`) - 공지사항, 습득물/분실물 관리 등 
-    - 공지사항 관리 (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
-    ![예시](docs/adminNotice.gif)
-    - 관리자 로그 기록 조회 (`/api/logs/**`) - admin 계정으로 작업한 로그 조회
-    ![예시](docs/adminlog.gif)
-    - API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
-    ![예시](docs/apichart.gif)
+ ![예시](docs/boardScheduleHeader.gif)
+
+---
 
 - **관리자 API키 관리** (`/api/admin/apikey`) - API키 발급, 삭제
   ![예시](docs/adminApikey.gif)
@@ -199,12 +203,6 @@ mvn spring-boot:run
   
 - **마이페이지 즐겨찾기** (`/api/mypage/favorite`) - 마이페이지 정류장/노선 즐겨찾기 조회, 수정, 삭제
   ![예시](docs/mypageFavorite.gif)
-
-
-
-  ![예시](docs/boardScheduleHeader.gif)
-- **버스 요금 정보 관리** (`/api/fares/**`) & **버스 회사 정보 관리** (`/api/companies/**`)
-  ![예시](docs/boardFareCompanies.gif)
 
 
 > Swagger UI: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
