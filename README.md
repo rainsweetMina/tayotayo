@@ -60,8 +60,11 @@ mvn spring-boot:run
 - **노선/정류소 관리** (`/api/bus/**`) <br/>
   <a href="https://www.youtube.com/watch?v=0CjTwxoGKzw" target="_blank">
   <img src="https://img.youtube.com/vi/0CjTwxoGKzw/0.jpg" width="500"/>
+  
 - **시간표 및 저상버스 관리** (`/api/schedule/**`)
+- 
 - **버스 요금 관리** (`/api/fares/**`)
+- 
 - **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
   - **관리자 기능** (`/api/admin/**`) - 공지사항, 습득물/분실물 관리 등 
     - 공지사항 관리 (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
@@ -70,10 +73,13 @@ mvn spring-boot:run
     ![예시](docs/adminlog.gif)
     - API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
     ![예시](docs/apichart.gif)
+
 - **관리자 API키 관리** (`/api/admin/apikey`) - API키 발급, 삭제
   ![예시](docs/adminApikey.gif)
+  
 - **사용자 관리** (`/api/management/user`) - User Role 조회, 수정
   ![예시](docs/adminUserManagement.gif)
+  
 - **마이페이지 즐겨찾기** (`/api/mypage/favorite`) - 마이페이지 정류장/노선 즐겨찾기 조회, 수정, 삭제
   ![예시](docs/mypageFavorite.gif)
 
