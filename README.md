@@ -71,8 +71,11 @@ mvn spring-boot:run
     - API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
     ![예시](docs/apichart.gif)
 - **관리자 API키 관리** (`/api/admin/apikey`) - API키 발급, 삭제
-- **사용자 관리** (`/api/management/user`) - USER role 조회, 수정
-- **마이페이지 즐겨찾기** (`/api/mypage/favorite`) - 
+  ![예시](docs/adminApikey.gif)
+- **사용자 관리** (`/api/management/user`) - User Role 조회, 수정
+  ![예시](docs/adminUserManagement.gif)
+- **마이페이지 즐겨찾기** (`/api/mypage/favorite`) - 마이페이지 정류장/노선 즐겨찾기 조회, 수정, 삭제
+  ![예시](docs/mypageFavorite.gif)
 
 
 
