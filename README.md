@@ -118,11 +118,10 @@ mvn spring-boot:run
    - 공지사항 관리
     (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
     ![예시](docs/adminNotice.gif)
-
+---
 ### 2️⃣ Q&A 관리자용
 - **경로**:
     - `PUT /api/qna/{id}/answer`, `PATCH /api/qna/admin/hide/{id}`, `GET /api/qna/admin/stats`,`GET /api/qna/admin`
----
 - **기능**:
     - 사용자 문의에 대한 관리자 답변 등록
     - 비공개 Q&A 숨김 처리
@@ -132,7 +131,7 @@ mvn spring-boot:run
     - 답변 입력과 함께 관리자 정보 자동 연동
     - `isSecret`, `visible` 등을 통한 접근 제어 구현
 
-![Q&A 시연](docs/qna-answer.gif)
+![Q&A 시연](docs/qnaAnswer.gif)
 
 ---
 
