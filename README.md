@@ -171,6 +171,15 @@ mvn spring-boot:run
     (`/api/logs/**`) - Redis, Query, API 로그 조회
     ![예시](docs/adminLogs.gif)
 
+- **노선/정류소 관리** (`/api/bus/**`)
+  ![예시](docs/busRoute.gif)
+- **시간표 및 저상버스 관리** (`/api/schedule/**`)
+  ![예시](docs/boardSchedule.gif)
+- **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
+  ![예시](docs/boardScheduleHeader.gif)
+- **버스 요금 정보 관리** (`/api/fares/**`) & **버스 회사 정보 관리** (`/api/companies/**`)
+  ![예시](docs/boardFareCompanies.gif)
+
 
 > Swagger UI: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
