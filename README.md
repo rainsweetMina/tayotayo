@@ -196,13 +196,13 @@ mvn spring-boot:run
 ---
 
 - **관리자 API키 관리** (`/api/admin/apikey`) - API키 발급, 삭제
-  ![예시](docs/adminApikey.gif)
+  
   
 - **사용자 관리** (`/api/management/user`) - User Role 조회, 수정
-  ![예시](docs/adminUserManagement.gif)
+  
   
 - **마이페이지 즐겨찾기** (`/api/mypage/favorite`) - 마이페이지 정류장/노선 즐겨찾기 조회, 수정, 삭제
-  ![예시](docs/mypageFavorite.gif)
+  
 
 
 > Swagger UI: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
