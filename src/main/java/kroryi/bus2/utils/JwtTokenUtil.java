@@ -46,7 +46,7 @@ public class JwtTokenUtil {
 
         return Jwts.builder()
                 .setSubject(key.getId().toString())
-                .claim("name", key.getName())
+                .claim("name", key.getUser_name())
                 .claim("allowedIp", key.getAllowedIp())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)

@@ -13,15 +13,15 @@ import java.time.LocalDateTime;
 //-------------- 추후 수정 --------------------------------------------------------
 public class ApiKeyResponseDTO {
     private Long id;
-    @JsonIgnore
-    private String name;
-    @JsonIgnore
+//    @JsonIgnore
+    private String username;
+//    @JsonIgnore
     private boolean active;
     private String apiKey;
-    @JsonIgnore
-    private User user;
+//    @JsonIgnore
+//    private User user;
+    private String user_id;
     private LocalDateTime createdAt;
-    @JsonIgnore
     private LocalDateTime expiresAt;
 
 //    // Getters and Setters

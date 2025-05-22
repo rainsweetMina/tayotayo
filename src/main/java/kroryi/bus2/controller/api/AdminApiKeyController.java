@@ -54,7 +54,7 @@ public class AdminApiKeyController {
                 .map(apiKey -> {
                     ApiKeyResponseDTO dto = new ApiKeyResponseDTO();
                     dto.setId(apiKey.getId());
-                    dto.setName(apiKey.getName());
+                    dto.setUsername(apiKey.getUser().getUsername());
                     dto.setApiKey(apiKey.getApiKey());
                     dto.setActive(apiKey.isActive());
                     dto.setCreatedAt(apiKey.getCreatedAt());
@@ -74,7 +74,7 @@ public class AdminApiKeyController {
                 .map(apiKey -> {
                     ApiKeyResponseDTO response = new ApiKeyResponseDTO();
                     response.setId(apiKey.getId());
-                    response.setName(apiKey.getName());
+                    response.setUsername(apiKey.getUser().getUsername());
                     response.setActive(apiKey.isActive());
                     response.setApiKey(apiKey.getApiKey());
                     return ResponseEntity.ok(response);
@@ -86,7 +86,7 @@ public class AdminApiKeyController {
     @PostMapping("/create")
     public ApiKeyResponseDTO createKey(@RequestBody CreateApiKeyRequestDTO request) {
         ApiKey key = ApiKey.builder()
-                .name(request.getName())
+                .user_name(request.getUser_name())
                 .active(true)
                 .issuedAt(LocalDateTime.now())
                 .expiresAt(request.getExpiresAt())
@@ -105,7 +105,7 @@ public class AdminApiKeyController {
 
         ApiKeyResponseDTO response = new ApiKeyResponseDTO();
         response.setId(saved.getId());
-        response.setName(saved.getName());
+        response.setUsername(saved.getUser_name());
         response.setActive(saved.isActive());
         response.setApiKey(saved.getApiKey());
         return response;

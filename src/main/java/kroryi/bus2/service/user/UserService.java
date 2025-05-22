@@ -111,6 +111,7 @@ public class UserService {
     }
 
     public User getUserByUserId(String userId) {
-        return userRepository.findByUserId(userId).orElse(null);
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
     }
 }

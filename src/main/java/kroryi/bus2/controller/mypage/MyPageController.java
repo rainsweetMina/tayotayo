@@ -108,27 +108,47 @@ public class MyPageController {
         model.addAttribute("parameterName", "Your Parameter Value"); // 원하는 값 넣기
         return "mypage/apikey-request";
     }
-    // API 키 발급 페이지
+//    // API 키 발급 페이지
+//    @GetMapping("/apikey-request")
+//    public String showApiKeyRequestForm(Model model) {
+//        String userId = extractUserId();
+//        if (userId == null) {
+//            return "redirect:/login";
+//        }
+//
+//        // API 키 발급 로직 (예시)
+//        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
+//        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
+//
+//        if (apiKeyOpt.isPresent()) {
+//            model.addAttribute("apiKey", apiKeyOpt.get());
+//        } else {
+//            model.addAttribute("apiKey", null);
+//            model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
+//        }
+//
+//        return "mypage/apikey-request"; // 'apikey-request.html'로 이동
+//    }
+
     @GetMapping("/apikey-request")
-    public String showApiKeyRequestForm(Model model) {
-        String userId = extractUserId();
-        if (userId == null) {
+    public String showApiKeyRequestForm(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
             return "redirect:/login";
         }
 
-        // API 키 발급 로직 (예시)
-        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
-        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
+        // 🔄 APPROVED, PENDING 구분 없이 최근 키 1개 조회
+        ApiKey apiKey = apiKeyService.getApiKeyRequestForUser(userDetails.toEntity());
+        log.info("✅ API 키 조회 결과: {}", (apiKey != null ? "발급된 API 키 있음" : "발급된 API 키 없음"));
 
-        if (apiKeyOpt.isPresent()) {
-            model.addAttribute("apiKey", apiKeyOpt.get());
-        } else {
-            model.addAttribute("apiKey", null);
+        model.addAttribute("apiKey", apiKey);
+
+        if (apiKey == null) {
             model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
         }
 
         return "mypage/apikey-request"; // 'apikey-request.html'로 이동
     }
+
 
     // 비밀번호 변경 폼
     @Operation(summary = "비밀번호 변경 폼", description = "비밀번호 변경 폼을 표시합니다.")

@@ -46,4 +46,8 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Long> {
     Optional<ApiKey> findFirstByUser(User user);
 
     Optional<ApiKey> findByUser(User user);
+
+    Optional<ApiKey> findTopByUserAndStatusOrderByCreatedAtDesc(User user, ApiKeyStatus apiKeyStatus);
+
+
 }

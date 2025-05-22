@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class CreateApiKeyRequestDTO {
-    private String name;
+    private String user_name;
     private String allowedIp;
     private LocalDateTime expiresAt;
     private List<String> callbackUrls;
