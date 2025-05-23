@@ -254,10 +254,27 @@ public class MyPageController {
     })
     @GetMapping("/lost")
     public String userLostItems(Model model) {
-        List<LostItemListResponseDTO> lostItems = lostItemService.getAllLostItems();
+        // ✅ 1. 로그인 유저 ID 추출
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        // ✅ 2. 유저 객체 가져오기
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        // ✅ 3. 본인 분실물만 조회
+        List<LostItemResponseDTO> lostItems = lostItemService.getMyLostItems(user.getId());
+
+        // ✅ 4. 모델에 담기
         model.addAttribute("lostItems", lostItems);
-        return "mypage/mypage-lost";
+
+        return "mypage/mypage-lost"; // ✅ 기존 뷰 그대로 사용
     }
+
 
     // 분실물 등록 처리
     @Operation(summary = "분실물 등록", description = "새로운 분실물을 등록합니다.")
@@ -353,4 +370,3 @@ public class MyPageController {
         return "redirect:/mypage/apikey-request"; // 리다이렉트 후 메시지 전달
     }
 }
-

@@ -19,5 +19,8 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 
     List<LostItem> findAllByOrderByCreatedAtDesc();
 
+    List<LostItem> findAllByReporterId(Long reporterId);
+
+
 }
 

@@ -188,11 +188,26 @@ public class LostItemService {
         item.setUpdatedAt(LocalDateTime.now()); // ✅ updatedAt 수동 갱신 (Auditing 적용 시 생략 가능)
     }
 
-
-
-
-
-
+    // ✅ 본인 분실물만 조회하는 메서드
+    public List<LostItemResponseDTO> getMyLostItems(Long memberId) {
+        List<LostItem> items = lostItemRepository.findAllByReporterId(memberId);
+        return items.stream()
+                .map(item -> LostItemResponseDTO.builder()
+                        .id(item.getId())
+                        .title(item.getTitle())
+                        .content(item.getContent())
+                        .busNumber(item.getBusNumber())
+                        .busCompany(item.getBusCompany())
+                        .lostTime(item.getLostTime())
+                        .memberId(item.getReporter().getId())
+                        .matched(item.isMatched())
+                        .visible(item.isVisible())
+                        .deleted(item.isDeleted())
+                        .createdAt(item.getCreatedAt())
+                        .updatedAt(item.getUpdatedAt())
+                        .build()
+                ).toList();
+    }
 
 
 }

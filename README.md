@@ -149,12 +149,12 @@ mvn spring-boot:run
     - 게시글은 등록 후 7일 뒤 자동 숨김 처리 (Scheduler)
     - 매칭 시 상태 자동 변경 ('회수 완료') 및 '신고 없이 수령' 처리도 가능
 
-![분실물/습득물 시연](docs/found-match.gif)
+![분실물/습득물 시연](docs/lostFound.gif)
 
 
 ---
 
-### 4️⃣ 광고 등록
+### 4️⃣ 광고
 - **경로**:
     - `POST /api/ad`, `PUT /api/ad/{id}`, `DELETE /api/ad/{id}`, ...
     - `POST /api/ad-company`, `GET /api/ad-company`, ...
@@ -163,7 +163,7 @@ mvn spring-boot:run
     - 팝업 광고는 자동 종료 / 배너 광고는 상태별 필터링
     - 광고회사 드롭다운 연동
 
-![광고 시연](docs/ad-create.gif)
+![광고 시연](docs/ad.gif)
 
 ---
 

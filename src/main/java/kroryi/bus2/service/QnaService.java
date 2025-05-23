@@ -57,7 +57,7 @@ public class QnaService {
     @Transactional(readOnly = true)
     public List<QnaListDTO> getAllQna() {
         return qnaRepository.findAll().stream()
-                .filter(q -> !q.isDeleted())
+                .filter(q -> !q.isDeleted() && q.isVisible())
                 .map(q -> {
                     String username = userRepository.findById(q.getMemberId())
                             .map(User::getUsername)

@@ -22,27 +22,6 @@ public class QnaAdminService {
 
     private final QnaRepository qnaRepository;
 
-    // Q&A 등록
-    public Long createQna(QnaRequestDTO requestDTO) {
-        Qna qna = Qna.builder()
-                .memberId(requestDTO.getMemberId())
-                .title(requestDTO.getTitle())
-                .content(requestDTO.getContent())
-                .isSecret(requestDTO.isSecret())
-                .isDeleted(false)
-                .visible(true)
-                .status(QnaStatus.WAITING)
-                .build();
-
-        Qna saved = qnaRepository.save(qna);
-        return saved.getId();
-    }
-
-    // 사용자용 전체 Q&A 조회 (숨김/삭제 제외)
-    public List<QnaResponseDTO> getAllVisibleQna() {
-        List<Qna> qnas = qnaRepository.findByIsDeletedFalseAndVisibleTrueOrderByCreatedAtDesc();
-        return qnas.stream().map(this::toResponseDTO).collect(Collectors.toList());
-    }
 
     // 단건 조회 (권한 체크는 컨트롤러 또는 서비스 확장 시 구현)
     public QnaResponseDTO getQnaDetail(Long qnaId, Long requesterId, boolean isAdmin) {
@@ -111,37 +90,12 @@ public class QnaAdminService {
                 .secretCount(qnaRepository.countByIsSecretTrue())
                 .build();
     }
-    @Transactional
-    public void updateQna(Long qnaId, Long memberId, QnaUpdateDTO dto) {
-        Qna qna = qnaRepository.findById(qnaId)
-                .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
 
-        System.out.println("🔍 Qna DB memberId: " + qna.getMemberId());
-        System.out.println("🔍 요청한 memberId: " + memberId);
-
-        if (!qna.getMemberId().equals(memberId)) {
-            throw new AccessDeniedException("본인만 수정할 수 있습니다.");
-        }
-
-        System.out.println("요청된 memberId: " + memberId);
-        System.out.println("글 작성자 memberId: " + qna.getMemberId());
-
-
-        if (dto.getTitle() != null) qna.setTitle(dto.getTitle());
-        if (dto.getContent() != null) qna.setContent(dto.getContent());
-        if (dto.getIsSecret() != null) qna.setSecret(dto.getIsSecret());
-    }
     @Transactional
     @AdminAudit(action = "QnA 삭제", target = "Qna")
-    public void deleteQna(Long qnaId, Long memberId) {
+    public void deleteQna(Long qnaId) {
         Qna qna = qnaRepository.findById(qnaId)
                 .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
-
-        // 본인 확인
-        if (!qna.getMemberId().equals(memberId)) {
-            throw new AccessDeniedException("본인만 삭제할 수 있습니다.");
-        }
-
         qna.setDeleted(true);
     }
 
