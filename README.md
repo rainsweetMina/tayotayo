@@ -11,6 +11,8 @@
 
 ---
 
+
+
 ### 🛠 관리자 기능
 
 #### 🗂 게시글 관리
@@ -117,9 +119,19 @@ mvn spring-boot:run
 - **관리자 기능** (`/api/admin/**`)
    - 공지사항 관리
     (`/api/notice/**`) - 공지사항 등록, 수정, 삭제
-    ![예시](docs/adminNotice.gif)
+https://github.com/user-attachments/assets/da98b9d3-1206-4c2b-a3a8-cf82240ba297
+
+- 로그 기록 조회 (`/api/logs/**`) - Redis, Query, API 로그 조회
+ 
+https://github.com/user-attachments/assets/cafc911b-7852-467b-ad57-9eccc98c5059
+
+- API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
+
+https://github.com/user-attachments/assets/ac6871c0-9b24-49bf-98ba-3f76e71d473e
+
+
 ---
-### 2️⃣ Q&A 관리자용
+### Q&A 관리자용
 - **경로**:
     - `PUT /api/qna/{id}/answer`, `PATCH /api/qna/admin/hide/{id}`, `GET /api/qna/admin/stats`,`GET /api/qna/admin`
 - **기능**:
@@ -154,7 +166,7 @@ mvn spring-boot:run
 
 ---
 
-### 4️⃣ 광고 등록
+### 광고 등록
 - **경로**:
     - `POST /api/ad`, `PUT /api/ad/{id}`, `DELETE /api/ad/{id}`, ...
     - `POST /api/ad-company`, `GET /api/ad-company`, ...
@@ -167,20 +179,10 @@ mvn spring-boot:run
 
 ---
 
-- 로그 기록 조회 (`/api/logs/**`) - Redis, Query, API 로그 조회
-    ![예시](docs/adminLogs.gif)
-  
-- API chart 조회 (`/api/logs/**`) - Redis사용량, API 사용량 조회
-    ![예시](docs/apichart.gif)
-
----
-
 - **노선/정류소 관리** (`/api/bus/**`)
   ![예시](docs/busRoute.gif)
   
 - **노선/정류소 관리** (`/api/bus/**`) <br/>
-  <a href="https://www.youtube.com/watch?v=0CjTwxoGKzw" target="_blank">
-  <img src="https://img.youtube.com/vi/0CjTwxoGKzw/0.jpg" width="500"/>
 
 ---
   
