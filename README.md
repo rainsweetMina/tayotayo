@@ -131,7 +131,7 @@ mvn spring-boot:run
     - 답변 입력과 함께 관리자 정보 자동 연동
     - `isSecret`, `visible` 등을 통한 접근 제어 구현
 
-![Q&A 시연](docs/qnaAnswer.gif)
+https://github.com/user-attachments/assets/3fc66d60-2f30-4473-b7a9-00add259ad91
 
 ---
 
@@ -149,8 +149,7 @@ mvn spring-boot:run
     - 게시글은 등록 후 7일 뒤 자동 숨김 처리 (Scheduler)
     - 매칭 시 상태 자동 변경 ('회수 완료') 및 '신고 없이 수령' 처리도 가능
 
-![분실물/습득물 시연](docs/lostFound.gif)
-
+https://github.com/user-attachments/assets/88a7c07c-e53c-42e7-819f-cabfc701c61b
 
 ---
 
@@ -163,7 +162,7 @@ mvn spring-boot:run
     - 팝업 광고는 자동 종료 / 배너 광고는 상태별 필터링
     - 광고회사 드롭다운 연동
 
-![광고 시연](docs/ad.gif)
+https://github.com/user-attachments/assets/dac656ad-a64e-4796-b291-828b3fa658fe
 
 ---
 
