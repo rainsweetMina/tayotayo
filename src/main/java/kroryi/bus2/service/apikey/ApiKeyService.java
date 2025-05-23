@@ -223,28 +223,6 @@ public class ApiKeyService {
         return apiKeyRepository.save(newApiKey);
     }
 
-    // ====================================
-    // ✅ API 키 유효성 검사 (미사용)
-    // ====================================
-
-    /**
-     * API 키 유효성 검사
-     *
-     * @param apiKey 검증할 API 키
-     * @return 유효한 API 키인지 여부 (미사용 중)
-     */
-    public boolean isValidApiKey(String apiKey) {
-        // 실제 API 키 검증 로직 (DB에서 확인하거나 특정 값과 비교)
-        return apiKeyRepository.existsByApikey(apiKey);
-    }
-
-    // API 키가 관리자인지 확인하는 메서드
-    public boolean isAdminApiKey(String apiKey) {
-        // 실제 관리자 API 키 확인 로직
-        // 예시로 특정 API 키가 관리자인지 확인하는 조건을 추가
-        return "admin-api-key".equals(apiKey); // 예시로 "admin-api-key"가 관리자 키라고 가정
-    }
-
     public ApiKey getApiKeyRequestForUser(User user) {
         return apiKeyRepository.findTopByUserOrderByCreatedAtDesc(user).orElse(null);
     }
@@ -256,4 +234,10 @@ public class ApiKeyService {
         apiKey.setActive(!apiKey.isActive()); // 활성화 상태 토글
         apiKeyRepository.save(apiKey);
     }
+
+    public User getUserByUserId(String userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
 }

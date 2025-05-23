@@ -51,25 +51,6 @@ public class UserApiKeyController {
         }
     }
 
-//    @Operation(summary = "API 키 발급 요청", description = "사용자가 새로운 API 키 발급을 요청합니다.")
-//    @PostMapping("/request")
-//    public ResponseEntity<ApiKeyResponseDTO> requestApiKey(@RequestBody CreateApiKeyRequestDTO request) {
-//        User user = userService.getUserByUserId(request.getUserId());
-//        if (user == null) {
-//            System.out.println("api키발급확인");
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//        }
-//
-//        System.out.println("api키발급확인2");
-//        ApiKey apiKey = apiKeyService.issueApiKey(request.getName(), request.getAllowedIp(), user);
-//        ApiKeyResponseDTO response = new ApiKeyResponseDTO();
-//        response.setId(apiKey.getId());
-//        response.setUser_id(apiKey.getUserId());
-//        response.setActive(apiKey.isActive());
-//        response.setApiKey(apiKey.getApiKey());
-//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-//    }
-
     @PostMapping("/request")
     public ResponseEntity<ApiKeyResponseDTO> requestApiKey(@RequestBody CreateApiKeyRequestDTO request) {
         log.info("🔥 [requestApiKey] 컨트롤러 진입 - userId: {}", request.getUserId());
@@ -119,6 +100,31 @@ public class UserApiKeyController {
         response.setApiKey(apiKey.getApiKey());
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "API 키 재발급 요청", description = "기존 키가 없을 때 새 API 키를 재발급합니다.")
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissueApiKey(@RequestParam String userId) {
+        log.info("🔁 [reissueApiKey] API 키 재발급 요청 - userId: {}", userId);
+
+        try {
+            ApiKey apiKey = apiKeyService.reissueApiKey(userId);
+
+            ApiKeyResponseDTO response = new ApiKeyResponseDTO();
+            response.setId(apiKey.getId());
+            response.setUser_id(apiKey.getUserIdString());
+            response.setActive(apiKey.isActive());
+            response.setApiKey(apiKey.getApiKey());
+            response.setCreatedAt(apiKey.getCreatedAt());
+            response.setExpiresAt(apiKey.getExpiresAt());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            log.warn("❌ 재발급 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 
     @Operation(summary = "API 키 발급 요청 기록 조회", description = "사용자가 이전에 요청한 API 키 발급 기록을 조회합니다.")
     @GetMapping("/getApiKeyRequest")

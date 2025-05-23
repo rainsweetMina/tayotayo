@@ -15,7 +15,8 @@ public class ApiKeyResponseDTO {
     private Long id;
 //    @JsonIgnore
     private String username;
-//    @JsonIgnore
+    private String userIdString;
+    //    @JsonIgnore
     private boolean active;
     private String apiKey;
 //    @JsonIgnore
