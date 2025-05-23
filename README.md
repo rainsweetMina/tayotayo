@@ -179,16 +179,13 @@ https://github.com/user-attachments/assets/ac6871c0-9b24-49bf-98ba-3f76e71d473e
 
 ---
 
+- **버스 길찾기 시스템**
+
+https://github.com/user-attachments/assets/532e9184-97b4-4c21-ac32-cc5a1f54489b
+
+
 - **노선/정류소 관리** (`/api/bus/**`)
   ![예시](docs/busRoute.gif)
-  
-- **노선/정류소 관리** (`/api/bus/**`) <br/>
-
-
-https://github.com/user-attachments/assets/30e8f305-c094-4fa6-bf47-88e6f7314896
-
-
----
   
 - **버스 요금 정보 관리** (`/api/fares/**`) & **버스 회사 정보 관리** (`/api/companies/**`)
   ![예시](docs/boardFareCompanies.gif)
