@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Log4j2
@@ -114,4 +115,26 @@ public class UserService {
         return userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
     }
+
+    @Transactional
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateLastLoginAt(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void withdrawUser(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        user.setWithdraw(true);
+        userRepository.save(user);
+    }
+
 }

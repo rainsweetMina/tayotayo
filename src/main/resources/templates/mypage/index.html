@@ -66,12 +66,10 @@
 
 <a href="/mypage/modify">정보 수정</a><br/>
 <a href="/mypage/password">비밀번호 변경</a><br/>
-<a href="/logout">로그아웃</a>
+<a href="/logout">로그아웃</a><br/>
+<a href="/mypage/withdraw" style="color: red; display: inline-block; margin-top: 10px;">회원 탈퇴</a>
 
-<form th:action="@{/mypage/withdraw}" method="post" th:if="${_csrf != null}" style="margin-top: 10px;">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-    <button type="submit" style="color: red;">회원 탈퇴</button>
-</form>
+
 
 </body>
 </html>

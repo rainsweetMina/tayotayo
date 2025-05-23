@@ -5,6 +5,7 @@ import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +27,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         User user = userRepository.findByUserId(username)
                 .orElseThrow(() -> new UsernameNotFoundException("❌ 사용자를 찾을 수 없습니다: " + username));
+
+        // ✅ 탈퇴한 사용자 로그인 차단
+        if (user.isWithdraw()) {
+            log.warn("🚫 탈퇴한 사용자 로그인 시도 - userId: {}", username);
+            throw new DisabledException("이미 탈퇴한 계정입니다.");
+        }
 
         log.info("✅ 사용자 조회 성공 - username: {}", user.getUsername());
         return new CustomUserDetails(user);

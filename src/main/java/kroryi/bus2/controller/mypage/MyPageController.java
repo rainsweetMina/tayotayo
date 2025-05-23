@@ -359,5 +359,26 @@ public class MyPageController {
         lostItemService.deleteLostItem(id); // 이 메서드는 soft delete 혹은 삭제 처리
         return "redirect:/mypage/lost";
     }
+
+    @GetMapping("/withdraw")
+    public String showWithdrawPage() {
+        return "mypage/withdraw";
+    }
+
+    @Operation(summary = "회원 탈퇴 처리", description = "현재 로그인된 사용자를 탈퇴 처리합니다.")
+    @PostMapping("/withdraw")
+    public String handleWithdraw(RedirectAttributes redirectAttributes, Model model) {
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        userService.withdrawUser(userId);
+        SecurityContextHolder.clearContext(); // 로그아웃
+        model.addAttribute("message", "회원 탈퇴가 완료되었습니다.");
+        return "mypage/withdraw"; // ✅ HTML 직접 렌더링
+    }
+
+
 }
 

@@ -1,27 +1,20 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>회원 탈퇴</title>
 </head>
 <body>
 <h1>회원 탈퇴</h1>
+<p>정말로 탈퇴하시겠습니까?<br/>탈퇴 후에는 계정을 복구할 수 없습니다.</p>
 
 <form th:action="@{/mypage/withdraw}" method="post">
-    <label>비밀번호:</label>
-    <input type="password" name="password" required /><br/>
-
-    <button type="submit">비밀번호 확인 및 인증 코드 전송</button>
+    <button type="submit">탈퇴하기</button>
 </form>
 
-<!-- 인증 코드 입력 폼은 인증코드 발송 후에만 보이도록 처리 -->
-<form th:if="${codeSent}" th:action="@{/mypage/withdraw/confirm}" method="post">
-    <label>이메일 인증 코드:</label>
-    <input type="text" name="code" required /><br/>
+<a th:href="@{/mypage}">취소</a>
 
-    <button type="submit">최종 탈퇴</button>
-</form>
-
+<p th:if="${message}" th:text="${message}" style="color: green;"></p>
 <p th:if="${error}" th:text="${error}" style="color: red;"></p>
 </body>
 </html>
