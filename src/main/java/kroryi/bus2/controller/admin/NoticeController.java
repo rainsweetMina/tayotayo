@@ -3,6 +3,7 @@ package kroryi.bus2.controller.admin;
 import kroryi.bus2.dto.notice.NoticeDTO;
 import kroryi.bus2.service.admin.notice.NoticeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +27,11 @@ public class NoticeController {
         return ResponseEntity.ok(noticeService.findById(id));
     }
 
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
     public ResponseEntity<NoticeDTO> createNotice(
-            @ModelAttribute NoticeDTO dto,
-            @RequestParam("files") List<MultipartFile> files) {
+            @RequestPart("dto") NoticeDTO dto,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         return ResponseEntity.ok(noticeService.createNotice(dto, files));
     }
 
@@ -42,6 +43,7 @@ public class NoticeController {
             @RequestParam("files") List<MultipartFile> files) {
         return ResponseEntity.ok(noticeService.updateNotice(id, dto, files));
     }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")

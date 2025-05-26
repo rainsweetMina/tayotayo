@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class NoticeServiceImpl implements NoticeService {
     public NoticeDTO createNotice(NoticeDTO dto, List<MultipartFile> files) {
         Notice notice = new Notice();
         populateNoticeFields(dto, notice);
+        notice.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
         noticeRepository.save(notice);
 
         if (files != null && !files.isEmpty()) {
@@ -74,7 +76,7 @@ public class NoticeServiceImpl implements NoticeService {
                         notice.getAuthor(),
                         notice.getContent(),
                         notice.getCreatedDate().toLocalDateTime(),
-                        notice.getUpdatedDate().toLocalDateTime(),
+                        notice.getUpdatedDate() != null ? notice.getUpdatedDate().toLocalDateTime() : null, // Handle null updatedDate
                         notice.isShowPopup(),
                         notice.getPopupStart(),
                         notice.getPopupEnd(),
@@ -115,5 +117,6 @@ public class NoticeServiceImpl implements NoticeService {
         notice.setShowPopup(dto.isShowPopup());
         notice.setPopupStart(dto.getPopupStart());
         notice.setPopupEnd(dto.getPopupEnd());
+        notice.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
     }
 }
