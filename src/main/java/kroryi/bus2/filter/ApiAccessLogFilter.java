@@ -2,8 +2,7 @@ package kroryi.bus2.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
-import kroryi.bus2.entity.ApiAccessLog;
-import kroryi.bus2.repository.jpa.ApiAccessLogRepository;
+import kroryi.bus2.repository.jpa.admin.ApiAccessLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor

@@ -2,8 +2,7 @@ package kroryi.bus2.service;
 
 import jakarta.transaction.Transactional;
 import kroryi.bus2.entity.AdminAuditLog;
-import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
-import lombok.RequiredArgsConstructor;
+import kroryi.bus2.repository.jpa.admin.AdminAuditLogRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

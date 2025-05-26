@@ -1,4 +1,4 @@
-package kroryi.bus2.repository.jpa;
+package kroryi.bus2.repository.jpa.admin;
 
 import kroryi.bus2.entity.ApiLogEntry;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -3,10 +3,7 @@ package kroryi.bus2.aop;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.dto.lost.FoundItemRequestDTO;
 import kroryi.bus2.entity.AdminAuditLog;
-import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
-import kroryi.bus2.service.AuditLogService;
-import kroryi.bus2.entity.AdminAuditLog;
-import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
+import kroryi.bus2.repository.jpa.admin.AdminAuditLogRepository;
 import kroryi.bus2.service.AuditLogServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
