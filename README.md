@@ -183,18 +183,18 @@ https://github.com/user-attachments/assets/ac6871c0-9b24-49bf-98ba-3f76e71d473e
 
 https://github.com/user-attachments/assets/532e9184-97b4-4c21-ac32-cc5a1f54489b
 
-
-- **노선/정류소 관리** (`/api/bus/**`)
-  ![예시](docs/busRoute.gif)
   
 - **버스 요금 정보 관리** (`/api/fares/**`) & **버스 회사 정보 관리** (`/api/companies/**`)
-  ![예시](docs/boardFareCompanies.gif)
-  
+
+https://github.com/user-attachments/assets/61fea920-74a3-4e93-95d7-4a1bf48386e9
+
 - **시간표 및 저상버스 관리** (`/api/schedule/**`)
-  ![예시](docs/boardSchedule.gif)
+  
+https://github.com/user-attachments/assets/f0105207-be72-4768-a8a6-7ed28e8402d3
   
 - **노선별 주요 정류장 지정** (`/api/schedule-headers/**`)
- ![예시](docs/boardScheduleHeader.gif)
+
+https://github.com/user-attachments/assets/dd9f2393-c0d4-4b13-940a-cd8872d0a5d5
 
 ---
 
