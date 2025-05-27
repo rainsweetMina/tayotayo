@@ -7,8 +7,6 @@
 <body>
 <h1>API Key DashBoard</h1>
 
-<!--<p>환영합니다, <span th:text="${#authentication.name}">관리자</span>님!</p>-->
-
 <hr/>
 
 <h3>📋 전체 API Key 목록</h3>
@@ -16,8 +14,9 @@
     <thead>
     <tr>
         <th>ID</th>
+        <th>UserID</th>
         <th>API Key</th>
-<!--        <th>상태</th>-->
+        <th>상태</th>
         <th>발급일</th>
         <th>만료일</th>
         <th>관리</th>
@@ -26,19 +25,76 @@
     <tbody>
     <tr th:each="key : ${recentKeys}">
         <td th:text="${key.id}"></td>
+        <td th:text="${key.userIdString}"></td>
         <td th:text="${key.apiKey}"></td>
-<!--        <td th:text="${key.status}"></td>-->
+        <td th:text="${key.status}"></td> <!-- 승인 상태 표시 -->
         <td th:text="${#temporals.format(key.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
         <td th:text="${#temporals.format(key.expiresAt, 'yyyy-MM-dd HH:mm')}"></td>
         <td>
-            <form th:action="@{/admin/apikey/{id}/toggle(id=${key.id})}" method="post">
-                <button type="submit"
-                        th:text="${key.active ? '비활성화' : '활성화'}">
-                </button>
-            </form>
+            <!-- 승인 상태 토글 버튼 -->
+            <button type="button"
+                    th:attr="data-id=${key.id}"
+                    th:text="${key.status.name() == 'APPROVED' ? '승인 취소' : '승인'}"
+                    onclick="toggleApproval(this)">
+            </button>
+            <!-- 삭제 버튼 -->
+            <button type="button"
+                    th:attr="data-id=${key.id}"
+                    onclick="deleteApiKey(this)">
+                삭제
+            </button>
         </td>
     </tr>
     </tbody>
 </table>
+
+<script>
+    function toggleApproval(button) {
+        const id = button.getAttribute('data-id');
+
+        fetch(`/api/admin/apikey/${id}/toggle-approval`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("요청 실패");
+                return response.text();
+            })
+            .then(message => {
+                alert(message);
+                location.reload(); // 변경사항 반영을 위해 새로고침
+            })
+            .catch(err => {
+                alert("오류 발생: " + err.message);
+            });
+    }
+    function deleteApiKey(button) {
+        const id = button.getAttribute('data-id');
+
+        if (!confirm("정말 이 API 키를 삭제하시겠습니까?")) {
+            return;
+        }
+
+        fetch(`/api/admin/apikey/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("삭제 실패");
+                return response.text();
+            })
+            .then(message => {
+                alert(message);
+                location.reload(); // 삭제 후 새로고침
+            })
+            .catch(err => {
+                alert("오류 발생: " + err.message);
+            });
+    }
+</script>
 </body>
 </html>

@@ -52,6 +52,7 @@ public class BusScheduleApiController {
     }
 
     // 해당 노선의 방면 정보 가져오기
+    @Hidden
     @Operation(summary = "버스 노선 방면 조회", description = "버스 번호로 운행하는 방면 조회")
     @GetMapping("/route-notes")
     @ResponseBody
@@ -68,6 +69,7 @@ public class BusScheduleApiController {
     }
 
     // 해당 노선 번호의 방향 목록 조회
+    @Hidden
     @Operation(summary = "버스 노선 방향 조회", description = "해당 노선 방향 조회(moveDIr 정방향:0, 역방향:1)")
     @GetMapping("/route-id/movedirs")
     @ResponseBody
@@ -147,6 +149,7 @@ public class BusScheduleApiController {
         return null;
     }
 
+    @Hidden
     @Operation(summary = "해당 노선의 노선ID 조회(방향)", description = "버스번호와 방향으로 routeId 조회")
     @GetMapping("/route-id/by-movedir")
     @ResponseBody

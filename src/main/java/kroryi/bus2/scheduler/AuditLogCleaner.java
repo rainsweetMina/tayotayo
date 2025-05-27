@@ -1,7 +1,7 @@
 package kroryi.bus2.scheduler;
 
 import jakarta.transaction.Transactional;
-import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
+import kroryi.bus2.repository.jpa.admin.AdminAuditLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

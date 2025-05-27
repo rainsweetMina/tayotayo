@@ -2,7 +2,7 @@ package kroryi.bus2.service;
 
 import kroryi.bus2.dto.ApiResponseStatDTO;
 import kroryi.bus2.entity.ApiLogEntry;
-import kroryi.bus2.repository.jpa.ApiLogEntryRepository;
+import kroryi.bus2.repository.jpa.admin.ApiLogEntryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;

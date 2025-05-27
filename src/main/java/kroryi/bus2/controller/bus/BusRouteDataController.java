@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -86,6 +87,7 @@ public class BusRouteDataController {
     }
 
     // 경유 정류소만 추가 거의 쓸일없을듯?
+    @Hidden
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "경유지 추가", description = "새로운 경유 정류소만 추가 거의 쓸일없을듯?")
     @PostMapping("/AddRouteStopLink")
@@ -115,6 +117,7 @@ public class BusRouteDataController {
         return ResponseEntity.ok(route);
     }
 
+    // 이거 에러있음
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "노선정보 수정", description = "커스텀/일반 노선 구분 없이 노선ID로 정보 수정")
     @PutMapping("/UpdateRouteUnified/{routeId}")

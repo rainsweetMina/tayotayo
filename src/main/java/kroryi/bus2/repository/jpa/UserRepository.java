@@ -27,4 +27,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 유저 이름 검색용 (qnaList.html에 사용)
     List<User> findByUsernameContaining(String keyword);
+
+    List<User> findByWithdrawFalse();
+
 }

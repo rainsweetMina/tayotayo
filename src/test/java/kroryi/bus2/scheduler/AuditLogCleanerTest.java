@@ -1,7 +1,7 @@
 package kroryi.bus2.scheduler;
 
 import kroryi.bus2.entity.AdminAuditLog;
-import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
+import kroryi.bus2.repository.jpa.admin.AdminAuditLogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

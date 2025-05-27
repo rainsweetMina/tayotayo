@@ -7,6 +7,8 @@ import kroryi.bus2.dto.apiKey.CreateApiKeyRequestDTO;
 import kroryi.bus2.dto.apiKey.ApiKeyResponseDTO;
 import kroryi.bus2.dto.apiKey.UpdateApiKeyStatusRequestDTO;
 import kroryi.bus2.entity.apikey.ApiKey;
+import kroryi.bus2.entity.apikey.ApiKeyStatus;
+import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.apikey.ApiKeyService;
 import kroryi.bus2.repository.jpa.apikey.ApiKeyRepository;
 import kroryi.bus2.utils.JwtTokenUtil;
@@ -54,7 +56,7 @@ public class AdminApiKeyController {
                 .map(apiKey -> {
                     ApiKeyResponseDTO dto = new ApiKeyResponseDTO();
                     dto.setId(apiKey.getId());
-                    dto.setName(apiKey.getName());
+                    dto.setUsername(apiKey.getUser().getUsername());
                     dto.setApiKey(apiKey.getApiKey());
                     dto.setActive(apiKey.isActive());
                     dto.setCreatedAt(apiKey.getCreatedAt());
@@ -74,7 +76,7 @@ public class AdminApiKeyController {
                 .map(apiKey -> {
                     ApiKeyResponseDTO response = new ApiKeyResponseDTO();
                     response.setId(apiKey.getId());
-                    response.setName(apiKey.getName());
+                    response.setUsername(apiKey.getUser().getUsername());
                     response.setActive(apiKey.isActive());
                     response.setApiKey(apiKey.getApiKey());
                     return ResponseEntity.ok(response);
@@ -85,13 +87,23 @@ public class AdminApiKeyController {
     @Operation(summary = "API 키 생성", description = "새로운 API 키를 생성합니다.")
     @PostMapping("/create")
     public ApiKeyResponseDTO createKey(@RequestBody CreateApiKeyRequestDTO request) {
-        ApiKey key = ApiKey.builder()
-                .name(request.getName())
+        ApiKey.ApiKeyBuilder builder = ApiKey.builder()
+                .user_name(request.getUser_name())
                 .active(true)
                 .issuedAt(LocalDateTime.now())
                 .expiresAt(request.getExpiresAt())
                 .allowedIp(request.getAllowedIp())
-                .build();
+                .status(ApiKeyStatus.PENDING)
+                .createdAt(LocalDateTime.now());
+
+        // ✅ userId가 넘어온 경우 User 엔티티 연결
+        if (request.getUserId() != null && !request.getUserId().isBlank()) {
+            User user = apiKeyService.getUserByUserId(request.getUserId()); // 또는 직접 userRepository 사용
+            builder.user(user);
+            builder.userIdString(user.getUserId());
+        }
+
+        ApiKey key = builder.build();
 
         if (request.getCallbackUrls() != null) {
             for (String url : request.getCallbackUrls()) {
@@ -105,7 +117,8 @@ public class AdminApiKeyController {
 
         ApiKeyResponseDTO response = new ApiKeyResponseDTO();
         response.setId(saved.getId());
-        response.setName(saved.getName());
+        response.setUsername(saved.getUser_name());
+        response.setUserIdString(saved.getUserIdString()); // ✅ DTO에 필드가 있다면 포함
         response.setActive(saved.isActive());
         response.setApiKey(saved.getApiKey());
         return response;
@@ -123,6 +136,16 @@ public class AdminApiKeyController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("API 키를 찾을 수 없습니다."));
     }
 
+    @Operation(summary = "API 키 승인 상태 토글", description = "API 키 상태를 승인/대기로 토글합니다.")
+    @PutMapping("/{id}/toggle-approval")
+    public ResponseEntity<String> toggleApprovalStatus(@PathVariable Long id) {
+        log.info("🔁 API 키 승인 상태 변경 요청: {}", id); // ← 로그 추가하면 호출 여부 추적 가능
+        boolean approved = apiKeyService.toggleActive(id); // 또는 toggleActiveStatus(id)
+
+        return ResponseEntity.ok(
+                approved ? "✅ API 키가 승인되었습니다." : "⏳ API 키가 대기 상태로 변경되었습니다."
+        );
+    }
 
 
     @Operation(summary = "API 키 삭제", description = "지정한 ID의 API 키를 삭제합니다.")

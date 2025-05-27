@@ -76,34 +76,6 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             response.getWriter().write("Missing API Key");
             return;
         }
-
-        // API 키가 유효하지 않으면 401 Unauthorized 응답
-        if (!apiKeyService.isValidApiKey(apiKey)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid API Key");
-            return;
-        }
-
-        // 권한 설정: 기본은 ROLE_USER, 관리자는 ROLE_ADMIN
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        if (apiKeyService.isAdminApiKey(apiKey)) {
-            authorities = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        }
-
-        // 👇 기존 인증 백업
-        var originalAuthentication = SecurityContextHolder.getContext().getAuthentication();
-
-        try {
-            // 👇 현재 요청에만 임시 인증 설정
-            ApiKeyAuthenticationToken authToken = new ApiKeyAuthenticationToken(apiKey, authorities);
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-
-            chain.doFilter(request, response);
-
-        } finally {
-            // 👇 기존 인증 복구 (세션 덮어쓰기 방지)
-            SecurityContextHolder.getContext().setAuthentication(originalAuthentication);
-        }
     }
 
     private String getApiKeyFromRequest(HttpServletRequest request) {

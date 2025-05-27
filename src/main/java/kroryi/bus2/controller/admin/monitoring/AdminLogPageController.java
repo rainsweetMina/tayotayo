@@ -1,7 +1,7 @@
 package kroryi.bus2.controller.admin.monitoring;
 
 import kroryi.bus2.entity.AdminAuditLog;
-import kroryi.bus2.repository.jpa.AdminAuditLogRepository;
+import kroryi.bus2.repository.jpa.admin.AdminAuditLogRepository;
 import kroryi.bus2.service.AuditLogServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

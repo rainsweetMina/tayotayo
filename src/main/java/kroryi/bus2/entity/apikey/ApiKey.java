@@ -28,7 +28,9 @@ public class ApiKey {
     @Column(unique = true, name = "api_key")
     private String apikey;
 
-    private String name;
+
+
+    private String user_name;
 
     @Builder.Default
     private Boolean active = true;
@@ -45,11 +47,12 @@ public class ApiKey {
     @Column(name = "callback_url")
     private String callbackUrl;
 
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "user_id_string")
+    private String userIdString;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.board;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.entity.busStop.BusStopInfo;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Hidden
 @Tag(name = "버스-정류장-조회", description = "")
 @RestController
 @RequestMapping("/api/bus-info")
