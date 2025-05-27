@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>분실물 상세 보기</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-5">
+
+<h2 class="mb-4">🔍 분실물 상세 정보</h2>
+
+<table class="table table-bordered">
+  <tr>
+    <th>제목</th>
+    <td th:text="${item.title}">제목</td>
+  </tr>
+  <tr>
+    <th>내용</th>
+    <td th:text="${item.content}">내용</td>
+  </tr>
+  <tr>
+    <th>버스 회사</th>
+    <td th:text="${item.busCompany}">회사</td>
+  </tr>
+  <tr>
+    <th>버스 번호</th>
+    <td th:text="${item.busNumber}">1234</td>
+  </tr>
+  <tr>
+    <th>분실일</th>
+    <td th:text="${#temporals.format(item.lostTime, 'yyyy-MM-dd HH:mm')}">날짜</td>
+  </tr>
+  <tr>
+    <th>등록일</th>
+    <td th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">생성일</td>
+  </tr>
+  <tr>
+    <th>최근 수정일</th>
+    <td th:text="${#temporals.format(item.updatedAt, 'yyyy-MM-dd HH:mm')}">수정일</td>
+  </tr>
+</table>
+
+<div class="mt-4">
+  <a href="/bus/lost" class="btn btn-secondary">🔙 목록으로 돌아가기</a>
+</div>
+
+</body>
+</html>

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
+
 @Tag(name = "질문-관리", description = "")
 @RestController
 @RequiredArgsConstructor
@@ -26,22 +28,6 @@ public class QnaApiController {
     private final QnaService qnaService;
     private final QnaAdminService qnaAdminService;
 
-    @Operation(summary = "QnA 등록", description = "사용자가 새 질문을 등록합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "질문 등록 완료")
-    })
-    @PostMapping
-    public ResponseEntity<Long> createQna(@RequestBody @Valid QnaRequestDTO requestDTO) {
-        Long qnaId = qnaAdminService.createQna(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(qnaId);
-    }
-
-    @Operation(summary = "QnA 전체 조회", description = "일반 사용자용 QnA 전체 목록을 조회합니다.")
-    @GetMapping
-    public ResponseEntity<List<QnaResponseDTO>> getAllQna() {
-        List<QnaResponseDTO> qnaList = qnaAdminService.getAllVisibleQna();
-        return ResponseEntity.ok(qnaList);
-    }
 
     @Operation(summary = "QnA 단건 조회", description = "QnA 상세 정보를 조회합니다.")
     @GetMapping("/{id}")
@@ -74,22 +60,14 @@ public class QnaApiController {
         return ResponseEntity.ok(stats);
     }
 
-    @Operation(summary = "QnA 수정", description = "작성자가 본인의 QnA를 수정합니다.")
-    @PatchMapping("/{id}")
-    public ResponseEntity<String> updateQna(@PathVariable Long id,
-                                            @RequestBody QnaUpdateDTO dto) {
-        Long memberId = dto.getMemberId();
-        qnaAdminService.updateQna(id, memberId, dto);
-        return ResponseEntity.ok("질문글이 수정되었습니다.");
-    }
 
-    @Operation(summary = "QnA 삭제", description = "작성자가 본인의 QnA를 삭제합니다.")
-    @DeleteMapping("/{id}")
+    @Operation(summary = "QnA 삭제 (관리자)", description = "관리자가 QnA를 삭제합니다.")
+    @DeleteMapping("/admin/{id}")
     public ResponseEntity<String> deleteQna(@PathVariable Long id) {
-        Long memberId = 1L; // ✅ 실제 로그인 사용자 ID로 대체해야 함 (임시값)
-        qnaAdminService.deleteQna(id, memberId);
+        qnaAdminService.deleteQna(id); // 관리자 전용 삭제 메서드
         return ResponseEntity.ok("질문글이 삭제되었습니다.");
     }
+
 
     @Operation(summary = "QnA 답변 등록 (관리자)", description = "관리자가 QnA에 답변을 등록합니다.")
     @PutMapping("/{id}/answer")
