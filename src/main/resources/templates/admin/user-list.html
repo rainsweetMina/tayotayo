@@ -37,8 +37,11 @@
       <th>전화번호</th>
       <th>가입유형</th>
       <th>가입일</th>
+      <th>최근 로그인</th>
       <th>권한</th>
       <th>권한 변경</th>
+      <th>임시 비밀번호</th>
+      <th>강제 탈퇴</th>
     </tr>
     </thead>
     <tbody>
@@ -49,6 +52,7 @@
       <td th:text="${user.phoneNumber} ?: '-'">전화번호</td>
       <td th:text="${user.signupType}">가입유형</td>
       <td th:text="${user.signupDate}">가입일</td>
+      <td th:text="${#temporals.format(user.lastLoginAt, 'yyyy-MM-dd HH:mm:ss')}">최근 로그인</td>
       <td th:text="${user.role}">권한</td>
       <td>
         <form th:action="@{/admin/users/{userId}/role(userId=${user.userId})}" method="post">
@@ -59,6 +63,17 @@
             <option th:selected="${user.role.name() == 'AD'}" value="AD">AD</option>
           </select>
           <button type="submit">변경</button>
+        </form>
+      </td>
+      <td>
+        <form th:action="@{/admin/users/{userId}/temp-password(userId=${user.userId})}" method="post">
+          <button type="submit">임시 비밀번호 발급</button>
+        </form>
+      </td>
+      <td>
+        <form th:action="@{/admin/users/{userId}/withdraw(userId=${user.userId})}" method="post"
+              onsubmit="return confirm('정말로 탈퇴 처리하시겠습니까?');">
+          <button type="submit" th:disabled="${user.withdraw}">탈퇴</button>
         </form>
       </td>
     </tr>

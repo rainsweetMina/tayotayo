@@ -108,7 +108,8 @@ public class MyPageController {
         model.addAttribute("parameterName", "Your Parameter Value"); // 원하는 값 넣기
         return "mypage/apikey-request";
     }
-    // API 키 발급 페이지
+
+    // API 키 신청 화면 보여주기
     @GetMapping("/apikey-request")
     public String showApiKeyRequestForm(Model model) {
         String userId = extractUserId();
@@ -116,19 +117,51 @@ public class MyPageController {
             return "redirect:/login";
         }
 
-        // API 키 발급 로직 (예시)
-        Optional<ApiKey> apiKeyOpt = apiKeyService.findLatestByUserId(userId);
-        log.info("✅ API 키 조회 결과: {}", apiKeyOpt.isPresent() ? "발급된 API 키 있음" : "발급된 API 키 없음");
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-        if (apiKeyOpt.isPresent()) {
-            model.addAttribute("apiKey", apiKeyOpt.get());
-        } else {
-            model.addAttribute("apiKey", null);
+        // APPROVED, PENDING 구분 없이 최근 키 1개 조회
+        ApiKey apiKey = apiKeyService.getApiKeyRequestForUser(user);
+        log.info("✅ API 키 조회 결과: {}", (apiKey != null ? "발급된 API 키 있음" : "발급된 API 키 없음"));
+
+        model.addAttribute("apiKey", apiKey);
+
+        if (apiKey == null) {
             model.addAttribute("message", "현재 발급된 API 키가 없습니다. API 키를 신청해 주세요.");
         }
 
-        return "mypage/apikey-request"; // 'apikey-request.html'로 이동
+        return "mypage/apikey-request";
     }
+
+
+    // API 키 발급 요청 페이지
+    @PostMapping("/apikey-request")
+    public String handleApiKeyRequest(@RequestParam String type, RedirectAttributes redirectAttributes) {
+        String userId = extractUserId();
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            if ("request".equals(type)) {
+                apiKeyService.requestApiKey(userId);
+                redirectAttributes.addFlashAttribute("message", "API 키 신청이 완료되었습니다.");
+            } else if ("renew".equals(type)) {
+                apiKeyService.reissueApiKey(userId);
+                redirectAttributes.addFlashAttribute("message", "API 키가 재발급되었습니다.");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "잘못된 요청입니다.");
+            }
+        } catch (Exception e) {
+            log.error("API 키 신청 실패", e);
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/mypage/apikey-request";
+    }
+
 
     // 비밀번호 변경 폼
     @Operation(summary = "비밀번호 변경 폼", description = "비밀번호 변경 폼을 표시합니다.")
@@ -327,30 +360,25 @@ public class MyPageController {
         return "redirect:/mypage/lost";
     }
 
-    // API 키 발급 요청 페이지
-    @Operation(summary = "API 키 신청 처리", description = "사용자가 API 키를 신청합니다. 신청 후 관리자의 승인을 기다려야 합니다.")
-    @PostMapping("/apikey-request")
-    public String requestApiKey(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                @RequestParam String type, RedirectAttributes redirectAttributes) {
-        if (userDetails == null) {
+    @GetMapping("/withdraw")
+    public String showWithdrawPage() {
+        return "mypage/withdraw";
+    }
+
+    @Operation(summary = "회원 탈퇴 처리", description = "현재 로그인된 사용자를 탈퇴 처리합니다.")
+    @PostMapping("/withdraw")
+    public String handleWithdraw(RedirectAttributes redirectAttributes, Model model) {
+        String userId = extractUserId();
+        if (userId == null) {
             return "redirect:/login";
         }
-        try {
-            if ("request".equals(type)) {
-                apiKeyService.requestApiKey(userDetails.getUsername());
-                redirectAttributes.addFlashAttribute("message", "API 키 신청이 완료되었습니다. 관리자의 승인을 기다려주세요.");
-            } else if ("renew".equals(type)) {
-                apiKeyService.renewApiKey(userDetails.getUsername());
-                redirectAttributes.addFlashAttribute("message", "API 키 재발급이 완료되었습니다.");
-            } else {
-                redirectAttributes.addFlashAttribute("error", "잘못된 요청입니다.");
-            }
-        } catch (Exception e) {
-            log.error("API 키 신청 실패", e);
-            redirectAttributes.addFlashAttribute("error", "API 키 신청에 실패했습니다. 다시 시도해주세요.");
-        }
 
-        return "redirect:/mypage/apikey-request"; // 리다이렉트 후 메시지 전달
+        userService.withdrawUser(userId);
+        SecurityContextHolder.clearContext(); // 로그아웃
+        model.addAttribute("message", "회원 탈퇴가 완료되었습니다.");
+        return "mypage/withdraw"; // ✅ HTML 직접 렌더링
     }
+
+
 }
 

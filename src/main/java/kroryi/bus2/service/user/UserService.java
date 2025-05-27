@@ -4,13 +4,17 @@ import jakarta.transaction.Transactional;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginRequestDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
+import kroryi.bus2.dto.user.UserInfoDTO;
+import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Log4j2
@@ -111,6 +115,42 @@ public class UserService {
     }
 
     public User getUserByUserId(String userId) {
-        return userRepository.findByUserId(userId).orElse(null);
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
     }
+
+    @Transactional
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateLastLoginAt(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void withdrawUser(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        user.setWithdraw(true);
+        userRepository.save(user);
+    }
+
+    public UserInfoDTO getUserInfo(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다."));
+
+        return new UserInfoDTO(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole()  // ✅ Role enum 자체를 전달
+        );
+    }
+
+
 }

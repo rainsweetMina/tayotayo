@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>즐겨찾기</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .favorites { max-width: 600px; margin: 0 auto; }
+        .favorite-item {
+            display: flex; justify-content: space-between;
+            padding: 10px; border-bottom: 1px solid #ccc;
+        }
+        .favorite-item span { font-weight: bold; }
+        .add-form { margin-top: 20px; display: flex; gap: 10px; }
+        h2 { border-bottom: 2px solid #333; padding-bottom: 5px; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="favorites">
+    <h1>🚏 즐겨찾기 관리</h1>
+
+    <h2>📍 정류장 즐겨찾기</h2>
+    <div id="bus-stop-list"></div>
+    <div class="add-form">
+        <input type="text" id="busStopId" placeholder="정류장 ID 입력">
+        <button onclick="addBusStop()">정류장 추가</button>
+    </div>
+
+    <h2>🚌 노선 즐겨찾기</h2>
+    <div id="route-list"></div>
+    <div class="add-form">
+        <input type="text" id="routeId" placeholder="노선 ID 입력">
+        <button onclick="addRoute()">노선 추가</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const userId = /*[[${userId}]]*/ "";
+    const busStopList = document.getElementById('bus-stop-list');
+    const routeList = document.getElementById('route-list');
+
+    if (!userId || userId === "") {
+        console.warn("⚠ userId가 비어 있습니다. 로그인 상태를 확인하세요.");
+    }
+
+    function loadFavorites() {
+        busStopList.innerHTML = '';
+        routeList.innerHTML = '';
+
+        axios.get(`/api/mypage/favorite/bus-stop?userId=${userId}`)
+            .then(res => {
+                (res.data || []).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'favorite-item';
+                    div.innerHTML = `
+                        <div><span>정류장</span> | ${item.bsId}</div>
+                        <button onclick="removeBusStop('${item.bsId}')">삭제</button>
+                    `;
+                    busStopList.appendChild(div);
+                });
+            })
+            .catch(err => {
+                console.error("정류장 목록 조회 실패:", err);
+                alert('정류장 목록을 불러오는 데 실패했습니다.');
+            });
+
+        axios.get(`/api/mypage/favorite/route?userId=${userId}`)
+            .then(res => {
+                (res.data || []).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'favorite-item';
+                    div.innerHTML = `
+                        <div><span>노선</span> | ${item.routeId}</div>
+                        <button onclick="removeRoute('${item.routeId}')">삭제</button>
+                    `;
+                    routeList.appendChild(div);
+                });
+            })
+            .catch(err => {
+                console.error("노선 목록 조회 실패:", err);
+                alert('노선 목록을 불러오는 데 실패했습니다.');
+            });
+    }
+
+    function addBusStop() {
+        const bsId = document.getElementById('busStopId').value.trim();
+        if (!bsId) return alert('정류장 ID를 입력하세요.');
+
+        axios.post(`/api/mypage/favorite/bus-stop?userId=${userId}&bsId=${bsId}`)
+            .then(() => {
+                alert('정류장 추가 완료!');
+                document.getElementById('busStopId').value = '';
+                loadFavorites();
+            })
+            .catch(err => {
+                console.error(err);
+                alert(err.response?.data || '정류장 추가 실패!');
+            });
+    }
+
+    function addRoute() {
+        const routeId = document.getElementById('routeId').value.trim();
+        if (!routeId) return alert('노선 ID를 입력하세요.');
+
+        axios.post(`/api/mypage/favorite/route?userId=${userId}&routeId=${routeId}`)
+            .then(() => {
+                alert('노선 추가 완료!');
+                document.getElementById('routeId').value = '';
+                loadFavorites();
+            })
+            .catch(err => {
+                console.error(err);
+                alert(err.response?.data || '노선 추가 실패!');
+            });
+    }
+
+    function removeBusStop(bsId) {
+        axios.delete(`/api/mypage/favorite/bus-stop`, {
+            params: { userId: userId, bsId: bsId }
+        })
+            .then(() => loadFavorites())
+            .catch(err => {
+                console.error(err);
+                alert('정류장 삭제 실패!');
+            });
+    }
+
+    function removeRoute(routeId) {
+        axios.delete(`/api/mypage/favorite/route`, {
+            params: { userId: userId, routeId: routeId }
+        })
+            .then(() => loadFavorites())
+            .catch(err => {
+                console.error(err);
+                alert('노선 삭제 실패!');
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadFavorites);
+</script>
+</body>
+</html>

@@ -38,27 +38,28 @@ public class ApiKeyService {
     /**
      * 새로운 API 키 발급
      *
-     * @param name      API 키 이름
+     * @param user_name      API 키 이름
      * @param allowedIp 허용된 IP
      * @param user      발급 대상 사용자
      * @return 발급된 API 키
      */
     @Transactional
-    public ApiKey issueApiKey(String name, String allowedIp, User user) {
-        // API 키 생성
+    public ApiKey issueApiKey(String user_name, String allowedIp, User user) {
+
         ApiKey apiKey = ApiKey.builder()
-                .apikey(UUID.randomUUID().toString())  // 랜덤 API 키 생성
-                .name(name)
+                .apikey(UUID.randomUUID().toString())
                 .allowedIp(allowedIp)
-                .user(user)  // 사용자 정보 추가
-                .expiresAt(LocalDateTime.now().plusDays(defaultExpirationDays))  // 기본 만료일 설정
-                .status(ApiKeyStatus.PENDING)  // 기본 상태는 PENDING
-                .createdAt(LocalDateTime.now())  // 생성일자 설정
+                .user(user)                                // ← User 객체
+                .userIdString(user.getUserId())            // ← String 형태의 로그인 ID 복사 저장
+                .user_name(user_name)
+                .expiresAt(LocalDateTime.now().plusDays(defaultExpirationDays))
+                .status(ApiKeyStatus.PENDING)
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        // API 키를 DB에 저장하고 반환
         return apiKeyRepository.save(apiKey);
     }
+
 
     /**
      * 일반 사용자가 API 키를 신청하는 메서드
@@ -84,16 +85,16 @@ public class ApiKeyService {
             throw new IllegalStateException("이미 API 키를 신청했거나 발급받은 상태입니다.");
         }
 
-        // 새로운 API 키 생성
-        ApiKey key = ApiKey.builder()
-                .user(user)
-                .apikey(UUID.randomUUID().toString().replace("-", ""))  // 중복을 피한 랜덤 API 키 생성
-                .status(ApiKeyStatus.PENDING)  // 상태를 PENDING으로 설정
-                .createdAt(LocalDateTime.now())  // 생성일자 설정
-                .build();
+        // 기본값으로 API 키 발급 처리
+        ApiKey apiKey = issueApiKey(
+                user.getUsername(),        // 기본 이름
+                "0.0.0.0",           // 기본 허용 IP (모두 허용)
+                user
+        );
 
-        apiKeyRepository.save(key);  // DB에 저장
+        log.info("🔑 API 키 발급 완료 - 키: {}", apiKey.getApiKey());
     }
+
 
     public void renewApiKey(String userId) {
         // 1. User 객체 먼저 조회
@@ -126,7 +127,8 @@ public class ApiKeyService {
         // 사용자 조회
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        return apiKeyRepository.findTopByUserOrderByCreatedAtDesc(user);  // 가장 최근 생성된 키 반환
+        return apiKeyRepository.findTopByUserAndStatusOrderByCreatedAtDesc(user, ApiKeyStatus.APPROVED);
+
     }
 
     /**
@@ -221,32 +223,8 @@ public class ApiKeyService {
         return apiKeyRepository.save(newApiKey);
     }
 
-    // ====================================
-    // ✅ API 키 유효성 검사 (미사용)
-    // ====================================
-
-    /**
-     * API 키 유효성 검사
-     *
-     * @param apiKey 검증할 API 키
-     * @return 유효한 API 키인지 여부 (미사용 중)
-     */
-    public boolean isValidApiKey(String apiKey) {
-        // 실제 API 키 검증 로직 (DB에서 확인하거나 특정 값과 비교)
-        return apiKeyRepository.existsByApikey(apiKey);
-    }
-
-    // API 키가 관리자인지 확인하는 메서드
-    public boolean isAdminApiKey(String apiKey) {
-        // 실제 관리자 API 키 확인 로직
-        // 예시로 특정 API 키가 관리자인지 확인하는 조건을 추가
-        return "admin-api-key".equals(apiKey); // 예시로 "admin-api-key"가 관리자 키라고 가정
-    }
-
     public ApiKey getApiKeyRequestForUser(User user) {
-        // 예시: user 기준으로 apiKey 하나 조회 (상황에 따라 쿼리 수정)
-        return apiKeyRepository.findFirstByUser(user)
-                .orElse(null);
+        return apiKeyRepository.findTopByUserOrderByCreatedAtDesc(user).orElse(null);
     }
 
     @Transactional
@@ -256,4 +234,10 @@ public class ApiKeyService {
         apiKey.setActive(!apiKey.isActive()); // 활성화 상태 토글
         apiKeyRepository.save(apiKey);
     }
+
+    public User getUserByUserId(String userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
 }

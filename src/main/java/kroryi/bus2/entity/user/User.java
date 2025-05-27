@@ -8,6 +8,7 @@ import kroryi.bus2.entity.lost.LostItem;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -50,6 +51,9 @@ public class User {
     @Column(name = "signup_date")
     private LocalDate signupDate;
 
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
     @OneToMany(mappedBy = "handler")
     private Set<FoundItem> foundItems = new LinkedHashSet<>();
 
@@ -58,5 +62,8 @@ public class User {
 
     @OneToMany(mappedBy = "reporter")
     private Set<LostItem> lostItems = new LinkedHashSet<>();
+
+    @Column(name = "withdraw", nullable = false)
+    private boolean withdraw = false;  // 기본값은 false
 
 }
