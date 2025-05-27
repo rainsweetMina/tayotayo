@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>분실물 신고</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <script>
+        function toggleForm() {
+            const formDiv = document.getElementById('registerForm');
+            formDiv.style.display = formDiv.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</head>
+<body class="container mt-5">
+
+<h2 class="mb-4">📋 분실물 목록</h2>
+
+<!-- ✅ 목록 테이블 조각 포함 -->
+<div th:replace="lost/lostList :: lostListTable"></div>
+
+<!-- ✅ 하단 버튼 -->
+<div class="mt-4 mb-4 d-flex justify-content-between">
+    <a href="/bus/lost/register" class="btn btn-primary">+ 분실물 신고하기</a>
+    <a href="/mypage/lost" class="btn btn-outline-secondary">📁 내 분실물 관리</a>
+</div>
+
+<!-- ✅ 등록 폼 (초기에는 숨김) -->
+<div id="registerForm" style="display: none;">
+    <h4 class="mb-3">📄 분실물 등록</h4>
+
+    <form action="/bus/lost/register" method="post">
+        <div class="mb-3">
+            <label class="form-label">제목</label>
+            <input type="text" name="title" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">내용</label>
+            <textarea name="content" class="form-control" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">버스 회사</label>
+            <input type="text" name="busCompany" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">버스 번호</label>
+            <input type="text" name="busNumber" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">분실일</label>
+            <input type="datetime-local" name="lostTime" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-success">등록</button>
+    </form>
+</div>
+
+</body>
+</html>

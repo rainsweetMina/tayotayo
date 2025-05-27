@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>분실물 등록</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-5">
+
+<h2 class="mb-4">📄 분실물 신고</h2>
+<p>버스에서 분실하신 물건을 신고해주세요.</p>
+
+<!-- ✅ 등록 메시지 출력 -->
+<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+<!-- ✅ 등록 폼 -->
+<form th:action="@{/bus/lost/register}" method="post">
+    <div class="mb-3">
+        <label class="form-label">제목</label>
+        <input type="text" name="title" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">내용</label>
+        <textarea name="content" class="form-control" rows="3" required></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">버스 회사</label>
+        <input type="text" name="busCompany" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">버스 번호</label>
+        <input type="text" name="busNumber" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">분실일</label>
+        <input type="datetime-local" name="lostTime" class="form-control">
+    </div>
+
+    <div class="text-end">
+        <a th:href="@{/bus/lost}" class="btn btn-secondary">취소</a>
+        <button type="submit" class="btn btn-success">등록</button>
+    </div>
+</form>
+
+</body>
+</html>

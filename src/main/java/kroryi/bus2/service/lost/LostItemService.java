@@ -55,6 +55,20 @@ public class LostItemService {
         return lostItemRepository.findAllByVisibleTrue();
     }
 
+    // ✅ 홈페이지에서 전체 공개용 목록 조회에 적합한 메서드
+    public List<LostItemListResponseDTO> getVisibleLostItemsAsDTO() {
+        return lostItemRepository.findAllByVisibleTrue().stream()
+                .filter(item -> !item.isDeleted())  // 삭제 안 된 것만
+                .map(item -> LostItemListResponseDTO.builder()
+                        .id(item.getId())
+                        .title(item.getTitle())
+                        .busNumber(item.getBusNumber())
+                        .lostTime(item.getLostTime())
+                        .build())
+                .toList();
+    }
+
+
     public List<LostItemListResponseDTO> getAllLostItems() {
         return lostItemRepository.findAll().stream()
                 .filter(item -> item.isVisible() && !item.isDeleted()) // ✅ 조건 추가

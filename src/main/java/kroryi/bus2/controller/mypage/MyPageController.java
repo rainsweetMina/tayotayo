@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.config.security.CustomUserDetails;
@@ -16,7 +14,6 @@ import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.apikey.ApiKeyService;
-import kroryi.bus2.service.lost.FoundItemServiceImpl;
 import kroryi.bus2.service.lost.LostItemService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +28,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,7 +41,6 @@ public class MyPageController {
 
     private final UserService userService;
     private final LostItemService lostItemService;
-    private final FoundItemServiceImpl foundItemServiceImpl;
     private final ApiKeyService apiKeyService;
 
     private String extractUserId() {
@@ -276,38 +271,19 @@ public class MyPageController {
     }
 
 
-    // 분실물 등록 처리
-    @Operation(summary = "분실물 등록", description = "새로운 분실물을 등록합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "분실물이 성공적으로 등록되었습니다."),
-            @ApiResponse(responseCode = "400", description = "분실물 등록 오류")
-    })
-    @PostMapping("/lost")
-    public String registerLostItem(LostItemRequestDTO dto) {
-        String userId = extractUserId();
-        Long memberId = userService.findByUserId(userId).getId();
-        dto.setReporterId(memberId);
-        lostItemService.saveLostItem(dto);
-        return "redirect:/mypage/lost";
+    // 🔄 상세보기 요청 시 숨김/삭제된 글이면 에러 메시지와 함께 목록으로 redirect
+    @GetMapping("/lost/view/{id}")
+    public String viewLostItem(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            LostItemResponseDTO dto = lostItemService.getLostItemById(id);
+            model.addAttribute("lostItem", dto);
+            return "mypage/mypageLostdetail";
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", "이 게시물은 숨김 또는 삭제 처리되어 확인할 수 없습니다.");
+            return "redirect:/mypage/lost";
+        }
     }
 
-    // 습득물 목록
-    @Operation(summary = "습득물 목록 조회", description = "사용자가 조회할 수 있는 습득물 목록을 표시합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "습득물 목록 조회 성공")
-    })
-    @GetMapping("/found")
-    public String foundListForUser(Model model) {
-        List<FoundItemResponseDTO> foundItems = foundItemServiceImpl.getVisibleFoundItemsForUser();
-        model.addAttribute("foundItems", foundItems);
-        return "mypage/mypage-found"; // ✅ Thymeleaf 파일명
-    }
-    @GetMapping("/lost/view/{id}")
-    public String viewLostItem(@PathVariable Long id, Model model) {
-        LostItemResponseDTO dto = lostItemService.getLostItemById(id);
-        model.addAttribute("lostItem", dto);
-        return "mypage/mypageLostdetail";
-    }
     @GetMapping("/lost/edit/{id}")
     public String editLostItemForm(@PathVariable Long id, Model model) {
         LostItemResponseDTO dto = lostItemService.getLostItemById(id);
