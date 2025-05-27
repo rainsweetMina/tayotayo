@@ -35,35 +35,14 @@
     </tr>
     </tbody>
 </table>
+<!-- 에러 메시지 출력 영역 (등록 폼 위든 아래든 상관 없음) -->
+<div th:if="${error}" style="color: red; margin-top: 15px; font-weight: bold;">
+    <p th:text="${error}"></p>
+</div>
 
-<!-- ➕ 등록 버튼 -->
-<button type="button" onclick="toggleForm()" style="margin-top: 20px;">+ 분실물 등록</button>
-
-<!-- 📋 분실물 등록 폼 -->
-<form id="lostForm" th:action="@{/mypage/lost}" method="post" style="display:none; margin-top: 15px;">
-    <div>
-        <label>분실물: <input type="text" name="title" required></label>
-    </div>
-    <div>
-        <label>내용: <textarea name="content" required></textarea></label>
-    </div>
-    <div>
-        <label>버스회사: <input type="text" name="busCompany" required></label>
-    </div>
-    <div>
-        <label>버스번호: <input type="text" name="busNumber" required></label>
-    </div>
-    <div>
-        <label>분실일시: <input type="datetime-local" name="lostTime"></label>
-    </div>
-    <button type="submit" style="margin-top: 10px;">제출</button>
-</form>
 
 <script>
-    function toggleForm() {
-        const form = document.getElementById('lostForm');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
+
 </script>
 </body>
 </html>

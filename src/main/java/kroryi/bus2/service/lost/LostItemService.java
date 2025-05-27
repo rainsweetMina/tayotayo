@@ -55,6 +55,20 @@ public class LostItemService {
         return lostItemRepository.findAllByVisibleTrue();
     }
 
+    // ✅ 홈페이지에서 전체 공개용 목록 조회에 적합한 메서드
+    public List<LostItemListResponseDTO> getVisibleLostItemsAsDTO() {
+        return lostItemRepository.findAllByVisibleTrue().stream()
+                .filter(item -> !item.isDeleted())  // 삭제 안 된 것만
+                .map(item -> LostItemListResponseDTO.builder()
+                        .id(item.getId())
+                        .title(item.getTitle())
+                        .busNumber(item.getBusNumber())
+                        .lostTime(item.getLostTime())
+                        .build())
+                .toList();
+    }
+
+
     public List<LostItemListResponseDTO> getAllLostItems() {
         return lostItemRepository.findAll().stream()
                 .filter(item -> item.isVisible() && !item.isDeleted()) // ✅ 조건 추가
@@ -188,11 +202,26 @@ public class LostItemService {
         item.setUpdatedAt(LocalDateTime.now()); // ✅ updatedAt 수동 갱신 (Auditing 적용 시 생략 가능)
     }
 
-
-
-
-
-
+    // ✅ 본인 분실물만 조회하는 메서드
+    public List<LostItemResponseDTO> getMyLostItems(Long memberId) {
+        List<LostItem> items = lostItemRepository.findAllByReporterId(memberId);
+        return items.stream()
+                .map(item -> LostItemResponseDTO.builder()
+                        .id(item.getId())
+                        .title(item.getTitle())
+                        .content(item.getContent())
+                        .busNumber(item.getBusNumber())
+                        .busCompany(item.getBusCompany())
+                        .lostTime(item.getLostTime())
+                        .memberId(item.getReporter().getId())
+                        .matched(item.isMatched())
+                        .visible(item.isVisible())
+                        .deleted(item.isDeleted())
+                        .createdAt(item.getCreatedAt())
+                        .updatedAt(item.getUpdatedAt())
+                        .build()
+                ).toList();
+    }
 
 
 }

@@ -1,0 +1,35 @@
+<!-- src/main/resources/templates/lost/lostList.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>분실물 목록 (조각)</title>
+</head>
+<body>
+
+<!-- ✅ 이 부분만 다른 페이지에서 include/reuse할 수 있음 -->
+<table class="table table-bordered" th:fragment="lostListTable">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>제목</th>
+        <th>버스 번호</th>
+        <th>분실일</th>
+        <th>상세보기</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item, iterStat : ${lostList}">
+        <td th:text="${iterStat.count}">1</td>
+        <td th:text="${item.title}">제목</td>
+        <td th:text="${item.busNumber}">1234</td>
+        <td th:text="${#temporals.format(item.lostTime, 'yyyy-MM-dd')}">2025-01-01</td>
+        <td>
+            <a th:href="@{'/bus/lost/detail/' + ${item.id}}" class="btn btn-sm btn-info">상세보기</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
