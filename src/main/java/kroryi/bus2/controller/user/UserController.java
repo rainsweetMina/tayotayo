@@ -4,10 +4,14 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpSession;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginFormDTO;
+import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.user.EmailService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +27,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/")
     public String home() {
@@ -63,6 +68,19 @@ public class UserController {
         model.addAttribute("loginForm", new LoginFormDTO());
         return "user/login";
     }
+
+    @PostMapping("/api/login")
+    public ResponseEntity<?> login(@RequestParam String username,
+                                   @RequestParam String password,
+                                   HttpSession session) {
+        User user = userService.findByUserId(username);
+        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+            return ResponseEntity.status(401).body("로그인 실패");
+        }
+        session.setAttribute("user", user);
+        return ResponseEntity.ok("로그인 성공");
+    }
+
     // 회원가입 폼
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
