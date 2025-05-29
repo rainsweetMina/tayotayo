@@ -32,9 +32,14 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/bus/**")
                 .allowedOrigins("https://docs.yi.or.kr:8094",
                         "https://192.168.10.47:8094",
+                        "https://0.0.0.0:5173",
+                        "http://192.168.10.13:5173",
+                        "http://192.168.10.13:5174",
                         "https://localhost:8094",
                         "http://localhost:5174",
-                        "http://localhost:5173"
+                        "http://localhost:5173",
+                        "https://localhost:5173",
+                        "https://localhost:5174"
                 )
                 .allowedMethods("GET", "POST", "DELETE", "PUT")
                 .allowCredentials(true);
