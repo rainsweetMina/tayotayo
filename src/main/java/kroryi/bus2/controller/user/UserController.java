@@ -36,7 +36,7 @@ public class UserController {
 
 
     // 로그인 페이지
-    @GetMapping("/login")
+    @GetMapping("/auth/login")
     public String login(@RequestParam(value = "errorCode", required = false) String errorCode,
                         @RequestParam(value = "logout", required = false) String logout,
                         @RequestParam(value = "redirect", required = false) String redirect,
@@ -79,6 +79,17 @@ public class UserController {
         }
         session.setAttribute("user", user);
         return ResponseEntity.ok("로그인 성공");
+    }
+
+    @PostMapping("/api/logout")
+    @ResponseBody
+    public ResponseEntity<?> logout(HttpSession session) {
+        session.invalidate(); // 세션 무효화
+
+        Map<String, String> result = new HashMap<>();
+        result.put("message", "로그아웃 완료");
+
+        return ResponseEntity.ok(result);
     }
 
     // 회원가입 폼

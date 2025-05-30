@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.mypage;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpSession;
 import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.dto.user.UserInfoDTO;
@@ -19,17 +20,23 @@ import java.util.Map;
 public class UserApiController {
 
     // 로그인된 유저 정보 반환
+    @Hidden
     @GetMapping("/info")
-    public ResponseEntity<?> userInfo(HttpSession session) {
-        User user = (User) session.getAttribute("user"); // ✅ 로그인 시 저장한 값
-        if (user == null) {
+    public ResponseEntity<?> userInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
         }
+
         Map<String, Object> result = new HashMap<>();
-        result.put("username", user.getUsername());
-        result.put("email", user.getEmail());
+        result.put("userId", userDetails.getUser().getUserId());
+        result.put("username", userDetails.getUser().getUsername());
+        result.put("email", userDetails.getUser().getEmail());
+        result.put("role", userDetails.getUser().getRole().name());
+
         return ResponseEntity.ok(result);
     }
+
+
 
 
 }

@@ -8,8 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,6 +30,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @RequiredArgsConstructor
@@ -67,6 +71,11 @@ public class SecurityConfig {
         http
                 .userDetailsService(userDetailsService)
                 .csrf(csrf -> csrf.disable())
+                .cors(withDefaults())
+
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
 
                 // Swagger → API 키 인증 순으로 필터 적용
                 .addFilterBefore(swaggerAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -76,11 +85,16 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 회원가입, 정적 자원 등 허용
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login", "/auth/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/mypage/favorites").hasRole("USER")
+
 
                         // Swagger는 인증만 되면 접근 가능
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
                         // ✅ 마이페이지는 USER 권한만 접근 가능
                         .requestMatchers("/mypage/**").hasRole("USER")
 
@@ -93,8 +107,11 @@ public class SecurityConfig {
 
                 // 폼 로그인 설정
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/api/auth/login") // 프론트엔드
+//                        .loginProcessingUrl("/login") // 백엔드
+                        .usernameParameter("userId")
+                        .passwordParameter("password")
                         .successHandler(customLoginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             String errorCode = "error";
@@ -103,7 +120,7 @@ public class SecurityConfig {
                             else if (exception instanceof LockedException) errorCode = "locked";
                             else if (exception instanceof AccountExpiredException) errorCode = "expired";
 
-                            response.sendRedirect("/login?errorCode=" + errorCode);
+                            response.sendRedirect("/auth/login?errorCode=" + errorCode);
                         })
                         .permitAll()
                 )
@@ -146,7 +163,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("https://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);  // 이 설정이 있어야 withCredentials: true 동작함

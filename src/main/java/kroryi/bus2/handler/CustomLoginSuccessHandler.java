@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,10 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
+
+        // ✅ 세션에 인증 정보 저장
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         String userId = authentication.getName();
 
         // 순환 참조 방지: 지연 주입
@@ -48,6 +53,5 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         response.getWriter().write(json);
         log.info("✅ 로그인 성공 (JSON): userId={}, role={}", user.getUserId(), user.getRole());
-
     }
 }
