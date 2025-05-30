@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.board;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.dto.board.BusCompanyDTO;
@@ -56,4 +57,13 @@ public class BusCompanyApiController {
         busCompanyService.deleteById(id);
         return ResponseEntity.ok("삭제 완료");
     }
+    //분실물등록 관련 api
+    @Hidden
+    @GetMapping("/{id}/routes")
+    @Operation(summary = "회사별 노선 조회", description = "회사 ID 기준으로 등록된 버스노선 목록을 반환합니다.")
+    public ResponseEntity<List<String>> getRoutesByCompany(@PathVariable int id) {
+        return ResponseEntity.ok(busCompanyService.getRoutesByCompanyId(id));
+    }
+
+
 }
