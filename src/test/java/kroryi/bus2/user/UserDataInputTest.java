@@ -24,7 +24,7 @@ public class UserDataInputTest {
 
     @Test
     public void insertTestUser() {
-        String userId = "testuser";
+        String userId = "testuser1";
 
         if (userRepository.findByUserId(userId).isPresent()) {
             log.info("이미 존재하는 아이디 입니다 : {}", userId);
