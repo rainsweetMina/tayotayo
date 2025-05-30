@@ -78,4 +78,13 @@ public class BusCompanyService {
     public void deleteById(int id) {
         busCompanyRepository.deleteById(id);
     }
+
+    //분실물관련
+    public List<String> getRoutesByCompanyId(int id) {
+        BusCompany company = busCompanyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회사 ID: " + id));
+        return company.getCompanyRouteNo();
+    }
+
+
 }
