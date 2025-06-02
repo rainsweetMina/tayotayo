@@ -111,7 +111,7 @@ public class UserController {
             }
 
             userService.join(jdto);
-            return "redirect:/login?registerSuccess=true";
+            return "redirect:/auth/login?registerSuccess=true";
         } catch (Exception e) {
             log.error("회원가입 오류: {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
