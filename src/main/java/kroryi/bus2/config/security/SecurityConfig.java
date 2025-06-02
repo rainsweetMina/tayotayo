@@ -83,11 +83,30 @@ public class SecurityConfig {
 // -------------------- swagger 보안 (우선제외시킴)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
+                // 폼 로그인 설정
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/auth/login")
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .successHandler(customLoginSuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            String errorCode = "error";
+                            if (exception instanceof BadCredentialsException) errorCode = "bad_credentials";
+                            else if (exception instanceof DisabledException) errorCode = "disabled";
+                            else if (exception instanceof LockedException) errorCode = "locked";
+                            else if (exception instanceof AccountExpiredException) errorCode = "expired";
+
+                            response.sendRedirect("/auth/login?errorCode=" + errorCode);
+                        })
+                        .permitAll()
+                )
+
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 회원가입, 정적 자원 등 허용
-                        .requestMatchers(HttpMethod.POST, "/login", "/auth/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/mypage/favorites").hasRole("USER")
 
 
@@ -105,26 +124,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 폼 로그인 설정
-                .formLogin(form -> form
-                        .loginPage("/auth/login")
-                        .loginProcessingUrl("/api/auth/login") // 프론트엔드
-//                        .loginProcessingUrl("/login") // 백엔드
-                        .usernameParameter("userId")
-                        .passwordParameter("password")
-                        .successHandler(customLoginSuccessHandler)
-                        .failureHandler((request, response, exception) -> {
-                            String errorCode = "error";
-                            if (exception instanceof BadCredentialsException) errorCode = "bad_credentials";
-                            else if (exception instanceof DisabledException) errorCode = "disabled";
-                            else if (exception instanceof LockedException) errorCode = "locked";
-                            else if (exception instanceof AccountExpiredException) errorCode = "expired";
-
-                            response.sendRedirect("/auth/login?errorCode=" + errorCode);
-                        })
-                        .permitAll()
-                )
-
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
@@ -132,7 +131,7 @@ public class SecurityConfig {
                         .successHandler(customLoginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             String encodedMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("/login?error=" + encodedMessage);
+                            response.sendRedirect("/auth/login?error=" + encodedMessage);
                         })
                 )
 
@@ -146,14 +145,14 @@ public class SecurityConfig {
 
                 // 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
+                        .logoutUrl("/api/logout") // Vue에서 이 URL로 POST 요청
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(200); // Vue가 리다이렉트하므로 200만 내려줌
+                        })
                         .permitAll()
-
-
                 );
 
         return http.build();

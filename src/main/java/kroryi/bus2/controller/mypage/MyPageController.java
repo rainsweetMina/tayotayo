@@ -73,12 +73,12 @@ public class MyPageController {
         String userId = extractUserId();
 
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         User user = userService.findByUserId(userId);
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         log.info("✅ 현재 로그인된 사용자 ID: {}", userId);
@@ -93,7 +93,7 @@ public class MyPageController {
     public String showApiKey(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
             log.warn("🛑 사용자 정보가 없습니다.");
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         User user = userDetails.getUser();
@@ -109,12 +109,12 @@ public class MyPageController {
     public String showApiKeyRequestForm(Model model) {
         String userId = extractUserId();
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         User user = userService.findByUserId(userId);
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         // APPROVED, PENDING 구분 없이 최근 키 1개 조회
@@ -136,7 +136,7 @@ public class MyPageController {
     public String handleApiKeyRequest(@RequestParam String type, RedirectAttributes redirectAttributes) {
         String userId = extractUserId();
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         try {
@@ -180,12 +180,12 @@ public class MyPageController {
     public String changePassword(@Valid @ModelAttribute ChangePasswordDTO dto, Model model) {
         String userId = extractUserId();
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         User user = userService.findByUserId(userId);
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         if (user.getSignupType() == SignupType.KAKAO || user.getSignupType() == SignupType.GOOGLE) {
@@ -223,12 +223,12 @@ public class MyPageController {
     public String showModifyForm(Model model) {
         String userId = extractUserId();
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         User user = userService.findByUserId(userId);
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         ModifyUserDTO dto = new ModifyUserDTO();
@@ -257,7 +257,7 @@ public class MyPageController {
                              RedirectAttributes redirectAttributes) {
         String userId = extractUserId();
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         try {
@@ -285,13 +285,13 @@ public class MyPageController {
         // ✅ 1. 로그인 유저 ID 추출
         String userId = extractUserId();
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         // ✅ 2. 유저 객체 가져오기
         User user = userService.findByUserId(userId);
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         // ✅ 3. 본인 분실물만 조회
@@ -363,7 +363,7 @@ public class MyPageController {
     public String handleWithdraw(RedirectAttributes redirectAttributes, Model model) {
         String userId = extractUserId();
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         userService.withdrawUser(userId);

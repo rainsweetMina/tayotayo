@@ -131,7 +131,7 @@ public class MypageFavoriteController {
         }
 
         if (userId == null) {
-            return "redirect:/login";
+            return "redirect:/auth/login";
         }
 
         model.addAttribute("userId", userId);

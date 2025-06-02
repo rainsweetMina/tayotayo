@@ -86,7 +86,7 @@
                 </li>
                 <!-- 비로그인 사용자: 로그인/회원가입 -->
                 <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" th:href="@{/login}">회원가입(로그인)</a>
+                    <a class="nav-link" th:href="@{/auth/login}">회원가입(로그인)</a>
                 </li>
 
                 <!-- 일반 사용자 메뉴 -->
