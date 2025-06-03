@@ -85,7 +85,7 @@ public class SecurityConfig {
 
                 // 폼 로그인 설정
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
@@ -126,7 +126,7 @@ public class SecurityConfig {
 
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
+                        .loginPage("/auth/login")
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customLoginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
@@ -162,7 +162,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://localhost:5173"));
+        config.setAllowedOrigins(List.of(
+            "https://localhost:5173",
+            "http://localhost:5173",
+            "http://localhost:8081",
+            "https://localhost:8081"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);  // 이 설정이 있어야 withCredentials: true 동작함
