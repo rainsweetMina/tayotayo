@@ -48,7 +48,6 @@ public interface BusStopRepository extends JpaRepository<BusStop,Long> {
             "OR LOWER(b.bsNm) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<BusStop> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-
     @Query("""
 SELECT distinct bs.bsId FROM BusStop bs
 WHERE 
@@ -61,5 +60,18 @@ ABS(bs.yPos - :y) * 110540 <= :radius
             @Param("y") Double y,
             @Param("radius") Double radius);
 
+    @Query(value = """
+    SELECT *
+    FROM bus_stop
+    WHERE ST_Distance_Sphere(
+        POINT(:x, :y), 
+        POINT(x_pos, y_pos)
+    ) <= :radius
+    """, nativeQuery = true)
+    List<BusStop> findStopsWithinRadius(
+            @Param("x") double x,
+            @Param("y") double y,
+            @Param("radius") double radius
+    );
 
 }

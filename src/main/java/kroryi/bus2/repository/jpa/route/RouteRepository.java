@@ -58,37 +58,4 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
             "LOWER(r.routeNo) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Route> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-
-    @Query("""
-            SELECT r FROM Route r
-            WHERE r.routeId IN (
-                SELECT rl1.routeId FROM RouteStopLink rl1
-                JOIN RouteStopLink rl2 ON rl1.routeId = rl2.routeId
-                WHERE rl1.bsId = :startBsId
-                  AND rl2.bsId = :endBsId
-                  AND rl1.seq < rl2.seq
-            )
-            """)
-    List<Route> findDirectRoutes(@Param("startBsId") String startBsId,
-                                 @Param("endBsId") String endBsId);
-
-
-    @Query("""
-            SELECT r FROM Route r
-            WHERE r.routeId IN (
-                SELECT rl1.routeId
-                FROM RouteStopLink rl1
-                JOIN RouteStopLink rl2 ON rl1.routeId = rl2.routeId
-                WHERE rl1.bsId = :startBsId
-                  AND rl2.bsId = :endBsId
-                  AND rl1.moveDir = :moveDir
-                  AND rl2.moveDir = :moveDir
-                  AND rl1.seq < rl2.seq
-            )
-            """)
-    List<Route> findDirectRoutesConsideringDirection(@Param("startBsId") String startBsId,
-                                                     @Param("endBsId") String endBsId,
-                                                     @Param("moveDir") String moveDir);
-
-
 }

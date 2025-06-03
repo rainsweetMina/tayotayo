@@ -51,7 +51,6 @@ import java.util.concurrent.TimeUnit;
 // 버스,노선 관련 데이터를 클라이언트에 제공하는 REST API 컨트롤러
 // 이 컨트롤러는 JSON 형식으로 데이터를 반환하며, 클라이언트(웹/앱)에서 실시간 정보 조회 및 검색에 활용
 public class BusUserDataController {
-    private final BusInfoInitService busInfoInitService;
     private final BusStopDataService busStopDataService;
     private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
@@ -59,14 +58,8 @@ public class BusUserDataController {
     private final BusRouteRealTimeDataService busRouteRealTimeDataService;
     private final GetRouteLinkService getRouteLinkService;
     private final BusStopRepository busStopRepository;
-    private final RouteRepository routeRepository;
-    private final AddRouteService addRouteService;
-    private final AddRouteStopLinkService addRouteStopLinkService;
-    private final RouteStopLinkRepository routeStopLinkRepository;
-    private final InsertStopIntoRouteService insertStopIntoRouteService;
-    private final DeleteStopFromRouteService deleteStopFromRouteService;
-    private final DeleteRouteService deleteRouteService;
     private final RouteFinderService routeFinderService;
+    private final RouteFinder routeFinder;
 
 
     @Value("${api.service-key-decoding}")
@@ -210,5 +203,28 @@ public class BusUserDataController {
         return ResponseEntity.ok(combinedResults);
     }
 
+    /**여기부터 Vue를 위한 api*/
+    @Operation(summary = "좌표 기반 자동 길찾기", description = "핀 좌표 2개로 반경 내 정류장을 찾아 경로를 계산")
+    @GetMapping("/route-auto")
+    public ResponseEntity<List<RouteResultDTO>> autoFindRoutesByCoords(
+            @RequestParam double startX,
+            @RequestParam double startY,
+            @RequestParam double endX,
+            @RequestParam double endY,
+            @RequestParam(defaultValue = "500") double radius // 기본 1km
+    ) {
+        List<RouteResultDTO> routes = routeFinderService.findRoutesNearCoords(startX, startY, endX, endY, radius);
+        return ResponseEntity.ok(routes);
+    }
 
+    @Operation(summary = "정류장 전용 검색", description = "검색어를 포함하는 정류장 이름만 반환 (노선 제외)")
+    @GetMapping("/search-bus-stops")
+    public ResponseEntity<List<BusStopDTO>> searchBusStops(@RequestParam String keyword) {
+        List<BusStop> stops = busStopRepository.findByBsNmContaining(keyword);
+        List<BusStopDTO> dtos = stops.stream()
+                .map(BusStopDTO::fromEntity)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
 }

@@ -175,4 +175,24 @@ WHERE r2.bsId = :endBsId
     List<String> findReachableStopsToWithDirection(@Param("endBsId") String endBsId);
 
 
+    @Query("""
+    SELECT DISTINCT r.routeId
+    FROM RouteStopLink r
+    WHERE r.bsId = :startBsId
+      AND r.routeId IN (
+          SELECT r2.routeId FROM RouteStopLink r2 WHERE r2.bsId = :endBsId
+      )
+""")
+    List<String> findDirectRouteIdsByStartAndEnd(@Param("startBsId") String startBsId,
+                                                 @Param("endBsId") String endBsId);
+
+
+    @Query("SELECT r FROM RouteStopLink r WHERE r.routeId = :routeId AND r.seq BETWEEN :start AND :end ORDER BY r.seq")
+    List<RouteStopLink> findByRouteIdAndSeqBetween(@Param("routeId") String routeId,
+                                                   @Param("start") int start,
+                                                   @Param("end") int end);
+
+    Optional<RouteStopLink> findByRouteIdAndBsId(String routeId, String bsId);
+
+
 }
