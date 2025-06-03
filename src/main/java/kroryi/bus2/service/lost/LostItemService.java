@@ -11,6 +11,8 @@ import kroryi.bus2.repository.jpa.LostFoundMatchRepository;
 import kroryi.bus2.repository.jpa.LostItemRepository;
 import kroryi.bus2.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +30,16 @@ public class LostItemService {
     @AdminAudit(action = "분실물 등록", target = "LostItem")
     public LostItem saveLostItem(LostItemRequestDTO dto) {
         // 신고자 유저 불러오기
-        User reporter = userRepository.findById(dto.getReporterId())
-                .orElseThrow(() -> new IllegalArgumentException("신고자 정보가 없습니다."));
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User reporter = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("로그인한 사용자를 찾을 수 없습니다."));
 
         LostItem item = LostItem.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .busNumber(dto.getBusNumber())
                 .busCompany(dto.getBusCompany())
-                .lostTime(dto.getLostTime() != null ? dto.getLostTime() : LocalDateTime.now())
+                .lostTime(dto.getLostTime())
                 .reporter(reporter)
                 .matched(false)
                 .visible(true) // ✅ 명시적 설정
@@ -62,8 +65,12 @@ public class LostItemService {
                 .map(item -> LostItemListResponseDTO.builder()
                         .id(item.getId())
                         .title(item.getTitle())
+                        .content(item.getContent())           // ✅ 추가
                         .busNumber(item.getBusNumber())
+                        .busCompany(item.getBusCompany())     // ✅ 추가
                         .lostTime(item.getLostTime())
+                        .createdAt(item.getCreatedAt())       // 선택
+                        .updatedAt(item.getUpdatedAt())       // 선택
                         .build())
                 .toList();
     }

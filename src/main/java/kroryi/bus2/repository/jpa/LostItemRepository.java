@@ -21,6 +21,7 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 
     List<LostItem> findAllByReporterId(Long reporterId);
 
+    List<LostItem> findByDeletedFalseAndVisibleTrue();
 
 }
 

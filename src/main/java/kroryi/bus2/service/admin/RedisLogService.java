@@ -1,176 +1,206 @@
 package kroryi.bus2.service.admin;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kroryi.bus2.repository.jpa.route.RouteRepository;
+import kroryi.bus2.dto.RedisMemoryInfo;
+import kroryi.bus2.dto.RedisStats;
+import lombok.Builder;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Log4j2
 public class RedisLogService {
+
     private final RedisTemplate<String, Object> redisTemplate;
-    private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
-    private final RouteRepository routeRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final ObjectMapper objectMapper;
 
-    // 메모리에 있는 Redis 읽기 (DB저장X)
+    private static final String REDIS_STATS_CACHE = "redisStats";
+    private static final String REDIS_INFO_KEY = "info";
+    private static final String REDIS_MEMORY_TOPIC = "/topic/redis-memory";
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
-    @Cacheable(value = "redisStats", key = "'info'")
-    public Map<String, String> getRedisInfo() {
+    /**
+     * Redis 정보를 캐시에서 조회
+     */
+    @Cacheable(value = REDIS_STATS_CACHE, key = "'" + REDIS_INFO_KEY + "'")
+    public RedisStats getRedisInfo() {
         log.info("캐시 미스 - Redis 정보를 직접 조회합니다.");
         return collectRedisStats();
     }
 
-    @CachePut(value = "redisStats", key = "'info'")
-    @Scheduled(fixedRate = 60000)  // 1분마다 캐시 갱신
-    public Map<String, String> updateRedisInfo() {
+    /**
+     * Redis 정보를 주기적으로 갱신 (10분마다)
+     */
+    @CachePut(value = REDIS_STATS_CACHE, key = "'" + REDIS_INFO_KEY + "'")
+    @Scheduled(fixedRate = 60000) // 1분마다 갱신
+    public RedisStats updateRedisInfo() {
         log.info("캐시 갱신 - Redis 정보를 다시 수집합니다.");
         return collectRedisStats();
     }
 
-    // Redis 상태 정보 수집 메서드
-    private Map<String, String> collectRedisStats() {
+    /**
+     * Redis 메모리 정보를 실시간으로 WebSocket을 통해 전송 (1분마다)
+     */
+    @Scheduled(fixedRate = 60000) // 1분으로 변경
+    public void sendRedisMemoryInfo() {
         try {
-            // Redis 연결 팩토리 확인
+            RedisMemoryInfo memoryInfo = collectRedisMemoryInfo();
+            messagingTemplate.convertAndSend(REDIS_MEMORY_TOPIC, memoryInfo);
+            log.debug("Redis 메모리 정보 전송 완료: {}", memoryInfo);
+        } catch (Exception e) {
+            log.error("Redis 메모리 정보 전송 실패", e);
+        }
+    }
+
+    /**
+     * Redis 상태 정보 수집
+     */
+    private RedisStats collectRedisStats() {
+        try {
             if (redisTemplate.getConnectionFactory() == null) {
-                log.error("❌ Redis 연결 팩토리가 NULL입니다.");
-                return Map.of("error", "Redis 연결 오류");
+                log.error("Redis 연결 팩토리가 NULL입니다.");
+                return RedisStats.createError("Redis 연결 오류");
             }
 
-            // Redis 연결 객체 확인
             var connection = redisTemplate.getConnectionFactory().getConnection();
             if (connection == null) {
-                log.error("❌ Redis 연결이 NULL입니다.");
-                return Map.of("error", "Redis 연결 오류");
+                log.error("Redis 연결이 NULL입니다.");
+                return RedisStats.createError("Redis 연결 오류");
             }
 
-            // Redis 상태 정보 수집
             Properties info = connection.info();
             if (info == null) {
-                log.error("❌ Redis 상태 정보가 NULL입니다.");
-                return Map.of("error", "Redis 상태 정보 없음");
+                log.error("Redis 상태 정보가 NULL입니다.");
+                return RedisStats.createError("Redis 상태 정보 없음");
             }
 
-            String usedMemory = info.getProperty("used_memory");
-            String maxMemory = info.getProperty("maxmemory");
-            String connectedClients = info.getProperty("connected_clients");
-
-            // Null 체크 후 기본 값으로 대체
-            usedMemory = (usedMemory != null) ? usedMemory : "0";
-            maxMemory = (maxMemory != null) ? maxMemory : "0";
-            connectedClients = (connectedClients != null) ? connectedClients : "0";
-
-            // Byte를 KB로 변환
-            long usedMemoryKb = Long.parseLong(usedMemory) / 1024;
-            long maxMemoryKb = Long.parseLong(maxMemory) / 1024;
-
-            Map<String, String> stats = Map.of(
-                    "usedMemory", String.valueOf(usedMemoryKb) + " KB",
-                    "maxMemory", String.valueOf(maxMemoryKb) + " KB",
-                    "connectedClients", connectedClients
-            );
-
-            log.info("🔍 Redis 메모리 사용량: {}/{}", usedMemoryKb + " KB", maxMemoryKb + " KB");
-            log.info("🔗 Redis 클라이언트 연결 수: {}", connectedClients);
-
-            return stats;
+            return RedisStats.builder()
+                    .usedMemory(parseMemoryValue(info.getProperty("used_memory", "0")))
+                    .maxMemory(parseMemoryValue(info.getProperty("maxmemory", "0")))
+                    .connectedClients(Integer.parseInt(info.getProperty("connected_clients", "0")))
+                    .uptime(info.getProperty("uptime_in_seconds", "0"))
+                    .version(info.getProperty("redis_version", "unknown"))
+                    .build();
         } catch (Exception e) {
-            log.error("❌ Redis 상태 수집 중 오류 발생", e);
-            return Map.of("error", "정보 수집 실패");
+            log.error("Redis 상태 수집 중 오류 발생", e);
+            return RedisStats.createError("정보 수집 실패");
         }
-
     }
 
-    // 설정 끝
-
-
-    // RedisLogService에서 주기적으로 데이터 수집 후 WebSocket으로 전송
-
-    public Map<String, Object> fetchRedisStats() {
-
+    /**
+     * Redis 메모리 정보만 수집
+     */
+    private RedisMemoryInfo collectRedisMemoryInfo() {
         try {
-            Properties info = redisTemplate.getConnectionFactory().getConnection().info();
-            log.info("🔍 Redis 상태 정보 조회 성공: {}", info);
-
-            Map<String, Object> stats = new HashMap<>();
-            stats.put("usedMemory", Integer.parseInt(info.getProperty("used_memory", "0")));
-            stats.put("connectedClients", Integer.parseInt(info.getProperty("connected_clients", "0")));
-//            stats.put("maxMemory", info.getProperty("maxmemory", "0")); // 아직 안넣었음.
-
-
-//            // Routes Count, Requests Today 받아오는 쿼리인데, Redis 메모리값 읽어오는거라 복잡한 쿼리가 실행 안됨.
-            long routeCount = routeRepository.count();  // Route 개수\
-            log.info("🔍 Redis Route 개수: {}", routeCount);
-
-            // RedisTemplate을 사용하여 단순 키 수 조회
-            Set<String> keys = redisTemplate.keys("redisStats:*");
-            long requestCountToday = (keys != null) ? keys.size() : 0;
-
-            stats.put("routesCount", String.valueOf(routeCount));
-            stats.put("requestToday", String.valueOf(requestCountToday));
-
-
-            return stats;
-        } catch (Exception e) {
-            log.error("❌ Redis 상태 조회 실패", e);
-            return Map.of("error", "Failed to fetch Redis stats");
-        }
-
-
-    }
-
-    private String formatMemory(String memoryInBytes) {
-        try {
-            long bytes = Long.parseLong(memoryInBytes);
-            if (bytes >= 1024 * 1024) {
-                return String.format("%.2f MB", bytes / (1024.0 * 1024.0));
-            } else if (bytes >= 1024) {
-                return String.format("%.2f KB", bytes / 1024.0);
-            } else {
-                return bytes + " B";
+            if (redisTemplate.getConnectionFactory() == null) {
+                log.error("Redis 연결 팩토리가 NULL입니다.");
+                return createEmptyMemoryInfo();
             }
+
+            var connection = redisTemplate.getConnectionFactory().getConnection();
+            if (connection == null) {
+                log.error("Redis 연결이 NULL입니다.");
+                return createEmptyMemoryInfo();
+            }
+
+            Properties info = connection.info();
+            if (info == null) {
+                log.error("Redis 정보가 NULL입니다.");
+                return createEmptyMemoryInfo();
+            }
+
+            String usedMemoryStr = info.getProperty("used_memory", "0");
+            String maxMemoryStr = info.getProperty("maxmemory", "0");
+            String connectedClientsStr = info.getProperty("connected_clients", "0");
+
+            log.info("Redis 원본 정보 - used_memory: {}, maxmemory: {}, connected_clients: {}", 
+                    usedMemoryStr, maxMemoryStr, connectedClientsStr);
+
+            double usedMemoryMB = convertToMegabytes(usedMemoryStr);
+            double maxMemoryMB = convertToMegabytes(maxMemoryStr);
+            int connectedClients = Integer.parseInt(connectedClientsStr);
+
+            Set<String> routeKeys = redisTemplate.keys("routeStats::*");
+            Set<String> statsKeys = redisTemplate.keys("routeStats::*");
+            
+            long routeCount = (routeKeys != null) ? routeKeys.size() : 0;
+            long requestCountToday = (statsKeys != null) ? statsKeys.size() : 0;
+
+            log.debug("Redis 키 조회 결과 - routeKeys: {}, statsKeys: {}", 
+                    routeCount, requestCountToday);
+
+            RedisMemoryInfo memoryInfo = RedisMemoryInfo.builder()
+                    .time(LocalDateTime.now().format(TIME_FORMATTER))
+                    .usedMemory(usedMemoryMB)
+                    .maxMemory(maxMemoryMB)
+                    .connectedClients(connectedClients)
+                    .routesCount(routeCount)
+                    .requestToday(requestCountToday)
+                    .build();
+
+            log.info("Redis 메모리 정보 - 사용 메모리: {}MB, 최대 메모리: {}MB, 연결된 클라이언트: {}", 
+                    String.format("%.2f", usedMemoryMB), 
+                    String.format("%.2f", maxMemoryMB), 
+                    connectedClients);
+            return memoryInfo;
+
+        } catch (Exception e) {
+            log.error("Redis 메모리 정보 수집 실패", e);
+            return createEmptyMemoryInfo();
+        }
+    }
+
+    private double convertToMegabytes(String bytes) {
+        try {
+            double value = Double.parseDouble(bytes);
+            return value / (1024.0 * 1024.0);
         } catch (NumberFormatException e) {
-            return "0 B";
+            log.error("메모리 값 변환 실패. 입력값: {}", bytes, e);
+            return 0.0;
         }
-
-
     }
 
-    // WebSocket 세션 관리
-    public void broadcastRedisStats() {
-        Map<String, Object> redisStats = fetchRedisStats();
+    private RedisMemoryInfo createEmptyMemoryInfo() {
+        return RedisMemoryInfo.builder()
+                .time(LocalDateTime.now().format(TIME_FORMATTER))
+                .usedMemory(0.0)
+                .maxMemory(0.0)
+                .connectedClients(0)
+                .routesCount(0)
+                .requestToday(0)
+                .build();
+    }
+
+    /**
+     * 메모리 값을 바이트에서 MB로 변환
+     */
+    private long parseMemoryValue(String memoryInBytes) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            // Map을 JSON 문자열로 변환
-            String jsonResponse = objectMapper.writeValueAsString(Map.of("type", "redisStats", "data", redisStats));
-
-            log.info("📡 Redis 상태 정보를 WebSocket으로 전송: {}", jsonResponse);
-
-            sessions.forEach(session -> {
-                try {
-                    session.sendMessage(new TextMessage(jsonResponse));
-                    log.info("✅ WebSocket 전송 성공: {}", session.getId());
-                } catch (Exception e) {
-                    log.error("❌ WebSocket 전송 실패: {}", session.getId(), e);
-                }
-            });
-        } catch (JsonProcessingException e) {
-            log.error("❌ JSON 변환 실패", e);
+            double bytes = Double.parseDouble(memoryInBytes);
+            double megabytes = bytes / (1024.0 * 1024.0);
+            log.debug("메모리 변환 - 원본: {} bytes, 변환: {} MB", 
+                    bytes, String.format("%.2f", megabytes));
+            return Math.round(megabytes); // 반올림하여 가장 가까운 정수값 반환
+        } catch (NumberFormatException e) {
+            log.error("메모리 값 변환 실패. 입력값: {}", memoryInBytes, e);
+            return 0;
         }
     }
-
-
-
-
 }
+

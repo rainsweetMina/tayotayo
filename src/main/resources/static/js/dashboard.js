@@ -1,52 +1,69 @@
 // WebSocket 연결 설정
-const socket = new WebSocket("wss://docs.yi.or.kr:8094/ws/dashboard");
+let stompClient = null;
 
-socket.onopen = () => {
-    console.log("✅ WebSocket 연결 성공!");
-    // 연결이 되면 서버로부터 데이터를 요청
-    socket.send("getDashboardData");
-};
+function connectWebSocket() {
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+    
+    stompClient.connect({}, 
+        function(frame) {  // 연결 성공 시
+            console.log('✅ WebSocket 연결 성공:', frame);
+            
+            // Redis 메모리 정보 구독
+            stompClient.subscribe('/topic/redis-memory', function(message) {
+                try {
+                    const data = JSON.parse(message.body);
+                    console.log('Redis 메모리 정보 수신:', data);
+                    
+                    // 대시보드 업데이트
+                    document.getElementById('memoryUsage').innerText = data.usedMemory.toFixed(2) + ' MB';
+                    document.getElementById('connectedClients').innerText = data.connectedClients || '-';
+                    document.getElementById('routesCount').innerText = data.routesCount || '-';
+                    document.getElementById('requestToday').innerText = data.requestToday || '-';
+                } catch (error) {
+                    console.error('메시지 처리 중 오류:', error);
+                }
+            });
+        },
+        function(error) {  // 연결 실패 시
+            console.error('❌ WebSocket 연결 실패:', error);
+            // 5초 후 재연결 시도
+            setTimeout(connectWebSocket, 5000);
+        }
+    );
 
+    // 연결이 끊어졌을 때 재연결 시도
+    stompClient.ws.onclose = function() {
+        console.log('🔌 WebSocket 연결 종료, 재연결 시도...');
+        setTimeout(connectWebSocket, 5000);
+    };
+}
 
-socket.onmessage = function (event) {
-    const response = JSON.parse(event.data);
-    console.log("Received:", response);
+// 초기 연결 시도
+connectWebSocket();
 
-    if (response.type === "redisStats") {
-        const data = response.data;
-
-        // 업데이트: 모든 데이터 표시
-        document.getElementById("routesCount").innerText = data.routesCount || "-";
-        document.getElementById("requestToday").innerText = data.requestToday || "-";
-        document.getElementById("memoryUsage").innerText = data.usedMemory || "-";
-        document.getElementById("connectedClients").innerText = data.connectedClients || "-";
+// 페이지 언로드 시 연결 종료
+window.onbeforeunload = function() {
+    if (stompClient !== null) {
+        stompClient.disconnect();
     }
-};
-
-socket.onerror = (error) => {
-    console.error("❌ WebSocket 오류:", error);
-};
-
-socket.onclose = () => {
-    console.log("🔌 WebSocket 연결 종료");
 };
 
 // 대시보드 업데이트 함수
 function updateDashboard(data) {
     if (data.routesCount !== undefined) {
-        document.getElementById("routesCount").innerText = data.routesCount;
+        document.getElementById('routesCount').innerText = data.routesCount;
     }
     if (data.requestToday !== undefined) {
-        document.getElementById("requestToday").innerText = data.requestToday;
+        document.getElementById('requestToday').innerText = data.requestToday;
     }
     if (data.memoryUsage !== undefined) {
-        document.getElementById("memoryUsage").innerText = data.memoryUsage + " MB";
+        document.getElementById('memoryUsage').innerText = data.memoryUsage + ' MB';
     }
     if (data.connectedClients !== undefined) {
-        document.getElementById("connectedClients").innerText = data.connectedClients;
+        document.getElementById('connectedClients').innerText = data.connectedClients;
     }
 }
-
 
 // 응답 속도 차트 렌더링
 // 1. 24시간 고정 라벨 생성
@@ -127,5 +144,4 @@ function drawChart(labels, values) {
             }
         }
     });
-
 }
