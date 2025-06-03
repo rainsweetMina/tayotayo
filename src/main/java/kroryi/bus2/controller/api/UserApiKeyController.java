@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.api;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.config.security.CustomOAuth2User;
@@ -15,8 +16,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user/apikey")
@@ -46,6 +50,7 @@ public class UserApiKeyController {
         dto.setUserId(apiKey.getUserIdString());
         dto.setActive(apiKey.isActive());
         dto.setApiKey(apiKey.getApiKey());
+        dto.setStatus(apiKey.getStatus());
         dto.setCreatedAt(apiKey.getCreatedAt());
         dto.setExpiresAt(apiKey.getExpiresAt());
         return dto;
@@ -77,9 +82,13 @@ public class UserApiKeyController {
         return ResponseEntity.ok(toDto(apiKey));
     }
 
-    @Operation(summary = "API 키 재발급 요청", description = "기존 키가 없을 때 새 API 키를 재발급합니다.")
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissueApiKey(@RequestParam String userId) {
+    public ResponseEntity<?> reissueApiKey(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "인증 정보가 없습니다."));
+        }
+
+        String userId = userDetails.getUser().getUserId();
         log.info("🔁 [reissueApiKey] API 키 재발급 요청 - userId: {}", userId);
 
         try {
@@ -87,7 +96,10 @@ public class UserApiKeyController {
             return ResponseEntity.status(HttpStatus.CREATED).body(toDto(apiKey));
         } catch (IllegalStateException | IllegalArgumentException e) {
             log.warn("❌ 재발급 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("❌ 예상치 못한 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "서버 내부 오류가 발생했습니다."));
         }
     }
 
@@ -102,4 +114,18 @@ public class UserApiKeyController {
 
         return ResponseEntity.ok(toDto(apiKey));
     }
+
+    @Hidden
+    @GetMapping("/summary")
+    public ResponseEntity<Map<String, String>> getApiKeySummary(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        String userId = userDetails.getUser().getUserId();
+        ApiKey key = apiKeyService.getApiKeyRequestForUser(userService.getUserByUserId(userId));
+
+        String status = (key == null) ? "NONE"
+                : key.isActive() ? "APPROVED"
+                : "PENDING";
+
+        return ResponseEntity.ok(Map.of("status", status));
+    }
+
 }

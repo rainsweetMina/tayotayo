@@ -16,5 +16,5 @@ public class UserInfoDTO {
     private SignupType signupType;
     private LocalDateTime signupDate;
     private String role;
-    private LocalDateTime lastLoginDate;
+    private LocalDateTime lastLoginAt;
 }

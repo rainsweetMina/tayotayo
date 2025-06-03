@@ -71,6 +71,21 @@ public class UserController {
         return "user/login";
     }
 
+    @GetMapping("/auth/logout")
+    public String logoutPage(HttpSession session, HttpServletResponse response) {
+        if (session != null) session.invalidate();
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
+
+        return "redirect:/auth/login?logout=true"; // 로그인 페이지로 이동
+    }
+
+
     @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestParam String username,
                                    @RequestParam String password,

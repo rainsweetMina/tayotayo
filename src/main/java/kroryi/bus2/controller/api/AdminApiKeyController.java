@@ -61,6 +61,7 @@ public class AdminApiKeyController {
                     dto.setUsername(apiKey.getUser().getUsername());
                     dto.setApiKey(apiKey.getApiKey());
                     dto.setActive(apiKey.isActive());
+                    dto.setStatus(apiKey.getStatus());
                     dto.setCreatedAt(apiKey.getCreatedAt());
                     dto.setExpiresAt(apiKey.getExpiresAt());
                     return dto;

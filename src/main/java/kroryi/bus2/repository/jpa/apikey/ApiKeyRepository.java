@@ -5,6 +5,7 @@ import kroryi.bus2.entity.apikey.ApiKeyStatus;
 import kroryi.bus2.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ApiKeyRepository extends JpaRepository<ApiKey, Long> {
@@ -50,4 +51,7 @@ public interface ApiKeyRepository extends JpaRepository<ApiKey, Long> {
     Optional<ApiKey> findTopByUserAndStatusOrderByCreatedAtDesc(User user, ApiKeyStatus apiKeyStatus);
 
 
+    List<ApiKey> findAllByUser(User user);
+
+    List<ApiKey> findAllByUserAndActiveTrue(User user);
 }

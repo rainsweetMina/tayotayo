@@ -19,6 +19,7 @@ import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.repository.jpa.mypage.FavoriteBusStopRepository;
 import kroryi.bus2.repository.jpa.mypage.FavoriteRouteRepository;
 import kroryi.bus2.service.mypage.FavoriteService;
+import kroryi.bus2.service.mypage.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,15 +47,14 @@ public class MypageFavoriteController {
     private final RouteRepository routeRepository;
     private final UserRepository userRepository;
     private final FavoriteService favoriteService;
+    private final NotificationService notificationService;
 
-    @Operation(summary = "정류장 즐겨찾기 추가", description = "사용자가 특정 정류장을 즐겨찾기에 추가합니다.")
+    @Operation(summary = "정류장 즐겨찾기 추가")
     @PostMapping("/favorite/bus-stop")
     @ResponseBody
-    public ResponseEntity<String> addFavoriteBusStop(
-            @RequestBody FavoriteBusStopRequestDTO dto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        log.info("📩 받은 요청 bsId = {}", dto.getBsId());
+    public ResponseEntity<String> addFavoriteBusStop(@RequestBody FavoriteBusStopRequestDTO dto,
+                                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("\uD83D\uDCE9 받은 요청 bsId = {}", dto.getBsId());
         String loginUserId = userDetails.getUserId();
 
         User user = userRepository.findByUserId(loginUserId)
@@ -68,59 +69,44 @@ public class MypageFavoriteController {
 
         FavoriteBusStop favorite = new FavoriteBusStop(null, dto.getBsId(), loginUserId, busStop, user, LocalDateTime.now());
         favoriteBusStopRepository.save(favorite);
+
+        // 상세 메시지로 변경
+        String message = String.format("'%s' 정류장이 즐겨찾기에 추가되었습니다.", busStop.getBsNm());
+        notificationService.createNotification(loginUserId, message);
+
         return ResponseEntity.ok("정류장이 즐겨찾기에 추가되었습니다.");
     }
 
-    @Operation(summary = "정류장 즐겨찾기 목록 조회", description = "사용자가 즐겨찾는 정류장 목록을 조회합니다.")
-    @GetMapping("/favorite/bus-stop")
-    public ResponseEntity<List<FavoriteBusStopResponseDTO>> getFavoriteBusStops(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 로그인 안 된 경우
-        }
-
-        String userId = userDetails.getUserId();
-        List<FavoriteBusStop> list = favoriteBusStopRepository.findByUserUserId(userId);
-
-        List<FavoriteBusStopResponseDTO> dtoList = list.stream()
-                .map(f -> new FavoriteBusStopResponseDTO(
-                        f.getBsId(),
-                        f.getBusStop().getBsNm() // 정류장 이름
-                ))
-                .toList();
-
-        return ResponseEntity.ok(dtoList);
-    }
-
-    @Operation(summary = "정류장 즐겨찾기 삭제", description = "사용자가 특정 정류장을 즐겨찾기에서 삭제합니다.")
+    @Operation(summary = "정류장 즐겨찾기 삭제")
     @DeleteMapping("/favorite/bus-stop/{bsId}")
-    public ResponseEntity<?> deleteFavoriteBusStop(
-            @PathVariable String bsId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+    public ResponseEntity<?> deleteFavoriteBusStop(@PathVariable String bsId,
+                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         String userId = userDetails.getUserId();
 
-        boolean exists = favoriteBusStopRepository.existsByUserUserIdAndBsId(userId, bsId);
-        if (!exists) {
+        if (!favoriteBusStopRepository.existsByUserUserIdAndBsId(userId, bsId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("즐겨찾기 항목이 없습니다.");
         }
 
+        // 삭제 전에 정류장 이름 가져오기
+        BusStop busStop = busStopRepository.findByBsId(bsId)
+                .orElse(null);
         favoriteBusStopRepository.deleteByUserUserIdAndBsId(userId, bsId);
-        return ResponseEntity.ok("정류장 즐겨찾기 삭제 완료");
+
+        String message = busStop != null ?
+                String.format("'%s' 정류장이 즐겨찾기에서 삭제되었습니다.", busStop.getBsNm()) :
+                "정류장 즐겨찾기가 삭제되었습니다.";
+
+        notificationService.createNotification(userId, message);
+
+        return ResponseEntity.ok(message);
     }
 
-    @Operation(summary = "노선 즐겨찾기 추가", description = "사용자가 특정 노선을 즐겨찾기에 추가합니다.")
+    @Operation(summary = "노선 즐겨찾기 추가")
     @PostMapping("/favorite/route")
     @ResponseBody
-    public ResponseEntity<String> addFavoriteRoute(
-            @RequestBody FavoriteRouteRequestDTO dto,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
+    public ResponseEntity<String> addFavoriteRoute(@RequestBody FavoriteRouteRequestDTO dto,
+                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
         String loginUserId = userDetails.getUserId();
 
         User user = userRepository.findByUserId(loginUserId)
@@ -135,56 +121,68 @@ public class MypageFavoriteController {
 
         FavoriteRoute favorite = new FavoriteRoute(null, dto.getRouteId(), loginUserId, route, user, LocalDateTime.now());
         favoriteRouteRepository.save(favorite);
+
+        // 상세 메시지로 변경
+        String message = String.format("'%s'번 노선이 즐겨찾기에 추가되었습니다.", route.getRouteNo());
+        notificationService.createNotification(loginUserId, message);
+
         return ResponseEntity.ok("노선이 즐겨찾기에 추가되었습니다.");
     }
 
-    @Operation(summary = "노선 즐겨찾기 목록 조회", description = "사용자가 즐겨찾는 노선 목록을 조회합니다.")
-    @GetMapping("/favorite/route")
-    public ResponseEntity<List<FavoriteRouteResponseDTO>> getFavoriteRoutes(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String userId = userDetails.getUserId();
-        List<FavoriteRoute> favorites = favoriteRouteRepository.findByUserUserId(userId);
-
-        List<FavoriteRouteResponseDTO> dtoList = favorites.stream()
-                .map(f -> new FavoriteRouteResponseDTO(
-                        f.getRouteId(),
-                        f.getRoute().getRouteNo(), // 노선 번호
-                        f.getRoute().getStNm(),    // 출발지
-                        f.getRoute().getEdNm()     // 도착지
-                ))
-                .toList();
-
-        return ResponseEntity.ok(dtoList);
-    }
-
-    @Operation(summary = "노선 즐겨찾기 삭제", description = "사용자가 특정 노선을 즐겨찾기에서 삭제합니다.")
+    @Operation(summary = "노선 즐겨찾기 삭제")
     @DeleteMapping("/favorite/route/{routeId}")
-    public ResponseEntity<?> deleteFavoriteRoute(
-            @PathVariable String routeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+    public ResponseEntity<?> deleteFavoriteRoute(@PathVariable String routeId,
+                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         String userId = userDetails.getUserId();
 
-        boolean exists = favoriteRouteRepository.existsByUserUserIdAndRouteId(userId, routeId);
-        if (!exists) {
+        if (!favoriteRouteRepository.existsByUserUserIdAndRouteId(userId, routeId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("즐겨찾기 항목이 없습니다.");
         }
 
+        // 삭제 전에 노선 정보 가져오기
+        Route route = routeRepository.findByRouteId(routeId)
+                .orElse(null);
+
         favoriteRouteRepository.deleteByUserUserIdAndRouteId(userId, routeId);
-        return ResponseEntity.ok("노선 즐겨찾기 삭제 완료");
+
+        String message = route != null ?
+                String.format("'%s'번 노선(%s → %s)이 즐겨찾기에서 삭제되었습니다.",
+                        route.getRouteNo(), route.getStNm(), route.getEdNm()) :
+                "노선 즐겨찾기가 삭제되었습니다.";
+
+        notificationService.createNotification(userId, message);
+
+        return ResponseEntity.ok(message);
     }
 
+    @Operation(summary = "정류장 즐겨찾기 목록 조회")
+    @GetMapping("/favorite/bus-stop")
+    public ResponseEntity<List<FavoriteBusStopResponseDTO>> getFavoriteBusStops(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        String userId = userDetails.getUserId();
 
-    @Operation(summary = "노선,정류장 통합 조회", description = "사용자가 즐겨찾는 정류장과 노선 목록을 통합 조회합니다.")
+        List<FavoriteBusStop> list = favoriteBusStopRepository.findByUserUserId(userId);
+        List<FavoriteBusStopResponseDTO> dtoList = list.stream()
+                .map(f -> new FavoriteBusStopResponseDTO(f.getBsId(), f.getBusStop().getBsNm()))
+                .toList();
+        return ResponseEntity.ok(dtoList);
+    }
+
+    @Operation(summary = "노선 즐겨찾기 목록 조회")
+    @GetMapping("/favorite/route")
+    public ResponseEntity<List<FavoriteRouteResponseDTO>> getFavoriteRoutes(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        String userId = userDetails.getUserId();
+
+        List<FavoriteRoute> favorites = favoriteRouteRepository.findByUserUserId(userId);
+        List<FavoriteRouteResponseDTO> dtoList = favorites.stream()
+                .map(f -> new FavoriteRouteResponseDTO(f.getRouteId(), f.getRoute().getRouteNo(), f.getRoute().getStNm(), f.getRoute().getEdNm()))
+                .toList();
+        return ResponseEntity.ok(dtoList);
+    }
+
+    @Operation(summary = "노선,정류장 통합 조회")
     @GetMapping("/favorite/all")
     @ResponseBody
     public ResponseEntity<Map<String, List<?>>> getAllFavorites(@RequestParam String userId) {
@@ -192,7 +190,7 @@ public class MypageFavoriteController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "즐겨찾기 페이지", description = "마이페이지 즐겨찾기 뷰 페이지를 반환합니다.")
+    @Operation(summary = "즐겨찾기 페이지")
     @GetMapping("/favorites")
     public String showFavoritesPage(Model model, @AuthenticationPrincipal Object principal) {
         String userId = null;
@@ -208,5 +206,17 @@ public class MypageFavoriteController {
 
         model.addAttribute("userId", userId);
         return "mypage/mypage-favorites";
+    }
+
+    @GetMapping("/favorites/summary")
+    public ResponseEntity<Map<String, Integer>> getFavoriteSummary(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        String userId = userDetails.getUser().getUserId();
+        int busCount = favoriteRouteRepository.countByUser_UserId(userId);
+        int stopCount = favoriteBusStopRepository.countByUser_UserId(userId);
+
+        Map<String, Integer> result = new HashMap<>();
+        result.put("busCount", busCount);
+        result.put("stopCount", stopCount);
+        return ResponseEntity.ok(result);
     }
 }

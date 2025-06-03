@@ -29,4 +29,6 @@ public interface FavoriteRouteRepository extends JpaRepository<FavoriteRoute, Lo
     int deleteByUserUserIdAndRouteId(String userId, String routeId);
 
     List<FavoriteRoute> findByUserUserId(String userId);
+
+    int countByUser_UserId(String userId);
 }

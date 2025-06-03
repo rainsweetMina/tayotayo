@@ -5,9 +5,9 @@ import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginRequestDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
 import kroryi.bus2.dto.user.UserInfoDTO;
-import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.UserRepository;
+import kroryi.bus2.service.mypage.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,6 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NotificationService notificationService;
 
     public boolean checkUserIdDuplicate(String userId) {
         return userRepository.existsByUserId(userId);
@@ -91,6 +92,13 @@ public class UserService {
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
+
+        // ✅ 알림 추가
+        notificationService.createNotification(
+                userId,
+                "회원 정보 변경 완료"
+        );
+
         return true;
     }
 
@@ -155,8 +163,6 @@ public class UserService {
                 user.getLastLoginAt()
         );
     }
-
-
 
     public boolean isUserIdDuplicate(String userId) {
         return userRepository.existsByUserId(userId);

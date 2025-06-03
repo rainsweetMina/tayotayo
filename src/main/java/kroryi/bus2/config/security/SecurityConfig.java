@@ -104,13 +104,11 @@ public class SecurityConfig {
 
                 // 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutUrl("/auth/logout") // Vue에서 이 URL로 POST 요청
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/auth/login")  // 자동 리다이렉트
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(200); // Vue가 리다이렉트하므로 200만 내려줌
-                        })
                         .permitAll()
                 )
 
