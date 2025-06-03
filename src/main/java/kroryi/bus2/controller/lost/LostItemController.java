@@ -1,5 +1,6 @@
 package kroryi.bus2.controller.lost;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kroryi.bus2.dto.lost.LostItemAdminResponseDTO;
@@ -13,11 +14,13 @@ import kroryi.bus2.repository.jpa.UserRepository;
 import kroryi.bus2.service.lost.LostItemService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,17 @@ public class LostItemController {
     private final UserRepository userRepository;
     private final LostItemRepository lostItemRepository;
 
+    @Hidden
+    @GetMapping("/search")
+    public List<LostItemResponseDTO> searchLostItems(
+            @RequestParam(required = false) String itemName,
+            @RequestParam(required = false) String busCompany,
+            @RequestParam(required = false) String busNumber,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        return lostItemService.search(itemName, busCompany, busNumber, startDate, endDate);
+    }
 
     @Operation(summary = "분실물 등록", description = "일반회원이 분실물을 등록합니다.")
     @PostMapping
