@@ -27,4 +27,6 @@ public interface FavoriteRouteRepository extends JpaRepository<FavoriteRoute, Lo
     @Transactional
     @Modifying
     int deleteByUserUserIdAndRouteId(String userId, String routeId);
+
+    List<FavoriteRoute> findByUserUserId(String userId);
 }

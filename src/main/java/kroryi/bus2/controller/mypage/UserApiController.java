@@ -27,14 +27,23 @@ public class UserApiController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("userId", userDetails.getUser().getUserId());
-        result.put("username", userDetails.getUser().getUsername());
-        result.put("email", userDetails.getUser().getEmail());
-        result.put("role", userDetails.getUser().getRole().name());
+        User user = userDetails.getUser();
 
-        return ResponseEntity.ok(result);
+        UserInfoDTO response = new UserInfoDTO(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getSignupType(),
+                user.getSignupDate(),     // LocalDateTime
+                user.getRole().name(),
+                user.getLastLoginAt()     // 추가된 최근접속일
+        );
+
+        return ResponseEntity.ok(response);
     }
+
+
 
 
 

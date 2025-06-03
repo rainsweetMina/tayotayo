@@ -1,5 +1,6 @@
 package kroryi.bus2.service.apikey;
 
+import jakarta.persistence.metamodel.SingularAttribute;
 import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.apikey.ApiKeyStatus;
 import kroryi.bus2.entity.user.User;
@@ -8,9 +9,11 @@ import kroryi.bus2.repository.jpa.apikey.ApiKeyRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.AbstractPersistable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -240,4 +243,7 @@ public class ApiKeyService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 
+    public Optional<ApiKey> findById(Long id) {
+        return apiKeyRepository.findById(id);
+    }
 }

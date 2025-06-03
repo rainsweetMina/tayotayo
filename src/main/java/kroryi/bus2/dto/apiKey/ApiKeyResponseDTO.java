@@ -1,7 +1,6 @@
 package kroryi.bus2.dto.apiKey;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import kroryi.bus2.entity.user.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -10,54 +9,18 @@ import java.time.LocalDateTime;
  * API 키 응답 DTO
  */
 @Data
-//-------------- 추후 수정 --------------------------------------------------------
 public class ApiKeyResponseDTO {
     private Long id;
-//    @JsonIgnore
-    private String username;
-    private String userIdString;
-    //    @JsonIgnore
-    private boolean active;
-    private String apiKey;
-//    @JsonIgnore
-//    private User user;
-    private String user_id;
-    private LocalDateTime createdAt;
-    private LocalDateTime expiresAt;
 
-//    // Getters and Setters
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public String getName() {
-//        return name;
-//    }
-//
-//    public void setName(String name) {
-//        this.name = name;
-//    }
-//
-//    public boolean isActive() {
-//        return active;
-//    }
-//
-//    public void setActive(boolean active) {
-//        this.active = active;
-//    }
-//
-//    public String getApiKey() {
-//        return apiKey;
-//    }
-//
-//    public void setApiKey(String apiKey) {
-//        this.apiKey = apiKey;
-//    }
-//
-//    public void setCreatedAt(LocalDateTime createdAt) {
-//    }
+    private String username;         // 사용자 이름
+    private String userId;           // 사용자 ID (user_id 대신 일관성 유지)
+
+    private boolean active;          // 활성 상태
+    private String apiKey;           // 실제 API 키
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt; // 발급일
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime expiresAt; // 만료일
 }

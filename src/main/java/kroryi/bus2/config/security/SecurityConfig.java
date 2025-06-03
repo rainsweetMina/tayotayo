@@ -102,6 +102,18 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
+                // 로그아웃 설정
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout") // Vue에서 이 URL로 POST 요청
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(200); // Vue가 리다이렉트하므로 200만 내려줌
+                        })
+                        .permitAll()
+                )
+
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 회원가입, 정적 자원 등 허용
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
@@ -141,18 +153,6 @@ public class SecurityConfig {
                         .tokenValiditySeconds(7 * 24 * 60 * 60)
                         .rememberMeParameter("remember-me")
                         .userDetailsService(userDetailsService)
-                )
-
-                // 로그아웃 설정
-                .logout(logout -> logout
-                        .logoutUrl("/api/logout") // Vue에서 이 URL로 POST 요청
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(200); // Vue가 리다이렉트하므로 200만 내려줌
-                        })
-                        .permitAll()
                 );
 
         return http.build();

@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @RestController
 @RequiredArgsConstructor
 @Log4j2
@@ -68,7 +70,6 @@ public class AdminApiKeyController {
         return ResponseEntity.ok(responseList);
     }
 
-
     @Operation(summary = "단일 API 키 조회", description = "지정한 ID에 해당하는 API 키 정보를 반환합니다.")
     @GetMapping("/{id}")
     public ResponseEntity<ApiKeyResponseDTO> getApiKey(@PathVariable Long id) {
@@ -98,13 +99,14 @@ public class AdminApiKeyController {
 
         // ✅ userId가 넘어온 경우 User 엔티티 연결
         if (request.getUserId() != null && !request.getUserId().isBlank()) {
-            User user = apiKeyService.getUserByUserId(request.getUserId()); // 또는 직접 userRepository 사용
+            User user = apiKeyService.getUserByUserId(request.getUserId());
             builder.user(user);
             builder.userIdString(user.getUserId());
         }
 
         ApiKey key = builder.build();
 
+        // ✅ 콜백 URL 설정
         if (request.getCallbackUrls() != null) {
             for (String url : request.getCallbackUrls()) {
                 key.addCallbackUrl(url);
@@ -112,17 +114,25 @@ public class AdminApiKeyController {
         }
 
         ApiKey saved = apiKeyRepository.save(key);
+
+        // ✅ JWT 토큰 생성 및 설정
         String jwt = jwtTokenUtil.generateToken(saved);
         saved.setApikey(jwt);
+        apiKeyRepository.save(saved);  // jwt 반영된 상태로 다시 저장
 
+        // ✅ 응답 DTO 생성
         ApiKeyResponseDTO response = new ApiKeyResponseDTO();
         response.setId(saved.getId());
         response.setUsername(saved.getUser_name());
-        response.setUserIdString(saved.getUserIdString()); // ✅ DTO에 필드가 있다면 포함
+        response.setUserId(saved.getUserIdString());
         response.setActive(saved.isActive());
         response.setApiKey(saved.getApiKey());
+        response.setCreatedAt(saved.getCreatedAt());
+        response.setExpiresAt(saved.getExpiresAt());
+
         return response;
     }
+
 
     @Operation(summary = "API 키 상태 변경", description = "지정한 API 키의 활성화 상태를 변경합니다.")
     @PutMapping("/{id}/status")

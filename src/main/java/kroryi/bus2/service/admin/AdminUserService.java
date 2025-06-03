@@ -51,7 +51,7 @@ public class AdminUserService {
     public LocalDate getSignupDate(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        return user.getSignupDate();
+        return user.getSignupDate().toLocalDate();
     }
 
     public LocalDateTime getLastLogin(String userId) {

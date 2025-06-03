@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -60,7 +61,7 @@ public class JoinRequestDTO {
                 .phoneNumber(normalizePhoneNumber(this.phoneNumber))
                 .signupType(this.signupType)
                 .role(Role.USER)
-                .signupDate(LocalDate.now())
+                .signupDate(LocalDateTime.now())
                 .build();
     }
 

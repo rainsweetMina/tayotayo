@@ -148,9 +148,17 @@ public class UserService {
                 user.getUserId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole()  // ✅ Role enum 자체를 전달
+                user.getPhoneNumber(),
+                user.getSignupType(),
+                user.getSignupDate(),
+                user.getRole().name(),
+                user.getLastLoginAt()
         );
     }
 
 
+
+    public boolean isUserIdDuplicate(String userId) {
+        return userRepository.existsByUserId(userId);
+    }
 }

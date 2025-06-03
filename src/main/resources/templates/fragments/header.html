@@ -101,7 +101,7 @@
 
                 <!-- 공통 로그아웃 -->
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <form th:action="@{/logout}" method="post" class="d-inline">
+                    <form th:action="@{/auth/logout}" method="post" class="d-inline">
                         <a class="nav-link" href="#" onclick="this.closest('form').submit(); return false;">
                             로그아웃
                         </a>
