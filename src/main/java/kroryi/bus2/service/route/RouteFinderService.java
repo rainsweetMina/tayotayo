@@ -3,6 +3,7 @@ package kroryi.bus2.service.route;
 import kroryi.bus2.dto.Route.RouteResultDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.busStop.TransferCandidate;
+import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -10,11 +11,13 @@ import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.service.busSetting.PathSettingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class RouteFinderService {
@@ -23,6 +26,7 @@ public class RouteFinderService {
     private final RouteStopLinkRepository routeStopLinkRepository;
     private final BusStopRepository busStopRepository;
     private final PathSettingService pathSettingService;
+    private final RouteDataService routeDataService;
     private final RouteFinder routeFinder;
 
     // 출,도착 정류소들의 특정 미터안의 후보를 찾는거
@@ -69,7 +73,7 @@ public class RouteFinderService {
             List<String> moveDirs = routeStopLinkRepository.findMoveDirByRouteIdAndBsId(routeId, startBsId);
             if (moveDirs.isEmpty()) continue;
 
-            String moveDir = moveDirs.get(0); // 첫 번째 방향 사용
+            String moveDir = moveDirs.get(0);
 
             List<BusStopDTO> stationIds;
             try {
@@ -85,10 +89,10 @@ public class RouteFinderService {
             Route route = routeRepository.findByRouteId(routeId)
                     .orElseThrow(() -> new RuntimeException("노선 없음: " + routeId));
 
-            // 정류장 수 기반 예상 시간 계산
-            double factor = pathSettingService.getTimeFactor();  // 서비스에서 가져오기
+            double factor = pathSettingService.getTimeFactor();
             int estimatedMinutes = (int) Math.round(stationIds.size() * factor);
 
+            // ✅ ORS는 비워서 전달
             result.add(RouteResultDTO.builder()
                     .type("직통")
                     .routeId(route.getRouteId())
@@ -98,6 +102,7 @@ public class RouteFinderService {
                     .transferCount(0)
                     .stationIds(stationIds)
                     .estimatedMinutes(estimatedMinutes)
+                    .orsPath(Collections.emptyList()) // 빈 리스트 전달
                     .build());
         }
 
@@ -204,6 +209,8 @@ public class RouteFinderService {
                 fullPath.addAll(second.getStationIds().subList(1, second.getStationIds().size()));
             }
 
+            List<CoordinateDTO> orsPath = Collections.emptyList();
+
             RouteResultDTO dto = RouteResultDTO.builder()
                     .type("환승")
                     .routeId(first.getRouteId() + " → " + second.getRouteId())
@@ -213,9 +220,9 @@ public class RouteFinderService {
                     .transferCount(1)
                     .stationIds(fullPath)
                     .transferStationId(transferBsId)
-                    .transferStationName(
-                            transferStop.getBsNm() != null ? transferStop.getBsNm() : "알 수 없음")
+                    .transferStationName(transferStop.getBsNm() != null ? transferStop.getBsNm() : "알 수 없음")
                     .estimatedMinutes(estimatedMinutes)
+                    .orsPath(orsPath) // 빈 리스트 전달
                     .build();
 
             transferResults.add(dto);
