@@ -15,8 +15,8 @@ import java.util.List;
 public class BusStopFullDetailDTO {
     private String bsId;
     private String bsNm;
-    private Double xPos;
-    private Double yPos;
+    private double xPos;
+    private double yPos;
 
     // 시군동
     private String city;

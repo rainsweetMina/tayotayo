@@ -47,8 +47,8 @@ public class BusStopDataService {
                 .id(stop.getId())
                 .bsId(stop.getBsId())
                 .bsNm(stop.getBsNm())
-                .xpos(stop.getXPos())
-                .ypos(stop.getYPos())
+                .xPos(stop.getXPos())
+                .yPos(stop.getYPos())
                 .build());
     }
 

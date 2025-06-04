@@ -49,8 +49,8 @@ public class RouteStopLinkService {
                         ((Number) row[0]).intValue(),      // seq
                         (String) row[1],                   // bsNm
                         (String) row[2],                   // bsId
-                        (Double) row[3],                   // xPos
-                        (Double) row[4]                    // yPos
+                        (double) row[3],                   // xPos
+                        (double) row[4]                    // yPos
                 ))
                 .collect(Collectors.toList());
     }
@@ -64,8 +64,8 @@ public class RouteStopLinkService {
                         ((Number) row[0]).intValue(),      // seq
                         (String) row[1],                   // bsNm
                         (String) row[2],                   // bsId
-                        (Double) row[3],                   // xPos
-                        (Double) row[4]                    // yPos
+                        (double) row[3],                   // xPos
+                        (double) row[4]                    // yPos
                 ))
                 .collect(Collectors.toList());
     }

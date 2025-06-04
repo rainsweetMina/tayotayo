@@ -23,9 +23,9 @@ public class BusStop {
     private String bsNm;
 
     @Column(name = "x_pos")
-    private Double xPos;
+    private double xPos;
 
     @Column(name = "y_pos")
-    private Double yPos;
+    private double yPos;
 
 }

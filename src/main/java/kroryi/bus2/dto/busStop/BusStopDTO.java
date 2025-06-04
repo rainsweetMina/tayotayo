@@ -13,19 +13,19 @@ public class BusStopDTO implements Serializable {
    private int seq;
    private String bsNm;
    private String bsId;
-   private Double xPos;
-   private Double yPos;
+   private double xPos;
+   private double yPos;
 
    public BusStopDTO() {}
 
-   public BusStopDTO(String bsId, String bsNm, Double xPos, Double yPos) {
+   public BusStopDTO(String bsId, String bsNm, double xPos, double yPos) {
       this.bsId = bsId;
       this.bsNm = bsNm;
       this.xPos = xPos;
       this.yPos = yPos;
    }
 
-   public BusStopDTO(int seq, String bsNm, String bsId, Double xPos, Double yPos) {
+   public BusStopDTO(int seq, String bsNm, String bsId, double xPos, double yPos) {
       this.seq = seq;
       this.bsNm = bsNm;
       this.bsId = bsId;

@@ -10,11 +10,11 @@ public class LinkWithCoordDTO {
 //    private String linkId;
 //    private String stNode;
 //    private String edNode;
-//    private Double gisDist;
+//    private double gisDist;
 
     private Integer moveDir;
-    private Double stX;
-    private Double stY;
-    private Double edX;
-    private Double edY;
+    private double stX;
+    private double stY;
+    private double edX;
+    private double edY;
 }

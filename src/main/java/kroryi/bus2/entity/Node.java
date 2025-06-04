@@ -22,10 +22,10 @@ public class Node {
     private String nodeNm;
 
     @Column(name = "x_pos")
-    private Double xPos;
+    private double xPos;
 
     @Column(name = "y_pos")
-    private Double yPos;
+    private double yPos;
 
     @Column(name = "bs_yn")
     private String bsYn;

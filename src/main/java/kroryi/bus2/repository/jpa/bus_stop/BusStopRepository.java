@@ -56,9 +56,9 @@ AND
 ABS(bs.yPos - :y) * 110540 <= :radius
 """)
     List<String> findNearbyStationIdsWithGeo(
-            @Param("x") Double x,
-            @Param("y") Double y,
-            @Param("radius") Double radius);
+            @Param("x") double x,
+            @Param("y") double y,
+            @Param("radius") double radius);
 
     @Query(value = """
     SELECT *

@@ -88,7 +88,7 @@ public class RouteFinder {
                     .transferCount(0)
                     .transferStationId(null)
                     .transferStationName(null)
-                    .estimatedMinutes(linkList.size() * 2)
+                    .estimatedMinutes((double) (linkList.size() * 2))
                     .stationIds(stops)
                     .orsPath(orsPath) // 🔥 여기에 주입
                     .build();

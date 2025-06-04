@@ -16,6 +16,7 @@ import kroryi.bus2.dto.Route.RouteResultDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
+import kroryi.bus2.dto.coordinate.CoordinateListWrapperDTO;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -59,7 +60,6 @@ public class BusUserDataController {
     private final GetRouteLinkService getRouteLinkService;
     private final BusStopRepository busStopRepository;
     private final RouteFinderService routeFinderService;
-    private final RouteFinder routeFinder;
 
 
     @Value("${api.service-key-decoding}")
@@ -237,14 +237,9 @@ public class BusUserDataController {
     }
 
     @PostMapping("/ors/polyline")
-    public ResponseEntity<List<CoordinateDTO>> getOrsPath(@RequestBody List<CoordinateDTO> coords) {
-        try {
-            List<CoordinateDTO> path = routeDataService.getOrsPath(coords);
-            return ResponseEntity.ok(path);
-        } catch (IOException | InterruptedException e) {
-            log.error("ORS 요청 실패", e);
-            return ResponseEntity.status(500).build();
-        }
+    public ResponseEntity<?> getOrsPolyline(@RequestBody List<CoordinateDTO> coordinates) throws IOException, InterruptedException {
+        log.info("📥 ORS 좌표 요청: {}개", coordinates.size());
+        return ResponseEntity.ok(routeDataService.getOrsPath(coordinates));
     }
 
 }

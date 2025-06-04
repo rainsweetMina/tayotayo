@@ -22,6 +22,6 @@ public class RedisLog {
     private Long routesCount;
     private Long requestToday;
     private LocalDateTime timestamp;
-    private Double memoryUsageMb;
+    private double memoryUsageMb;
 
 }

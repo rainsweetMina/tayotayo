@@ -25,10 +25,10 @@ public class BusStopDelete {
     private String bsNm;
 
     @Column(name = "x_pos")
-    private Double xPos;
+    private double xPos;
 
     @Column(name = "y_pos")
-    private Double yPos;
+    private double yPos;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

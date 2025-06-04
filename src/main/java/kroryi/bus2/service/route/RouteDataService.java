@@ -200,10 +200,29 @@ public class RouteDataService {
     public List<CoordinateDTO> getOrsPath(List<CoordinateDTO> coordinates) throws IOException, InterruptedException {
         String url = "https://api.openrouteservice.org/v2/directions/driving-car";
 
+        log.info("🧪 넘어온 원본 좌표들:");
+        for (int i = 0; i < coordinates.size(); i++) {
+            CoordinateDTO c = coordinates.get(i);
+            log.info(" - 좌표 {}: x={}, y={}", i, c.getXPos(), c.getYPos());
+        }
+
+        boolean hasInvalid = coordinates.stream().anyMatch(c -> {
+            Double x = c.getXPos();
+            Double y = c.getYPos();
+            return x == null || y == null || Double.compare(x, 0.0) == 0 || Double.compare(y, 0.0) == 0;
+        });
+
+        if (hasInvalid) {
+            log.error("❌ ORS 요청 중 0.0 좌표 포함됨 → 요청 차단");
+            for (int i = 0; i < coordinates.size(); i++) {
+                CoordinateDTO c = coordinates.get(i);
+                log.warn("좌표 {}: x={}, y={}", i, c.getXPos(), c.getYPos());
+            }
+            throw new IllegalArgumentException("ORS 요청 좌표에 유효하지 않은 값이 포함되어 있습니다.");
+        }
+
         // ORS 요청용 좌표 구성: [ [x, y], [x, y], ... ]
         List<List<Double>> orsCoordinates = coordinates.stream()
-
-
                 .map(c -> Arrays.asList(c.getXPos(), c.getYPos()))
                 .collect(Collectors.toList());
 
@@ -221,7 +240,9 @@ public class RouteDataService {
 
         // 요청 실행
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//        log.warn("ORS 응답 바디: {}", response.body());
+
+        log.info("🧪 ORS 요청 좌표: {}", coordinates);
+        log.info("🧪 요청 바디: {}", objectMapper.writeValueAsString(body));
 
         if (response.statusCode() != 200) {
             throw new IOException("OpenRouteService 요청 실패: " + response.body());
@@ -230,6 +251,7 @@ public class RouteDataService {
         JsonNode root = objectMapper.readTree(response.body());
         String encodedPolyline = root.get("routes").get(0).get("geometry").asText();
         System.out.printf("encodedPolyline: %s\n", encodedPolyline);
+
         return decodePolyline(encodedPolyline);
     }
 

@@ -32,7 +32,7 @@ public class ApiMetricsService {
         return apiLogEntryRepository.findDailyAvgResponse(start, now).stream()
                 .map(r -> new ApiResponseStatDTO(
                         ((java.sql.Date) r[0]).toLocalDate().toString(),
-                        (Double) r[1]
+                        (double) r[1]
                 ))
                 .toList();
     }
