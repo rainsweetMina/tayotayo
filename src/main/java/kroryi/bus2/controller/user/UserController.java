@@ -1,6 +1,8 @@
 package kroryi.bus2.controller.user;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginFormDTO;
@@ -69,6 +71,21 @@ public class UserController {
         return "user/login";
     }
 
+    @GetMapping("/auth/logout")
+    public String logoutPage(HttpSession session, HttpServletResponse response) {
+        if (session != null) session.invalidate();
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
+
+        return "redirect:/auth/login?logout=true"; // 로그인 페이지로 이동
+    }
+
+
     @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestParam String username,
                                    @RequestParam String password,
@@ -83,14 +100,26 @@ public class UserController {
 
     @PostMapping("/api/logout")
     @ResponseBody
-    public ResponseEntity<?> logout(HttpSession session) {
-        session.invalidate(); // 세션 무효화
+    public ResponseEntity<?> logout(HttpSession session, HttpServletResponse response) {
+        if (session != null) {
+            session.invalidate();
+        }
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/"); // 루트 경로에서 제거
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // HTTPS 환경 필수
+
+        response.addCookie(cookie);
 
         Map<String, String> result = new HashMap<>();
         result.put("message", "로그아웃 완료");
 
         return ResponseEntity.ok(result);
     }
+
+
 
     // 회원가입 폼
     @GetMapping("/register")
@@ -119,5 +148,11 @@ public class UserController {
             redirectAttributes.addFlashAttribute("joinRequestDTO", jdto);
             return "redirect:/register";
         }
+    }
+
+    @GetMapping("/api/user/check-id")
+    public Map<String, Boolean> checkUserIdDuplicate(@RequestParam String userId) {
+        boolean duplicate = userService.isUserIdDuplicate(userId);
+        return Map.of("duplicate", duplicate);
     }
 }

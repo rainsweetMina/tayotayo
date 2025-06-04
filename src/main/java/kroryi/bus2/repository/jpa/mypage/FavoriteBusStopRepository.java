@@ -27,5 +27,9 @@ public interface FavoriteBusStopRepository extends JpaRepository<FavoriteBusStop
     @Transactional
     @Modifying
     int deleteByUserUserIdAndBsId(String userId, String bsId);
+
+    List<FavoriteBusStop> findByUserUserId(String userId);
+
+    int countByUser_UserId(String userId);
 }
 

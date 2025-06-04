@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "습득물-일반", description = "")
@@ -28,5 +29,19 @@ public class FoundItemController {
     @GetMapping("/{id}")
     public ResponseEntity<FoundItemResponseDTO> getFoundItemDetailForUser(@PathVariable Long id) {
         return ResponseEntity.ok(foundItemService.getFoundItemDetailForUser(id));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<FoundItemResponseDTO>> searchFoundItems(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String busCompany,
+            @RequestParam(required = false) String busNumber,
+            @RequestParam String startDate,
+            @RequestParam String endDate
+    ) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        List<FoundItemResponseDTO> result = foundItemService.searchFoundItems(keyword, busCompany, busNumber, start, end);
+        return ResponseEntity.ok(result);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,7 +74,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setPassword("SOCIAL_LOGIN"); // 소셜 로그인 사용자에게 비밀번호 기본값 사용
             user.setRole(Role.USER);
             user.setSignupType(signupType);
-            user.setSignupDate(LocalDate.now());
+            user.setSignupDate(LocalDateTime.now());
             user = userRepository.save(user);
         }
 

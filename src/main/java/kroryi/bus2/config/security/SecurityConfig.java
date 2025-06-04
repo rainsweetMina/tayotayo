@@ -85,7 +85,7 @@ public class SecurityConfig {
 
                 // 폼 로그인 설정
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
@@ -99,6 +99,16 @@ public class SecurityConfig {
 
                             response.sendRedirect("/auth/login?errorCode=" + errorCode);
                         })
+                        .permitAll()
+                )
+
+                // 로그아웃 설정
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/auth/login")  // 자동 리다이렉트
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
 
@@ -126,7 +136,7 @@ public class SecurityConfig {
 
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
+                        .loginPage("/auth/login")
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customLoginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
@@ -141,18 +151,6 @@ public class SecurityConfig {
                         .tokenValiditySeconds(7 * 24 * 60 * 60)
                         .rememberMeParameter("remember-me")
                         .userDetailsService(userDetailsService)
-                )
-
-                // 로그아웃 설정
-                .logout(logout -> logout
-                        .logoutUrl("/api/logout") // Vue에서 이 URL로 POST 요청
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(200); // Vue가 리다이렉트하므로 200만 내려줌
-                        })
-                        .permitAll()
                 );
 
         return http.build();
@@ -162,7 +160,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://localhost:5173"));
+        config.setAllowedOrigins(List.of(
+            "https://localhost:5173",
+            "http://localhost:5173",
+            "http://localhost:8081",
+            "https://localhost:8081"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);  // 이 설정이 있어야 withCredentials: true 동작함

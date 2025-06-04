@@ -1,6 +1,7 @@
 package kroryi.bus2.service.lost;
 
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.lost.*;
@@ -16,8 +17,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,26 @@ public class LostItemService {
     private final FoundItemRepository foundItemRepository;
     private final LostFoundMatchRepository lostFoundMatchRepository;
 
+    @Hidden
+    public List<LostItemResponseDTO> search(String itemName, String busCompany, String busNumber,
+                                            LocalDate startDate, LocalDate endDate) {
+        // 빈 문자열을 null로 처리 (쿼리 조건 활성화용)
+        if (itemName != null && itemName.isBlank()) itemName = null;
+        if (busCompany != null && busCompany.isBlank()) busCompany = null;
+        if (busNumber != null && busNumber.isBlank()) busNumber = null;
+
+        // ✅ LocalDate → LocalDateTime 변환
+        LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(23, 59, 59) : null;
+
+        List<LostItem> results = lostItemRepository.searchByConditions(
+                itemName, busCompany, busNumber, startDateTime, endDateTime
+        );
+
+        return results.stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
     @AdminAudit(action = "분실물 등록", target = "LostItem")
     public LostItem saveLostItem(LostItemRequestDTO dto) {
         // 신고자 유저 불러오기
@@ -118,9 +141,10 @@ public class LostItemService {
                 .id(lostItem.getId())
                 .title(lostItem.getTitle())
                 .content(lostItem.getContent())
+                .busCompany(lostItem.getBusCompany()) // ✅ 반드시 추가!
                 .busNumber(lostItem.getBusNumber())
                 .lostTime(lostItem.getLostTime())
-                .memberId(lostItem.getReporter().getId()) // User 엔티티 대신 id만
+                .memberId(lostItem.getReporter().getId())
                 .matched(lostItem.isMatched())
                 .visible(lostItem.isVisible())
                 .deleted(lostItem.isDeleted())
@@ -128,6 +152,7 @@ public class LostItemService {
                 .updatedAt(lostItem.getUpdatedAt())
                 .build();
     }
+
     @Transactional
     @AdminAudit(action = "분실물 숨김", target = "LostItem")
     public void hideLostItem(Long id) {
@@ -211,7 +236,7 @@ public class LostItemService {
 
     // ✅ 본인 분실물만 조회하는 메서드
     public List<LostItemResponseDTO> getMyLostItems(Long memberId) {
-        List<LostItem> items = lostItemRepository.findAllByReporterId(memberId);
+        List<LostItem> items = lostItemRepository.findAllByReporterIdAndDeletedFalse(memberId);
         return items.stream()
                 .map(item -> LostItemResponseDTO.builder()
                         .id(item.getId())

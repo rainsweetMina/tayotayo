@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -346,6 +347,16 @@ public class FoundItemServiceImpl implements FoundItemService {
                 .toList();
     }
 
+    @Override
+    public List<FoundItemResponseDTO> searchFoundItems(String keyword, String busCompany, String busNumber, LocalDate startDate, LocalDate endDate) {
+        List<FoundItem> results = foundItemRepository.searchFoundItems(
+                keyword != null && !keyword.isBlank() ? keyword : null,
+                busCompany != null && !busCompany.isBlank() ? busCompany : null,
+                busNumber != null && !busNumber.isBlank() ? busNumber : null,
+                startDate, endDate
+        );
+        return results.stream().map(FoundItemResponseDTO::fromEntity).toList();
+    }
 
 
 }

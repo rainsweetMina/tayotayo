@@ -49,7 +49,7 @@ public class User {
     private SignupType signupType = SignupType.GENERAL; // 가입유형 (ex. 일반, 소셜 등)
 
     @Column(name = "signup_date")
-    private LocalDate signupDate;
+    private LocalDateTime signupDate;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;

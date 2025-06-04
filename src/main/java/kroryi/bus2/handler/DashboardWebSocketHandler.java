@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kroryi.bus2.service.admin.RedisLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.util.HashMap;
 import java.util.Map;
-
 
 /*
     Handler 패키지 따로 만든 이유
@@ -24,27 +23,39 @@ import java.util.Map;
 @Component
 @Log4j2
 @RequiredArgsConstructor
-@Slf4j
 public class DashboardWebSocketHandler extends TextWebSocketHandler {
 
     private final RedisLogService redisLogService;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         log.info("📥 WebSocket 클라이언트로부터 메시지 수신: {}", message.getPayload());
 
         // Redis 상태 정보 수집
-        Map<String, Object> redisStats = redisLogService.fetchRedisStats();
+        var redisStats = redisLogService.getRedisInfo();
 
+        // Redis 정보를 Map으로 변환
+        Map<String, Object> redisData = new HashMap<>();
+        if (redisStats.getError() == null) {
+            redisData.put("usedMemory", redisStats.getUsedMemory());
+            redisData.put("maxMemory", redisStats.getMaxMemory());
+            redisData.put("connectedClients", redisStats.getConnectedClients());
+            redisData.put("uptime", redisStats.getUptime());
+            redisData.put("version", redisStats.getVersion());
+        } else {
+            redisData.put("error", redisStats.getError());
+        }
 
         // JSON 형식으로 응답 구성
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = objectMapper.writeValueAsString(Map.of("type", "redisStats", "data", redisStats));
+        String jsonResponse = objectMapper.writeValueAsString(Map.of(
+                "type", "redisStats",
+                "data", redisData
+        ));
 
         log.info("📡 WebSocket 클라이언트로 데이터 전송: {}", jsonResponse);
 
         // WebSocket 클라이언트로 전송
         session.sendMessage(new TextMessage(jsonResponse));
-
     }
 }

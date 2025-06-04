@@ -237,7 +237,7 @@ public class MyPageController {
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setSignupType(user.getSignupType());
-        dto.setSignupDate(user.getSignupDate());
+        dto.setSignupDate(user.getSignupDate().toLocalDate());
         dto.setRole(user.getRole());
 
         model.addAttribute("modifyUserDTO", dto);

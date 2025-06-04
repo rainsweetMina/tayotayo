@@ -3,7 +3,9 @@ package kroryi.bus2.repository.jpa;
 import kroryi.bus2.entity.lost.FoundItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +30,22 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
 
     List<FoundItem> findAllByIsHiddenFalseAndIsDeletedFalse();
 
+    @Query("""
+    SELECT f FROM FoundItem f
+    WHERE f.isDeleted = false
+      AND f.visible = true
+      AND (:keyword IS NULL OR f.itemName LIKE %:keyword% OR f.content LIKE %:keyword%)
+      AND (:busCompany IS NULL OR f.busCompany = :busCompany)
+      AND (:busNumber IS NULL OR f.busNumber = :busNumber)
+      AND f.foundTime BETWEEN :startDate AND :endDate
+""")
+    List<FoundItem> searchFoundItems(
+            @Param("keyword") String keyword,
+            @Param("busCompany") String busCompany,
+            @Param("busNumber") String busNumber,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 
 
 }
