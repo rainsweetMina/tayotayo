@@ -101,7 +101,7 @@ public class RouteFinderService {
                     .endBsId(endBsId)
                     .transferCount(0)
                     .stationIds(stationIds)
-                    .estimatedMinutes((double) estimatedMinutes)
+                    .estimatedMinutes(estimatedMinutes)
                     .orsPath(Collections.emptyList()) // 빈 리스트 전달
                     .build());
         }
