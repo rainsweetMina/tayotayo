@@ -3,6 +3,7 @@ package kroryi.bus2.service.route;
 import kroryi.bus2.dto.Route.RouteResultDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.busStop.TransferCandidate;
+import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -10,11 +11,13 @@ import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.service.busSetting.PathSettingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class RouteFinderService {
@@ -23,6 +26,7 @@ public class RouteFinderService {
     private final RouteStopLinkRepository routeStopLinkRepository;
     private final BusStopRepository busStopRepository;
     private final PathSettingService pathSettingService;
+    private final RouteDataService routeDataService;
     private final RouteFinder routeFinder;
 
     // 출,도착 정류소들의 특정 미터안의 후보를 찾는거
@@ -89,6 +93,25 @@ public class RouteFinderService {
             double factor = pathSettingService.getTimeFactor();  // 서비스에서 가져오기
             int estimatedMinutes = (int) Math.round(stationIds.size() * factor);
 
+            // 🚨 ORS 경로 계산용 시작/종료 좌표 세팅
+            CoordinateDTO startCoord = new CoordinateDTO(
+                    stationIds.get(0).getXPos(),
+                    stationIds.get(0).getYPos()
+            );
+            CoordinateDTO endCoord = new CoordinateDTO(
+                    stationIds.get(stationIds.size() - 1).getXPos(),
+                    stationIds.get(stationIds.size() - 1).getYPos()
+            );
+
+            // 🚨 ORS API 호출
+            List<CoordinateDTO> orsPath = List.of();
+            try {
+                orsPath = routeDataService.getOrsPath(startCoord, endCoord);
+            } catch (Exception e) {
+                log.warn("❌ ORS 호출 실패: {}", e.getMessage());
+            }
+
+            // ✅ 결과 추가
             result.add(RouteResultDTO.builder()
                     .type("직통")
                     .routeId(route.getRouteId())
@@ -98,9 +121,9 @@ public class RouteFinderService {
                     .transferCount(0)
                     .stationIds(stationIds)
                     .estimatedMinutes(estimatedMinutes)
+                    .orsPath(orsPath)
                     .build());
         }
-
         return result;
     }
 
@@ -204,6 +227,18 @@ public class RouteFinderService {
                 fullPath.addAll(second.getStationIds().subList(1, second.getStationIds().size()));
             }
 
+            // ORS 경로 생성
+            List<CoordinateDTO> orsPath = List.of();
+            try {
+                List<CoordinateDTO> coords = fullPath.stream()
+                        .map(bs -> new CoordinateDTO(bs.getXPos(), bs.getYPos()))
+                        .collect(Collectors.toList());
+
+                orsPath = routeDataService.getOrsPath(coords);
+            } catch (Exception e) {
+                log.warn("❌ ORS 경로 계산 실패 (환승): {}", e.getMessage());
+            }
+
             RouteResultDTO dto = RouteResultDTO.builder()
                     .type("환승")
                     .routeId(first.getRouteId() + " → " + second.getRouteId())
@@ -216,6 +251,7 @@ public class RouteFinderService {
                     .transferStationName(
                             transferStop.getBsNm() != null ? transferStop.getBsNm() : "알 수 없음")
                     .estimatedMinutes(estimatedMinutes)
+                    .orsPath(orsPath)
                     .build();
 
             transferResults.add(dto);

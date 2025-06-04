@@ -65,6 +65,8 @@ public class BusUserDataController {
     @Value("${api.service-key-decoding}")
     private String serviceKey;
 
+    @Value("${ors.api.key}")
+    private String orsApiKey;
 
     @Operation(summary = "좌표기반 정류소 서칭", description = "전체 버스정류장을 좌표기반으로 불러오는거")
     @GetMapping("/busStopsInBounds")
@@ -204,17 +206,23 @@ public class BusUserDataController {
     }
 
     /**여기부터 Vue를 위한 api*/
-    @Operation(summary = "좌표 기반 자동 길찾기", description = "핀 좌표 2개로 반경 내 정류장을 찾아 경로를 계산")
-    @GetMapping("/route-auto")
-    public ResponseEntity<List<RouteResultDTO>> autoFindRoutesByCoords(
+    @Operation(summary = "좌표 기반 출발, 도착지 설정", description = "출발, 도착위치 핀 지정")
+    @GetMapping("/nearby-stops")
+    public ResponseEntity<Map<String, List<BusStopDTO>>> findNearbyStops(
             @RequestParam double startX,
             @RequestParam double startY,
             @RequestParam double endX,
             @RequestParam double endY,
-            @RequestParam(defaultValue = "500") double radius // 기본 1km
+            @RequestParam(defaultValue = "150") double radius
     ) {
-        List<RouteResultDTO> routes = routeFinderService.findRoutesNearCoords(startX, startY, endX, endY, radius);
-        return ResponseEntity.ok(routes);
+        List<BusStop> startStops = busStopRepository.findStopsWithinRadius(startX, startY, radius);
+        List<BusStop> endStops = busStopRepository.findStopsWithinRadius(endX, endY, radius);
+
+        Map<String, List<BusStopDTO>> result = new HashMap<>();
+        result.put("startCandidates", startStops.stream().map(BusStopDTO::fromEntity).toList());
+        result.put("endCandidates", endStops.stream().map(BusStopDTO::fromEntity).toList());
+
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "정류장 전용 검색", description = "검색어를 포함하는 정류장 이름만 반환 (노선 제외)")
@@ -227,4 +235,16 @@ public class BusUserDataController {
 
         return ResponseEntity.ok(dtos);
     }
+
+    @PostMapping("/ors/polyline")
+    public ResponseEntity<List<CoordinateDTO>> getOrsPath(@RequestBody List<CoordinateDTO> coords) {
+        try {
+            List<CoordinateDTO> path = routeDataService.getOrsPath(coords);
+            return ResponseEntity.ok(path);
+        } catch (IOException | InterruptedException e) {
+            log.error("ORS 요청 실패", e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
 }
