@@ -24,25 +24,25 @@ public class UserDataInputTest {
 
     @Test
     public void insertTestUser() {
-        String userId = "testuser1";
-
-        if (userRepository.findByUserId(userId).isPresent()) {
-            log.info("이미 존재하는 아이디 입니다 : {}", userId);
-            return;
-        }
-
-        User user = User.builder()
-                .userId(userId)
-                .username("테스트 유저")
-                .password(passwordEncoder.encode("1234"))
-                .email("testuser@example.com")
-                .phoneNumber("010-1234-5678")
-                .role(Role.USER)
-                .signupType(SignupType.GENERAL)
-                .signupDate(LocalDate.now())
-                .build();
-
-        userRepository.save(user);
-        log.info("테스트 유저 저장 완료: {} / {}", user.getUserId(), "1234");
+//        String userId = "testuser1";
+//
+//        if (userRepository.findByUserId(userId).isPresent()) {
+//            log.info("이미 존재하는 아이디 입니다 : {}", userId);
+//            return;
+//        }
+//
+//        User user = User.builder()
+//                .userId(userId)
+//                .username("테스트 유저")
+//                .password(passwordEncoder.encode("1234"))
+//                .email("testuser@example.com")
+//                .phoneNumber("010-1234-5678")
+//                .role(Role.USER)
+//                .signupType(SignupType.GENERAL)
+//                .signupDate(LocalDate.now())
+//                .build();
+//
+//        userRepository.save(user);
+//        log.info("테스트 유저 저장 완료: {} / {}", user.getUserId(), "1234");
     }
 }
