@@ -30,10 +30,10 @@ public class RouteStopLink {
     private String moveDir;
 
     @Column(name = "x_pos")
-    private Double xPos;
+    private double xPos;
 
     @Column(name = "y_pos")
-    private Double yPos;
+    private double yPos;
 
     // ✅ 정류소 참조
     @ManyToOne(fetch = FetchType.LAZY)

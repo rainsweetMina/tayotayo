@@ -16,8 +16,8 @@ public class RouteStopLinkDTO {
     private int seq;
     private String moveDir;
     @Column(name = "x_pos")
-    private Double xPos;
+    private double xPos;
 
     @Column(name = "y_pos")
-    private Double yPos;
+    private double yPos;
 }

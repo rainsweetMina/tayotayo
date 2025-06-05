@@ -1,6 +1,7 @@
 package kroryi.bus2.dto.Route;
 
 import kroryi.bus2.dto.busStop.BusStopDTO;
+import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +25,8 @@ public class RouteResultDTO {
     private double estimatedMinutes;
 
     private List<BusStopDTO> stationIds;  // 🚨 추가됨: 출발~도착 정류장까지의 경유지 리스트
+
+    private List<CoordinateDTO> orsPath; // ORS로 계산된 실제 지도상 경로
+
 
 }

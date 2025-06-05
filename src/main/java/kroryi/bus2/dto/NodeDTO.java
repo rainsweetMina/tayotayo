@@ -17,7 +17,7 @@ public class NodeDTO implements Serializable {
     private Long id;
     private String nodeId;
     private String nodeNm;
-    private Double xPos;
-    private Double yPos;
+    private double xPos;
+    private double yPos;
     private String bsYn;
 }

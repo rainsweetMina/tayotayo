@@ -31,7 +31,7 @@ public class LinkDTO implements Serializable {
     private String edNode;
 
     @JacksonXmlProperty(localName = "gisDist")
-    private Double gisDist;
+    private double gisDist;
 
     @JacksonXmlProperty(localName = "linkSeq")
     private Integer linkSeq;

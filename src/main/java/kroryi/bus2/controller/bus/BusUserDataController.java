@@ -16,6 +16,7 @@ import kroryi.bus2.dto.Route.RouteResultDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.coordinate.CoordinateDTO;
+import kroryi.bus2.dto.coordinate.CoordinateListWrapperDTO;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -51,7 +52,6 @@ import java.util.concurrent.TimeUnit;
 // 버스,노선 관련 데이터를 클라이언트에 제공하는 REST API 컨트롤러
 // 이 컨트롤러는 JSON 형식으로 데이터를 반환하며, 클라이언트(웹/앱)에서 실시간 정보 조회 및 검색에 활용
 public class BusUserDataController {
-    private final BusInfoInitService busInfoInitService;
     private final BusStopDataService busStopDataService;
     private final RouteDataService routeDataService;
     private final ObjectMapper objectMapper;
@@ -59,19 +59,14 @@ public class BusUserDataController {
     private final BusRouteRealTimeDataService busRouteRealTimeDataService;
     private final GetRouteLinkService getRouteLinkService;
     private final BusStopRepository busStopRepository;
-    private final RouteRepository routeRepository;
-    private final AddRouteService addRouteService;
-    private final AddRouteStopLinkService addRouteStopLinkService;
-    private final RouteStopLinkRepository routeStopLinkRepository;
-    private final InsertStopIntoRouteService insertStopIntoRouteService;
-    private final DeleteStopFromRouteService deleteStopFromRouteService;
-    private final DeleteRouteService deleteRouteService;
     private final RouteFinderService routeFinderService;
 
 
     @Value("${api.service-key-decoding}")
     private String serviceKey;
 
+    @Value("${ors.api.key}")
+    private String orsApiKey;
 
     @Operation(summary = "좌표기반 정류소 서칭", description = "전체 버스정류장을 좌표기반으로 불러오는거")
     @GetMapping("/busStopsInBounds")
@@ -210,5 +205,41 @@ public class BusUserDataController {
         return ResponseEntity.ok(combinedResults);
     }
 
+    /**여기부터 Vue를 위한 api*/
+    @Operation(summary = "좌표 기반 출발, 도착지 설정", description = "출발, 도착위치 핀 지정")
+    @GetMapping("/nearby-stops")
+    public ResponseEntity<Map<String, List<BusStopDTO>>> findNearbyStops(
+            @RequestParam double startX,
+            @RequestParam double startY,
+            @RequestParam double endX,
+            @RequestParam double endY,
+            @RequestParam(defaultValue = "150") double radius
+    ) {
+        List<BusStop> startStops = busStopRepository.findStopsWithinRadius(startX, startY, radius);
+        List<BusStop> endStops = busStopRepository.findStopsWithinRadius(endX, endY, radius);
+
+        Map<String, List<BusStopDTO>> result = new HashMap<>();
+        result.put("startCandidates", startStops.stream().map(BusStopDTO::fromEntity).toList());
+        result.put("endCandidates", endStops.stream().map(BusStopDTO::fromEntity).toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "정류장 전용 검색", description = "검색어를 포함하는 정류장 이름만 반환 (노선 제외)")
+    @GetMapping("/search-bus-stops")
+    public ResponseEntity<List<BusStopDTO>> searchBusStops(@RequestParam String keyword) {
+        List<BusStop> stops = busStopRepository.findByBsNmContaining(keyword);
+        List<BusStopDTO> dtos = stops.stream()
+                .map(BusStopDTO::fromEntity)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @PostMapping("/ors/polyline")
+    public ResponseEntity<?> getOrsPolyline(@RequestBody List<CoordinateDTO> coordinates) throws IOException, InterruptedException {
+        log.info("📥 ORS 좌표 요청: {}개", coordinates.size());
+        return ResponseEntity.ok(routeDataService.getOrsPath(coordinates));
+    }
 
 }

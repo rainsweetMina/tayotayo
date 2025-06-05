@@ -7,5 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class ApiResponseStatDTO {
     private String date;
-    private Double averageResponseTime;
+    private double averageResponseTime;
 }

@@ -10,8 +10,8 @@ import lombok.*;
 public class BusStopDetailResponseDTO  {
     private String bsId;
     private String bsNm;
-    private Double xPos;
-    private Double yPos;
+    private double xPos;
+    private double yPos;
 
     // BusStopInfo에서 가져올 시/구/동 정보
     private String city;

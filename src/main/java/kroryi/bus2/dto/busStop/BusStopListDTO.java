@@ -1,5 +1,6 @@
 package kroryi.bus2.dto.busStop;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +14,15 @@ import java.io.Serializable;
 @Builder
 public class BusStopListDTO implements Serializable {
     private Long id;
+    @JsonProperty("bsId")
     private String bsId;
+
+    @JsonProperty("bsNm")
     private String bsNm;
-    private Double xpos;
-    private Double ypos;
+
+    @JsonProperty("xPos")
+    private double xPos;
+
+    @JsonProperty("yPos")
+    private double yPos;
 }

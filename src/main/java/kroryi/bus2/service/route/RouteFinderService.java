@@ -3,6 +3,7 @@ package kroryi.bus2.service.route;
 import kroryi.bus2.dto.Route.RouteResultDTO;
 import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.busStop.TransferCandidate;
+import kroryi.bus2.dto.coordinate.CoordinateDTO;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
@@ -10,11 +11,13 @@ import kroryi.bus2.repository.jpa.bus_stop.BusStopRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import kroryi.bus2.service.busSetting.PathSettingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class RouteFinderService {
@@ -23,6 +26,8 @@ public class RouteFinderService {
     private final RouteStopLinkRepository routeStopLinkRepository;
     private final BusStopRepository busStopRepository;
     private final PathSettingService pathSettingService;
+    private final RouteDataService routeDataService;
+    private final RouteFinder routeFinder;
 
     // 출,도착 정류소들의 특정 미터안의 후보를 찾는거
     public List<RouteResultDTO> findRoutesWithNearbyStart(String startBsId, String endBsId) {
@@ -68,7 +73,7 @@ public class RouteFinderService {
             List<String> moveDirs = routeStopLinkRepository.findMoveDirByRouteIdAndBsId(routeId, startBsId);
             if (moveDirs.isEmpty()) continue;
 
-            String moveDir = moveDirs.get(0); // 첫 번째 방향 사용
+            String moveDir = moveDirs.get(0);
 
             List<BusStopDTO> stationIds;
             try {
@@ -84,10 +89,10 @@ public class RouteFinderService {
             Route route = routeRepository.findByRouteId(routeId)
                     .orElseThrow(() -> new RuntimeException("노선 없음: " + routeId));
 
-            // 정류장 수 기반 예상 시간 계산
-            double factor = pathSettingService.getTimeFactor();  // 서비스에서 가져오기
+            double factor = pathSettingService.getTimeFactor();
             int estimatedMinutes = (int) Math.round(stationIds.size() * factor);
 
+            // ✅ ORS는 비워서 전달
             result.add(RouteResultDTO.builder()
                     .type("직통")
                     .routeId(route.getRouteId())
@@ -97,6 +102,7 @@ public class RouteFinderService {
                     .transferCount(0)
                     .stationIds(stationIds)
                     .estimatedMinutes(estimatedMinutes)
+                    .orsPath(Collections.emptyList()) // 빈 리스트 전달
                     .build());
         }
 
@@ -203,6 +209,8 @@ public class RouteFinderService {
                 fullPath.addAll(second.getStationIds().subList(1, second.getStationIds().size()));
             }
 
+            List<CoordinateDTO> orsPath = Collections.emptyList();
+
             RouteResultDTO dto = RouteResultDTO.builder()
                     .type("환승")
                     .routeId(first.getRouteId() + " → " + second.getRouteId())
@@ -212,9 +220,9 @@ public class RouteFinderService {
                     .transferCount(1)
                     .stationIds(fullPath)
                     .transferStationId(transferBsId)
-                    .transferStationName(
-                            transferStop.getBsNm() != null ? transferStop.getBsNm() : "알 수 없음")
+                    .transferStationName(transferStop.getBsNm() != null ? transferStop.getBsNm() : "알 수 없음")
                     .estimatedMinutes(estimatedMinutes)
+                    .orsPath(orsPath) // 빈 리스트 전달
                     .build();
 
             transferResults.add(dto);
@@ -226,65 +234,36 @@ public class RouteFinderService {
         return transferResults;
     }
 
-
-
     private double distanceBetween(BusStop a, BusStop b) {
         double dx = a.getXPos() - b.getXPos();
         double dy = a.getYPos() - b.getYPos();
         return Math.sqrt(dx * dx + dy * dy); // 유클리디안 거리
     }
 
+    public List<RouteResultDTO> findRoutesNearCoords(double startX, double startY,
+                                                     double endX, double endY,
+                                                     double radius) {
+        List<BusStop> startStops = busStopRepository.findStopsWithinRadius(startX, startY, radius);
+        List<BusStop> endStops = busStopRepository.findStopsWithinRadius(endX, endY, radius);
 
-//    public List<RouteResultDTO> findTransferRoutes(String startBsId, String endBsId) {
-//        List<RouteResultDTO> transferResults = new ArrayList<>();
-//
-//        // 1. 후보 정류장 리스트
-//        BusStop start = busStopRepository.findByBsId(startBsId).orElseThrow();
-//        BusStop end = busStopRepository.findByBsId(endBsId).orElseThrow();
-//
-//        List<String> startCandidates = busStopRepository.findNearbyStationIdsWithGeo(start.getXPos(), start.getYPos(), 150.0);
-//        List<String> endCandidates = busStopRepository.findNearbyStationIdsWithGeo(end.getXPos(), end.getYPos(), 150.0);
-//
-//        // 2. 출발 후보 → 환승 후보들
-//        for (String sc : startCandidates) {
-//            List<String> midPointsA = routeStopLinkRepository.findReachableStopsFrom(sc); // sc에서 도달 가능한 정류장들
-//
-//            for (String ec : endCandidates) {
-//                List<String> midPointsB = routeStopLinkRepository.findReachableStopsTo(ec); // ec로 갈 수 있는 정류장들
-//
-//                // 3. 교집합: 환승 가능한 정류장 찾기
-//                Set<String> transferPoints = new HashSet<>(midPointsA);
-//                transferPoints.retainAll(midPointsB); // 둘 다 포함되는 환승 정류장
-//
-//                for (String transferBsId : transferPoints) {
-//                    // 4. 두 구간으로 쪼개서 직통 경로 조회
-//                    List<RouteResultDTO> firstLegs = findDirectRoutes(sc, transferBsId);
-//                    List<RouteResultDTO> secondLegs = findDirectRoutes(transferBsId, ec);
-//
-//                    for (RouteResultDTO first : firstLegs) {
-//                        for (RouteResultDTO second : secondLegs) {
-//                            // 5. 통합 경로로 합치기
-//                            List<BusStopDTO> fullPath = new ArrayList<>();
-//                            fullPath.addAll(first.getStationIds());
-//                            fullPath.addAll(second.getStationIds().subList(1, second.getStationIds().size())); // 환승지 중복 제거
-//
-//                            transferResults.add(RouteResultDTO.builder()
-//                                    .type("환승")
-//                                    .routeId(first.getRouteId() + " → " + second.getRouteId())
-//                                    .routeNo(first.getRouteNo() + " → " + second.getRouteNo())
-//                                    .startBsId(first.getStartBsId())
-//                                    .endBsId(second.getEndBsId())
-//                                    .transferCount(1)
-//                                    .stationIds(fullPath)
-//                                    .build());
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return transferResults;
-//    }
+        List<RouteResultDTO> result = new ArrayList<>();
+
+        for (BusStop start : startStops) {
+            for (BusStop end : endStops) {
+                try {
+                    List<RouteResultDTO> candidateRoutes = routeFinder.findRoutes(start.getBsId(), end.getBsId());
+
+                    if (!candidateRoutes.isEmpty()) {
+                        result.addAll(candidateRoutes);
+                    }
+                } catch (Exception e) {
+                    // 경로가 없는 경우는 무시 (예외 삼키기 or 로그 남기기)
+                }
+            }
+        }
+
+        return result;
+    }
 
 }
 

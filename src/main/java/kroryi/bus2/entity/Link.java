@@ -27,5 +27,5 @@ public class Link {
     private String edNode;
 
     @Column(name = "gis_dist")
-    private Double gisDist;
+    private double gisDist;
 }

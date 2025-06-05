@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class BusStopUpdateDTO {
     private String bsNm;
-    private Double xPos;
-    private Double yPos;
+    private double xPos;
+    private double yPos;
 }
