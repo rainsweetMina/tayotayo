@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,14 +32,13 @@ public class QnaService {
     private final QnaRepository qnaRepository;
     private final UserRepository userRepository;
 
-    // 해당 멤버만 등록
     public void createQuestion(QnaQuestionRequestDTO dto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userId = auth.getName();
         User user = userRepository.findByUserId(userId).orElseThrow();
 
         Qna qna = Qna.builder()
-                .memberId(user.getId())
+                .memberId(user.getId()) // ✅ 수정된 부분
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .status(QnaStatus.WAITING)
@@ -53,28 +53,14 @@ public class QnaService {
         qnaRepository.save(qna);
     }
 
-    // 리스트 조회
     @Transactional(readOnly = true)
     public List<QnaListDTO> getAllQna() {
         return qnaRepository.findAll().stream()
                 .filter(q -> !q.isDeleted() && q.isVisible())
-                .map(q -> {
-                    String username = userRepository.findById(q.getMemberId())
-                            .map(User::getUsername)
-                            .orElse("Unknown");
-
-                    return new QnaListDTO(
-                            q.getId(),
-                            q.getTitle(),
-                            q.getStatus().name(),
-                            username,
-                            q.isSecret(),
-                            q.getCreatedAt()
-                    );
-                }).collect(Collectors.toList());
+                .map(q -> QnaListDTO.from(q, userRepository)) // ✅ 수정된 부분
+                .collect(Collectors.toList());
     }
 
-    // Q&A 리스트 검색&페이지
     public Page<QnaListDTO> getQnaPage(String keyword, String field, int page) {
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -92,7 +78,6 @@ public class QnaService {
                     if (userIds.isEmpty()) {
                         return Page.empty(pageable);
                     }
-
                     qnaEntities = qnaRepository.findByMemberIdInAndIsDeletedFalse(userIds, pageable);
                     break;
                 default:
@@ -100,16 +85,9 @@ public class QnaService {
             }
         }
 
-        return qnaEntities.map(q -> {
-            String username = userRepository.findById(q.getMemberId())
-                    .map(User::getUsername).orElse("Unknown");
-            return new QnaListDTO(q.getId(), q.getTitle(), q.getStatus().name(), username, q.isSecret(), q.getCreatedAt());
-        });
+        return qnaEntities.map(q -> QnaListDTO.from(q, userRepository)); // ✅ 수정
     }
 
-
-
-    // 수정
     @Transactional
     public void updateQuestion(Long id, QnaQuestionRequestDTO dto, Authentication authentication) {
         Qna qna = qnaRepository.findById(id)
@@ -121,7 +99,7 @@ public class QnaService {
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        if (!isAdmin && !user.getId().equals(qna.getMemberId())) {
+        if (!isAdmin && !user.getId().equals(qna.getMemberId())) { // ✅ 수정
             throw new AccessDeniedException("수정 권한이 없습니다.");
         }
 
@@ -132,8 +110,7 @@ public class QnaService {
 
         qnaRepository.save(qna);
     }
-    
-    // 삭제
+
     @Transactional
     public void deleteQuestion(Long id, Authentication authentication) {
         Qna qna = qnaRepository.findById(id)
@@ -149,12 +126,31 @@ public class QnaService {
             throw new AccessDeniedException("삭제 권한이 없습니다.");
         }
 
-        qnaRepository.delete(qna);  // 💥 실제 삭제
+        qnaRepository.delete(qna);  // 💥 실제 삭제 방식
     }
 
     public int countUnansweredQnaByUser(String userId) {
-        return qnaRepository.countByUser_UserIdAndStatus(userId, QnaStatus.WAITING);
+        Long memberId = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."))
+                .getId();
+
+        return qnaRepository.countByMemberIdAndStatus(memberId, QnaStatus.WAITING);
     }
 
-}
+    @Transactional(readOnly = true)
+    public List<QnaListDTO> getQnaByUser(String userId) {
+        User user = userRepository.findByUserId(userId).orElseThrow();
+        List<Qna> qnas = qnaRepository.findByMemberId(user.getId());
 
+        return qnas.stream()
+                .filter(q -> !q.isDeleted())
+                .map(q -> QnaListDTO.from(q, userRepository)) // ✅ 수정
+                .collect(Collectors.toList());
+    }
+
+    public List<QnaListDTO> getQnaListByUserId(Long userId) {
+        return qnaRepository.findByMemberId(userId).stream()
+                .map(q -> QnaListDTO.from(q, userRepository)) // ✅ 수정
+                .collect(Collectors.toList());
+    }
+}
