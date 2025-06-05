@@ -153,6 +153,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         return new UserInfoDTO(
+                user.getId(),             // ✅ 숫자형 ID 추가
                 user.getUserId(),
                 user.getUsername(),
                 user.getEmail(),

@@ -28,6 +28,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -50,8 +51,18 @@ public class FoundItemServiceImpl implements FoundItemService {
     @AdminAudit(action = "습득물 등록", target = "FoundItem")
     @Override
     public void registerFoundItem(FoundItemRequestDTO dto, MultipartFile image) {
-        User handler = userRepository.findById(dto.getHandlerId())
-                .orElseThrow(() -> new EntityNotFoundException("담당자 없음"));
+        // 📌 1. 핸들러 ID 로깅
+        log.info("📌 handlerId from DTO = {}", dto.getHandlerId());
+
+// 📌 2. User 존재 확인
+        Optional<User> optionalUser = userRepository.findById(dto.getHandlerId());
+        if (optionalUser.isEmpty()) {
+            log.error("❌ 해당 ID의 유저가 없습니다: {}", dto.getHandlerId());
+            throw new EntityNotFoundException("🔥 해당 ID의 유저를 찾을 수 없습니다: " + dto.getHandlerId());
+        }
+
+        User handler = optionalUser.get(); // → 존재할 때만 get()
+
 
         FoundItem foundItem = FoundItem.builder()
                 .itemName(dto.getItemName())

@@ -22,10 +22,10 @@ public class FoundItemAdminController {
     private final FoundItemService foundItemService;
 
     @Operation(summary = "습득물 등록", description = "관리자가 습득물 정보를 등록합니다. 이미지 파일 포함 가능")
-    @PostMapping
+    @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<String> registerFoundItem(
-            @ModelAttribute FoundItemRequestDTO dto,
-            @RequestParam(value = "image", required = false) MultipartFile image) {
+            @RequestPart("dto") FoundItemRequestDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         foundItemService.registerFoundItem(dto, image);
         return ResponseEntity.ok("습득물 등록 완료");
     }

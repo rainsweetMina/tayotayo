@@ -39,7 +39,7 @@ public class UserDataInputTest {
                 .phoneNumber("010-1234-5678")
                 .role(Role.USER)
                 .signupType(SignupType.GENERAL)
-                .signupDate(LocalDate.now())
+//                .signupDate(LocalDate.now())
                 .build();
 
         userRepository.save(user);
