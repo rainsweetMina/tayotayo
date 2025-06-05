@@ -5,6 +5,7 @@ import kroryi.bus2.dto.mypage.NotificationDTO;
 import kroryi.bus2.service.mypage.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,13 +23,15 @@ public class NotificationController {
     }
 
     @GetMapping("/count")
-    public ResponseEntity<CountResponseDTO> countUnread(@RequestParam String userId) {
+    public ResponseEntity<CountResponseDTO> countUnread(Authentication auth) {
+        String userId = auth.getName();
         long count = notificationService.getNotificationsForUser(userId).stream()
                 .filter(n -> !n.isRead())
                 .count();
 
         return ResponseEntity.ok(new CountResponseDTO(count));
     }
+
 
     @PostMapping("/{id}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
