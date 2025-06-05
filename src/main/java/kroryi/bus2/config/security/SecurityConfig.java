@@ -75,6 +75,7 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation().changeSessionId()
                 )
 
                 // Swagger → API 키 인증 순으로 필터 적용
@@ -115,15 +116,26 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 로그인, 회원가입, 정적 자원 등 허용
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
-
                         .requestMatchers(HttpMethod.GET, "/auth/login").permitAll()
+                        
+                        // Public API 허용
+                        .requestMatchers("/api/public/**").permitAll()
+                        
+                        // User API는 인증 필요
+                        .requestMatchers("/api/user/**").authenticated()
+                        
+                        // Admin API는 ADMIN 권한 필요
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        
+                        // MyPage API
                         .requestMatchers(HttpMethod.GET, "/api/mypage/favorites").hasRole("USER")
-
 
                         // Swagger는 인증만 되면 접근 가능
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
+                        
+                        // 기타 API는 허용
                         .requestMatchers("/api/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
+                        
                         // ✅ 마이페이지는 USER 권한만 접근 가능
                         .requestMatchers("/mypage/**").hasRole("USER")
 
@@ -151,6 +163,8 @@ public class SecurityConfig {
                         .tokenValiditySeconds(7 * 24 * 60 * 60)
                         .rememberMeParameter("remember-me")
                         .userDetailsService(userDetailsService)
+                        .useSecureCookie(true)
+                        .rememberMeCookieName("remember-me")
                 );
 
         return http.build();
@@ -163,6 +177,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
             "https://localhost:5173",
             "http://localhost:5173",
+            "https://localhost:5174",
+            "http://localhost:5174",
             "http://localhost:8081",
             "https://localhost:8081"
         ));

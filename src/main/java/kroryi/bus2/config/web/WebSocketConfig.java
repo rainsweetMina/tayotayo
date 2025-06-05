@@ -23,6 +23,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOrigins(
                     "https://localhost:5173",
                     "http://localhost:5173",
+                    "https://localhost:5174",
+                    "http://localhost:5174",
                     "http://localhost:8081",
                     "https://localhost:8081"
                 )
