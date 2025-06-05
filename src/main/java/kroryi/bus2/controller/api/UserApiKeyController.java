@@ -117,15 +117,26 @@ public class UserApiKeyController {
 
     @Hidden
     @GetMapping("/summary")
-    public ResponseEntity<Map<String, String>> getApiKeySummary(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        String userId = userDetails.getUser().getUserId();
-        ApiKey key = apiKeyService.getApiKeyRequestForUser(userService.getUserByUserId(userId));
+    public ResponseEntity<?> getApiKeySummary(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null || userDetails.getUser() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+        }
 
-        String status = (key == null) ? "NONE"
-                : key.isActive() ? "APPROVED"
-                : "PENDING";
+        try {
+            String userId = userDetails.getUser().getUserId();
+            ApiKey key = apiKeyService.getApiKeyRequestForUser(userService.getUserByUserId(userId));
 
-        return ResponseEntity.ok(Map.of("status", status));
+            String status = (key == null) ? "NONE"
+                    : key.isActive() ? "APPROVED"
+                    : "PENDING";
+
+            return ResponseEntity.ok(Map.of("status", status));
+        } catch (Exception e) {
+            log.error("❌ API 키 요약 조회 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "서버 오류가 발생했습니다."));
+        }
     }
 
 }

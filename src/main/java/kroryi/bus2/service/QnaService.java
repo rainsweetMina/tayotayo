@@ -152,5 +152,9 @@ public class QnaService {
         qnaRepository.delete(qna);  // 💥 실제 삭제
     }
 
+    public int countUnansweredQnaByUser(String userId) {
+        return qnaRepository.countByUser_UserIdAndStatus(userId, QnaStatus.WAITING);
+    }
+
 }
 

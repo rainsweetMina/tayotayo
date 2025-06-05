@@ -71,7 +71,7 @@ public class SecurityConfig {
         http
                 .userDetailsService(userDetailsService)
                 .csrf(csrf -> csrf.disable())
-                .cors(withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
@@ -122,8 +122,9 @@ public class SecurityConfig {
 
                         // Swagger는 인증만 되면 접근 가능
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
+                        .requestMatchers("/api/**").permitAll()
+
                         // ✅ 마이페이지는 USER 권한만 접근 가능
                         .requestMatchers("/mypage/**").hasRole("USER")
 
@@ -160,15 +161,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-            "https://localhost:5173",
-            "http://localhost:5173",
-            "http://localhost:8081",
-            "https://localhost:8081"
-        ));
+        config.setAllowedOrigins(List.of("https://localhost:5173")); // ✅ 필요한 Origin만
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);  // 이 설정이 있어야 withCredentials: true 동작함
+        config.setAllowCredentials(true); // ✅ withCredentials 사용 시 필수
+        config.setExposedHeaders(List.of("Set-Cookie")); // ✅ 쿠키를 response에서 접근 가능하도록
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

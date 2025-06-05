@@ -53,6 +53,8 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
     // 작성자 ID 목록으로 검색
     Page<Qna> findByMemberIdInAndIsDeletedFalse(List<Long> memberIds, Pageable pageable);
 
+    int countByUser_UserIdAndStatus(String userId, QnaStatus status);
+
 
 
 }

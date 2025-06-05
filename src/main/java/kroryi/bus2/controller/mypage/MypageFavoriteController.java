@@ -209,14 +209,27 @@ public class MypageFavoriteController {
     }
 
     @GetMapping("/favorites/summary")
-    public ResponseEntity<Map<String, Integer>> getFavoriteSummary(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        String userId = userDetails.getUser().getUserId();
-        int busCount = favoriteRouteRepository.countByUser_UserId(userId);
-        int stopCount = favoriteBusStopRepository.countByUser_UserId(userId);
+    public ResponseEntity<?> getFavoriteSummary(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null || userDetails.getUser() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+        }
 
-        Map<String, Integer> result = new HashMap<>();
-        result.put("busCount", busCount);
-        result.put("stopCount", stopCount);
-        return ResponseEntity.ok(result);
+        String userId = userDetails.getUser().getUserId();
+
+        try {
+            int busCount = favoriteRouteRepository.countByUser_UserId(userId);
+            int stopCount = favoriteBusStopRepository.countByUser_UserId(userId);
+
+            Map<String, Integer> result = new HashMap<>();
+            result.put("busCount", busCount);
+            result.put("stopCount", stopCount);
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("❌ 즐겨찾기 요약 로딩 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "서버 오류가 발생했습니다."));
+        }
     }
 }

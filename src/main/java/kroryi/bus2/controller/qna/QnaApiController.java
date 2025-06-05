@@ -16,7 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.Map;
 
 
 @Tag(name = "질문-관리", description = "")
@@ -110,5 +110,13 @@ public class QnaApiController {
         qnaService.deleteQuestion(id, authentication);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/mypage/count") // 이렇게만 줄이기
+    public ResponseEntity<Map<String, Integer>> getUserQnaPendingCount(Authentication authentication) {
+        String userId = authentication.getName();
+        int count = qnaService.countUnansweredQnaByUser(userId);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
 
 }

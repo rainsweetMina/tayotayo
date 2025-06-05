@@ -12,10 +12,11 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // 모든 요청 허용
-                        .allowedOrigins("*") // 모든 도메인에서 요청 허용
+                registry.addMapping("/**")
+                        .allowedOrigins("https://localhost:5173") // ✅ Vue dev 서버 주소 명시
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // ✅ 쿠키 허용
             }
         };
     }
