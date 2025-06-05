@@ -30,6 +30,7 @@ public class UserApiController {
         User user = userDetails.getUser();
 
         UserInfoDTO response = new UserInfoDTO(
+                user.getId(),             // ✅ 숫자형 ID 추가
                 user.getUserId(),
                 user.getUsername(),
                 user.getEmail(),

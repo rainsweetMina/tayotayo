@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.config.security.ApiKeyAuthenticationToken;
 import kroryi.bus2.service.apikey.ApiKeyService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+@Log4j2
 @Component
 public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
@@ -49,6 +51,8 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
+        log.info("ApiKeyAuthenticationFilter------------>");
 
         // ✅ Swagger UI에서 API 호출인 경우만 필터 작동 (Referer에 swagger-ui 포함된 경우)
         String referer = request.getHeader("Referer");

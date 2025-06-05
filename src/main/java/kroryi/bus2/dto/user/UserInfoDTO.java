@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class UserInfoDTO {
+    private Long id; // ✅ 추가
     private String userId;
     private String name;
     private String email;
