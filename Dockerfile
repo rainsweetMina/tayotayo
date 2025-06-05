@@ -5,6 +5,8 @@ FROM ubuntu:22.04
 RUN apt-get update && \
     apt-get install -y openjdk-17-jdk net-tools iputils-ping vim vim && \
     apt-get clean
+ENV LANG=ko_KR.UTF-8
+ENV LC_ALL=ko_KR.UTF-8
 
 # JAVA 환경 변수 (Ubuntu에서 openjdk 설치 경로는 아래와 같음)
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
