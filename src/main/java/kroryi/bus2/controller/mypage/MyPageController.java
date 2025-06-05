@@ -10,6 +10,7 @@ import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.dto.lost.*;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
+import kroryi.bus2.dto.mypage.WithdrawRequestDTO;
 import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
@@ -18,10 +19,13 @@ import kroryi.bus2.service.lost.LostItemService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,6 +46,8 @@ public class MyPageController {
     private final UserService userService;
     private final LostItemService lostItemService;
     private final ApiKeyService apiKeyService;
+    private final PasswordEncoder passwordEncoder;
+
 
     private String extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -372,5 +378,27 @@ public class MyPageController {
         return "mypage/withdraw"; // ✅ HTML 직접 렌더링
     }
 
+    @Operation(summary = "Vue용 회원 탈퇴 처리", description = "Vue에서 보낸 비밀번호를 확인하고 회원 탈퇴를 수행합니다.")
+    @PostMapping(value = "/withdraw", consumes = "application/json")
+    @ResponseBody  // ⬅️ JSON 응답으로 처리
+    public ResponseEntity<?> handleWithdrawFromVue(@RequestBody WithdrawRequestDTO dto) {
+        String userId = extractUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "사용자를 찾을 수 없습니다."));
+        }
+
+        // 비밀번호 확인
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "비밀번호가 일치하지 않습니다."));
+        }
+
+        userService.withdrawUser(userId);
+        return ResponseEntity.ok(Map.of("message", "회원 탈퇴 완료"));
+    }
 
 }

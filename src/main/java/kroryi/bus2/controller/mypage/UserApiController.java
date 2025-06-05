@@ -37,7 +37,7 @@ public class UserApiController {
                 user.getSignupType(),
                 user.getSignupDate(),     // LocalDateTime
                 user.getRole().name(),
-                user.getLastLoginAt()     // 추가된 최근접속일
+                user.getLastLoginAt()
         );
 
         return ResponseEntity.ok(response);

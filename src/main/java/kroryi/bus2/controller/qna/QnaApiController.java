@@ -7,8 +7,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kroryi.bus2.dto.qna.*;
+import kroryi.bus2.entity.user.User;
+import kroryi.bus2.repository.jpa.UserRepository;
 import kroryi.bus2.service.QnaAdminService;
 import kroryi.bus2.service.QnaService;
+import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.Map;
 
 
 @Tag(name = "질문-관리", description = "")
@@ -27,17 +30,22 @@ public class QnaApiController {
 
     private final QnaService qnaService;
     private final QnaAdminService qnaAdminService;
+    private final UserRepository userRepository;
 
 
     @Operation(summary = "QnA 단건 조회", description = "QnA 상세 정보를 조회합니다.")
     @GetMapping("/{id}")
-    public ResponseEntity<QnaResponseDTO> getQnaDetail(@PathVariable Long id) {
-        Long memberId = 1L; // ✅ 실제 로그인 사용자 ID로 대체
-        boolean isAdmin = false; // ✅ 관리자 여부 판단 로직 필요
+    public ResponseEntity<QnaResponseDTO> getQnaDetail(@PathVariable Long id, Authentication auth) {
+        String userId = auth.getName(); // 현재 로그인한 사용자의 ID (userId 필드)
+        User user = userRepository.findByUserId(userId).orElseThrow();
 
-        QnaResponseDTO response = qnaAdminService.getQnaDetail(id, memberId, isAdmin);
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        QnaResponseDTO response = qnaAdminService.getQnaDetail(id, user.getId(), isAdmin);
         return ResponseEntity.ok(response);
     }
+
 
     @Operation(summary = "QnA 전체 조회 (관리자)", description = "관리자용 QnA 전체 목록을 조회합니다.")
     @GetMapping("/admin")
@@ -99,8 +107,12 @@ public class QnaApiController {
     @Hidden
     @Operation(summary = "Q&A 조회", description = "유저 전용 API")
     @GetMapping("/list")
-    public List<QnaListDTO> getQnaListApi() {
-        return qnaService.getAllQna();
+    public List<QnaListDTO> getQnaListApi(Authentication authentication) {
+        String userId = authentication.getName();
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
+
+        return qnaService.getQnaListByUserId(user.getId());
     }
 
     @Hidden
@@ -109,6 +121,30 @@ public class QnaApiController {
     public ResponseEntity<Void> deleteQna(@PathVariable Long id, Authentication authentication) {
         qnaService.deleteQuestion(id, authentication);
         return ResponseEntity.ok().build();
+    }
+
+    // 🔒 사용자 전용: 내 질문 목록
+    @GetMapping("/mypage")
+    public ResponseEntity<List<QnaListDTO>> getUserQnaList(Authentication auth) {
+        String userId = auth.getName();
+        return ResponseEntity.ok(qnaService.getQnaByUser(userId));
+    }
+
+    // 🔒 사용자 전용: 내 질문 작성
+    @PostMapping("/mypage")
+    public ResponseEntity<Void> createQna(Authentication auth,
+                                          @RequestBody @Valid QnaQuestionRequestDTO dto) {
+        dto.setUserId(auth.getName());
+        qnaService.createQuestion(dto);
+        return ResponseEntity.ok().build();
+    }
+
+    // 🔒 사용자 전용: 내 미답변 QnA 수
+    @GetMapping("/count")
+    public ResponseEntity<Map<String, Integer>> getUserQnaPendingCount(Authentication authentication) {
+        String userId = authentication.getName();
+        int count = qnaService.countUnansweredQnaByUser(userId);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
 }
