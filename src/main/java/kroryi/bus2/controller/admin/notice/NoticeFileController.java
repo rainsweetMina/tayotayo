@@ -3,6 +3,8 @@ package kroryi.bus2.controller.admin.notice;
 import kroryi.bus2.entity.Notice;
 import kroryi.bus2.entity.NoticeFile;
 import kroryi.bus2.service.admin.notice.NoticeService;
+import kroryi.bus2.service.admin.notice.FileStorageService;
+import kroryi.bus2.dto.notice.UpdateNoticeRequestDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -28,6 +30,7 @@ import java.util.UUID;
 public class NoticeFileController {
 
     private final NoticeService noticeService;
+    private final FileStorageService fileStorageService;
 
     @Value("${file.upload.dir:uploads/notices/}")
     private String uploadDir;
@@ -56,7 +59,7 @@ public class NoticeFileController {
             NoticeFile file = files.get(0);
             
             // 3. 파일 리소스 로드 - 실제 저장 경로에 맞게 수정
-            String uploadPath = System.getProperty("user.dir") + "/uploads/" + file.getStoredName();
+            String uploadPath = System.getProperty("user.dir") + "/" + uploadDir + file.getStoredName();
             Path filePath = Paths.get(uploadPath);
             Resource resource = new UrlResource(filePath.toUri());
 
@@ -139,7 +142,7 @@ public class NoticeFileController {
             NoticeFile file = files.get(fileIndex);
             
             // 실제 저장 경로에 맞게 수정
-            String uploadPath = System.getProperty("user.dir") + "/uploads/" + file.getStoredName();
+            String uploadPath = System.getProperty("user.dir") + "/" + uploadDir + file.getStoredName();
             Path filePath = Paths.get(uploadPath);
             Resource resource = new UrlResource(filePath.toUri());
 
@@ -165,34 +168,42 @@ public class NoticeFileController {
     /**
      * 파일 업로드
      */
-    @PostMapping("/files")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/{noticeId}/files")
+    public ResponseEntity<?> uploadFile(
+            @PathVariable Long noticeId,
+            @RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
                 return ResponseEntity.badRequest().body("파일이 비어있습니다.");
             }
 
-            // 업로드 디렉토리 생성
-            String uploadPath = System.getProperty("user.dir") + "/uploads/";
-            Files.createDirectories(Paths.get(uploadPath));
+            // 공지사항 조회
+            Notice notice = noticeService.findById(noticeId);
+            if (notice == null) {
+                return ResponseEntity.notFound().build();
+            }
 
-            // 저장할 파일명 생성 (UUID + 원본 파일명)
-            String originalFilename = file.getOriginalFilename();
-            String storedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+            // FileStorageService를 통해 파일 저장
+            List<NoticeFile> savedFiles = fileStorageService.storeFiles(List.of(file), notice);
+            
+            if (savedFiles.isEmpty()) {
+                return ResponseEntity.internalServerError().body("파일 저장에 실패했습니다.");
+            }
 
-            // 파일 저장
-            Path filePath = Paths.get(uploadPath + storedFilename);
-            Files.copy(file.getInputStream(), filePath);
+            // 공지사항에 파일 추가
+            notice.addFile(savedFiles.get(0));
+            noticeService.updateNotice(noticeId, 
+                new UpdateNoticeRequestDTO(
+                    notice.getTitle(), 
+                    notice.getContent(), 
+                    notice.isShowPopup(),
+                    notice.getPopupStart(),
+                    notice.getPopupEnd()
+                ), null);
 
-            // 파일 정보 반환
-            NoticeFile noticeFile = new NoticeFile();
-            noticeFile.setOriginalName(originalFilename);
-            noticeFile.setStoredName(storedFilename);
-            noticeFile.setFileSize(file.getSize());
+            return ResponseEntity.ok(savedFiles.get(0));
 
-            return ResponseEntity.ok(noticeFile);
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("파일 업로드 중 오류 발생", e);
             return ResponseEntity.internalServerError().body("파일 업로드 중 오류가 발생했습니다.");
         }
