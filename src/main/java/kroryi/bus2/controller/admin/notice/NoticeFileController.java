@@ -22,6 +22,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
+import java.io.File;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/admin/notices")
@@ -206,6 +209,137 @@ public class NoticeFileController {
         } catch (Exception e) {
             log.error("파일 업로드 중 오류 발생", e);
             return ResponseEntity.internalServerError().body("파일 업로드 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 이미지 파일 직접 보기 (브라우저에서 렌더링)
+     */
+    @GetMapping("/{noticeId}/images/{fileIndex}")
+    public ResponseEntity<Resource> viewNoticeImage(
+            @PathVariable Long noticeId,
+            @PathVariable int fileIndex) {
+
+        try {
+            Notice notice = noticeService.findById(noticeId);
+            if (notice == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            List<NoticeFile> files = notice.getFiles();
+            if (files == null || fileIndex >= files.size()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            NoticeFile file = files.get(fileIndex);
+            
+            // 이미지 파일인지 확인
+            String fileType = file.getFileType();
+            if (fileType == null || !fileType.startsWith("image/")) {
+                log.warn("이미지 파일이 아닙니다: {}, {}", fileType, file.getOriginalName());
+                return ResponseEntity.badRequest().body(null);
+            }
+            
+            // 파일 경로 구성
+            String uploadPath = System.getProperty("user.dir") + "/" + uploadDir + file.getStoredName();
+            Path filePath = Paths.get(uploadPath);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                log.error("파일을 찾을 수 없거나 읽을 수 없습니다: {}", filePath);
+                return ResponseEntity.notFound().build();
+            }
+
+            // 이미지 파일은 Content-Disposition 헤더를 설정하지 않음 (브라우저에서 바로 표시)
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(fileType))
+                    .body(resource);
+
+        } catch (Exception e) {
+            log.error("이미지 파일 표시 중 오류 발생", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 에디터용 이미지 업로드
+     */
+    @PostMapping("/upload/image")
+    public ResponseEntity<?> uploadImageForEditor(@RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("파일이 비어있습니다.");
+            }
+            
+            if (!file.getContentType().startsWith("image/")) {
+                return ResponseEntity.badRequest().body("이미지 파일만 업로드 가능합니다.");
+            }
+
+            // 파일 저장 경로 생성
+            String uploadDirPath = System.getProperty("user.dir") + "/uploads/editor";
+            File uploadDir = new File(uploadDirPath);
+            if (!uploadDir.exists()) {
+                boolean created = uploadDir.mkdirs();
+                if (!created) {
+                    return ResponseEntity.internalServerError().body("업로드 디렉토리를 생성할 수 없습니다.");
+                }
+            }
+
+            // 파일명 생성
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String newFilename = UUID.randomUUID() + extension;
+            
+            // 파일 저장
+            File targetFile = new File(uploadDirPath + File.separator + newFilename);
+            file.transferTo(targetFile);
+
+            // 이미지 URL 생성
+            String imageUrl = "/api/admin/notices/images/" + newFilename;
+            
+            // 응답 데이터 생성
+            Map<String, String> response = new HashMap<>();
+            response.put("url", imageUrl);
+            
+            log.info("에디터 이미지 업로드 성공: {}", imageUrl);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("에디터 이미지 업로드 실패", e);
+            return ResponseEntity.internalServerError().body("이미지 업로드 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 에디터에 삽입된 이미지 가져오기
+     */
+    @GetMapping("/images/{filename}")
+    public ResponseEntity<Resource> getEditorImage(@PathVariable String filename) {
+        try {
+            // 파일 경로 생성
+            String uploadDirPath = System.getProperty("user.dir") + "/uploads/editor";
+            Path filePath = Paths.get(uploadDirPath + File.separator + filename);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                log.error("이미지 파일을 찾을 수 없거나 읽을 수 없습니다: {}", filePath);
+                return ResponseEntity.notFound().build();
+            }
+
+            // 파일 확장자에 따른 MIME 타입 설정
+            String contentType = determineContentType(filename);
+            
+            // Content-Disposition 헤더를 설정하지 않으면 브라우저에서 바로 표시됨
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(resource);
+                    
+        } catch (Exception e) {
+            log.error("에디터 이미지 조회 실패", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
