@@ -60,7 +60,7 @@ public class UserApiKeyController {
     public ResponseEntity<ApiKeyResponseDTO> requestApiKey(@RequestBody CreateApiKeyRequestDTO request) {
         log.info("🔥 [requestApiKey] 컨트롤러 진입 - userId: {}", request.getUserId());
 
-        User user = userService.getUserByUserId(request.getUserId());
+        User user = userService.findByUserId(request.getUserId());
         if (user == null) {
             log.warn("❌ 사용자 없음 - userId: {}", request.getUserId());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -72,12 +72,13 @@ public class UserApiKeyController {
 
     @Operation(summary = "발급된 API 키 조회", description = "사용자의 API 키를 조회합니다.")
     @GetMapping("/getApiKey")
-    public ResponseEntity<ApiKeyResponseDTO> getUserApiKey(@RequestParam String userId) {
-        User user = userService.getUserByUserId(userId);
-        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    public ResponseEntity<ApiKeyResponseDTO> getUserApiKey() {
+        String userId = extractUserId();
+        User user = userService.findByUserId(userId);
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         ApiKey apiKey = apiKeyService.getApiKeyForUser(user);
-        if (apiKey == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        if (apiKey == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.ok(toDto(apiKey));
     }
@@ -105,11 +106,12 @@ public class UserApiKeyController {
 
     @Operation(summary = "API 키 발급 요청 기록 조회", description = "사용자가 이전에 요청한 API 키 발급 기록을 조회합니다.")
     @GetMapping("/getApiKeyRequest")
-    public ResponseEntity<ApiKeyResponseDTO> getUserApiKeyRequest(@RequestParam String userId) {
-        User user = userService.getUserByUserId(userId);
-        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    public ResponseEntity<ApiKeyResponseDTO> getUserApiKeyRequest(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null || userDetails.getUser() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
 
-        ApiKey apiKey = apiKeyService.getApiKeyRequestForUser(user);
+        ApiKey apiKey = apiKeyService.getApiKeyRequestForUser(userDetails.getUser());
         if (apiKey == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 
         return ResponseEntity.ok(toDto(apiKey));
@@ -125,7 +127,7 @@ public class UserApiKeyController {
 
         try {
             String userId = userDetails.getUser().getUserId();
-            ApiKey key = apiKeyService.getApiKeyRequestForUser(userService.getUserByUserId(userId));
+            ApiKey key = apiKeyService.getApiKeyRequestForUser(userService.findByUserId(userId));
 
             String status = (key == null) ? "NONE"
                     : key.isActive() ? "APPROVED"

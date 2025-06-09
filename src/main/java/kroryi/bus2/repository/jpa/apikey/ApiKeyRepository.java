@@ -10,48 +10,23 @@ import java.util.Optional;
 
 public interface ApiKeyRepository extends JpaRepository<ApiKey, Long> {
 
-    // ====================================
-    // 🔍 중복 확인 및 상태 기반 조회
-    // ====================================
-
-    /**
-     * 특정 사용자에 대해 특정 상태(PENDING 또는 APPROVED)의 API 키가 존재하는지 확인
-     */
+    // ✅ 중복 확인
     boolean existsByUserAndStatus(User user, ApiKeyStatus apiKeyStatus);
 
-    // ====================================
-    // 📦 최근 API 키 조회
-    // ====================================
-
-    /**
-     * 특정 사용자의 가장 최근에 생성된 API 키 조회
-     */
-
-
-    // 사용자와 상태를 기반으로 API 키 조회
-    Optional<ApiKey> findByUserAndStatus(User user, ApiKeyStatus status);
-
+    // ✅ 특정 사용자 기준 최신 키 1개
     Optional<ApiKey> findTopByUserOrderByCreatedAtDesc(User user);
 
-    // ====================================
-    // 🔑 API 키 문자열 기반 조회
-    // ====================================
+    // ✅ 상태 기준 + 최신 키 1개
+    Optional<ApiKey> findTopByUserAndStatusOrderByCreatedAtDesc(User user, ApiKeyStatus apiKeyStatus);
 
-    /**
-     * API 키 문자열로 APIKey 엔티티 조회
-     */
+    // ✅ 문자열 기준 조회
     ApiKey findByApikey(String apikey);
 
     boolean existsByApikey(String apikey);
 
-    Optional<ApiKey> findFirstByUser(User user);
-
-    Optional<ApiKey> findByUser(User user);
-
-    Optional<ApiKey> findTopByUserAndStatusOrderByCreatedAtDesc(User user, ApiKeyStatus apiKeyStatus);
-
-
+    // ✅ 사용자 전체 키 조회
     List<ApiKey> findAllByUser(User user);
 
+    // ✅ 사용자 활성 키만 조회
     List<ApiKey> findAllByUserAndActiveTrue(User user);
 }

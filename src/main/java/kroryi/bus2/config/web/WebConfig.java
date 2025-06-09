@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -88,6 +85,17 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(interceptor)
                 .addPathPatterns("/api/**"); // 감시할 경로 지정
     }
+
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/{spring:[\\w\\-]+}")
+                .setViewName("forward:/index.html");
+
+        registry.addViewController("/{spring:^(?!api|swagger-ui|v3|files|uploads|static).*}/**")
+                .setViewName("forward:/index.html");
+    }
+
+
 
 }
 

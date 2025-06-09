@@ -1,6 +1,5 @@
 package kroryi.bus2.service.apikey;
 
-import jakarta.persistence.metamodel.SingularAttribute;
 import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.apikey.ApiKeyStatus;
 import kroryi.bus2.entity.user.User;
@@ -9,11 +8,9 @@ import kroryi.bus2.repository.jpa.apikey.ApiKeyRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.AbstractPersistable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +22,8 @@ public class ApiKeyService {
 
     private final ApiKeyRepository apiKeyRepository;
     private final UserRepository userRepository;
-    private static final long DEFAULT_EXPIRATION_DAYS = 365;
 
-    @Value("${apikey.default.expiration}")
+    @Value("${apikey.default.expiration:365}")
     private int defaultExpirationDays;
 
     public ApiKeyService(ApiKeyRepository apiKeyRepository, UserRepository userRepository) {
@@ -35,18 +31,14 @@ public class ApiKeyService {
         this.userRepository = userRepository;
     }
 
-    // ====================================
-    // 🔐 API 키 발급 / 신청 처리
-    // ====================================
-
     @Transactional
     public ApiKey issueApiKey(String user_name, String allowedIp, User user) {
         List<ApiKey> existingKeys = apiKeyRepository.findAllByUser(user);
         for (ApiKey oldKey : existingKeys) {
             oldKey.setActive(false);
             oldKey.setStatus(ApiKeyStatus.EXPIRED);
-            apiKeyRepository.save(oldKey);
         }
+        apiKeyRepository.flush();
 
         ApiKey apiKey = ApiKey.builder()
                 .apikey(UUID.randomUUID().toString())
@@ -79,37 +71,44 @@ public class ApiKeyService {
             throw new IllegalStateException("이미 API 키를 신청했거나 발급받은 상태입니다.");
         }
 
-        ApiKey apiKey = issueApiKey(
-                user.getUsername(),
-                "0.0.0.0",
-                user
-        );
-
+        ApiKey apiKey = issueApiKey(user.getUsername(), "0.0.0.0", user);
         log.info("🔑 API 키 발급 완료 - 키: {}", apiKey.getApiKey());
     }
 
-    public void renewApiKey(String userId) {
+    @Transactional
+    public ApiKey renewApiKey(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        ApiKey apiKey = apiKeyRepository.findByUser(user)
-                .orElseThrow(() -> new IllegalStateException("기존 API 키가 없습니다."));
+        List<ApiKey> activeKeys = apiKeyRepository.findAllByUserAndActiveTrue(user);
+        activeKeys.forEach(key -> {
+            key.setActive(false);
+            key.setStatus(ApiKeyStatus.EXPIRED);
+        });
+        apiKeyRepository.flush();
 
-        apiKey.setApikey(UUID.randomUUID().toString().replace("-", ""));
-        apiKey.setStatus(ApiKeyStatus.PENDING);
+        ApiKey newApiKey = ApiKey.builder()
+                .user(user)
+                .apikey(UUID.randomUUID().toString())
+                .status(ApiKeyStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusYears(1))
+                .active(true)
+                .userIdString(user.getUserId())
+                .user_name(user.getUsername())
+                .build();
 
-        apiKeyRepository.save(apiKey);
+        return apiKeyRepository.save(newApiKey);
     }
 
     public Optional<ApiKey> findLatestByUserId(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        return apiKeyRepository.findTopByUserAndStatusOrderByCreatedAtDesc(user, ApiKeyStatus.APPROVED);
+        return apiKeyRepository.findTopByUserOrderByCreatedAtDesc(user);
     }
 
     public ApiKey getApiKeyForUser(User user) {
-        return apiKeyRepository.findTopByUserOrderByCreatedAtDesc(user)
-                .orElse(null);
+        return apiKeyRepository.findTopByUserOrderByCreatedAtDesc(user).orElse(null);
     }
 
     public List<ApiKey> getAllApiKeys() {
@@ -136,25 +135,22 @@ public class ApiKeyService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 활성화된 키만 조회 (active=true 조건 필수!)
         List<ApiKey> activeKeys = apiKeyRepository.findAllByUserAndActiveTrue(user);
-
         activeKeys.forEach(key -> {
             key.setActive(false);
             key.setStatus(ApiKeyStatus.EXPIRED);
-            // JPA 변경감지로 자동 반영
         });
-
         apiKeyRepository.flush();
 
-        // 새 API 키 생성 및 저장
         ApiKey newApiKey = ApiKey.builder()
                 .user(user)
-                .apikey(UUID.randomUUID().toString().replace("-", ""))
+                .apikey(UUID.randomUUID().toString())
                 .status(ApiKeyStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusYears(1))
                 .active(true)
+                .userIdString(user.getUserId())
+                .user_name(user.getUsername())
                 .build();
 
         return apiKeyRepository.save(newApiKey);

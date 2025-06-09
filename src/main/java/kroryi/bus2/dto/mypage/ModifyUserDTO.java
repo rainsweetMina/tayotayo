@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class ModifyUserDTO {
 
     private String userId;
+    private String name;
 
     @NotBlank(message = "이름을 입력하세요.")
     private String username;

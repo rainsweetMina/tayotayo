@@ -79,6 +79,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
     }
 
+
     @Transactional
     public void deleteByUserId(String userId) {
         User user = userRepository.findByUserId(userId)
@@ -89,11 +90,11 @@ public class UserService {
     @Transactional
     public boolean modifyUserInfo(String userId, ModifyUserDTO dto) {
         User user = findByUserId(userId);
-        user.setUsername(dto.getUsername());
+
+        user.setUsername(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
 
-        // ✅ 알림 추가
         notificationService.createNotification(
                 userId,
                 "회원 정보 변경 완료"
@@ -102,16 +103,22 @@ public class UserService {
         return true;
     }
 
+
     private boolean isValidPassword(String password) {
         String regex = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
         return password.matches(regex);
     }
 
     @Transactional
-    public boolean changePassword(String userId, String currentPassword, String newPassword) {
+    public boolean changePassword(String userId, String currentPassword, String newPassword, String confirmPassword) {
         User user = findByUserId(userId);
+
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            return false;
+            throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("새 비밀번호가 서로 일치하지 않습니다.");
         }
 
         if (!isValidPassword(newPassword)) {
@@ -119,12 +126,8 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
-        return true;
-    }
 
-    public User getUserByUserId(String userId) {
-        return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+        return true;
     }
 
     @Transactional

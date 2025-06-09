@@ -1,5 +1,6 @@
 package kroryi.bus2.config.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
 import kroryi.bus2.handler.CustomLoginSuccessHandler;
@@ -86,26 +87,33 @@ public class SecurityConfig {
 
                 // 폼 로그인 설정
                 .formLogin(form -> form
-                        .loginPage("/auth/login")
+                        .loginPage("/login")
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler(customLoginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
-                            String errorCode = "error";
-                            if (exception instanceof BadCredentialsException) errorCode = "bad_credentials";
-                            else if (exception instanceof DisabledException) errorCode = "disabled";
-                            else if (exception instanceof LockedException) errorCode = "locked";
-                            else if (exception instanceof AccountExpiredException) errorCode = "expired";
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json; charset=UTF-8");
 
-                            response.sendRedirect("/auth/login?errorCode=" + errorCode);
+                            String message = "아이디 또는 비밀번호가 올바르지 않습니다.";
+
+                            if (exception instanceof DisabledException) {
+                                message = "비활성화된 계정입니다.";
+                            } else if (exception instanceof LockedException) {
+                                message = "잠긴 계정입니다.";
+                            } else if (exception instanceof AccountExpiredException) {
+                                message = "계정이 만료되었습니다.";
+                            }
+
+                            response.getWriter().write("{\"message\": \"" + message + "\"}");
                         })
                         .permitAll()
                 )
 
                 // 로그아웃 설정
                 .logout(logout -> logout
-                        .logoutUrl("/auth/logout")
+                        .logoutUrl("/logout")
                         .logoutSuccessUrl("/auth/login")  // 자동 리다이렉트
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
@@ -121,6 +129,8 @@ public class SecurityConfig {
                         // Public API 허용
                         .requestMatchers("/api/public/**").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
+
                         // User API는 인증 필요
                         .requestMatchers("/api/user/**").authenticated()
 
@@ -133,7 +143,7 @@ public class SecurityConfig {
                         // Swagger는 인증만 되면 접근 가능
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
-                        .requestMatchers("/api/**").permitAll()
+//                        .requestMatchers("/api/**").permitAll()
 
                         // ✅ 마이페이지는 USER 권한만 접근 가능
                         .requestMatchers("/mypage/**").hasRole("USER")
@@ -152,8 +162,9 @@ public class SecurityConfig {
                         .successHandler(customLoginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             String encodedMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("/auth/login?error=" + encodedMessage);
+                            response.sendRedirect("/login?error=" + encodedMessage); // ✅ 프론트엔드 경로
                         })
+
                 )
 
                 // Remember Me

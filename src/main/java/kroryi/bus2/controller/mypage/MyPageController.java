@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.config.security.CustomUserDetails;
@@ -183,7 +185,9 @@ public class MyPageController {
             @ApiResponse(responseCode = "400", description = "비밀번호 변경 오류")
     })
     @PostMapping("/password")
-    public String changePassword(@Valid @ModelAttribute ChangePasswordDTO dto, Model model) {
+    public String changePassword(@Valid @ModelAttribute ChangePasswordDTO dto,
+                                 Model model,
+                                 HttpServletRequest request) { // ✅ 세션을 위한 request 추가
         String userId = extractUserId();
         if (userId == null) {
             return "redirect:/auth/login";
@@ -199,25 +203,34 @@ public class MyPageController {
             return "mypage/password";
         }
 
-        if (!dto.getModifyPassword().equals(dto.getModifyPasswordCheck())) {
-            model.addAttribute("error", "새 비밀번호가 일치하지 않습니다.");
-            return "mypage/password";
-        }
-
         try {
-            boolean success = userService.changePassword(userId, dto.getCurrentPassword(), dto.getModifyPassword());
+            boolean success = userService.changePassword(
+                    userId,
+                    dto.getCurrentPassword(),
+                    dto.getModifyPassword(),
+                    dto.getModifyPasswordCheck()
+            );
+
             if (!success) {
                 model.addAttribute("error", "현재 비밀번호가 일치하지 않습니다.");
                 return "mypage/password";
             }
 
-            model.addAttribute("success", "비밀번호가 성공적으로 변경되었습니다.");
-            return "mypage/password";
+            // ✅ 세션 무효화 = 자동 로그아웃 처리
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+
+            model.addAttribute("success", "비밀번호가 성공적으로 변경되었습니다. 다시 로그인 해주세요.");
+            return "redirect:/auth/login"; // 로그인 페이지로 리다이렉트
+
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             return "mypage/password";
         }
     }
+
 
     // 회원 정보 수정 폼
     @Operation(summary = "회원 정보 수정 폼", description = "사용자의 정보를 수정할 수 있는 폼을 표시합니다.")
