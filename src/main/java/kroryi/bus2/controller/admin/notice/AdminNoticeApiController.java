@@ -40,6 +40,13 @@ public class AdminNoticeApiController {
         return ResponseEntity.ok(noticeService.getAllNotices());
     }
 
+    @Operation(summary = "공지 상세 조회")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<NoticeResponseDTO> getNotice(@PathVariable Long id) {
+        log.info("🔴 ADMIN API 호출됨 - /api/admin/notices/{}", id);
+        return ResponseEntity.ok(noticeService.getNoticeById(id));
+    }
+
     @Operation(summary = "공지 등록")
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -49,9 +56,27 @@ public class AdminNoticeApiController {
             @RequestPart("notice") @Valid CreateNoticeRequestDTO dto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
-        log.info("📨 공지 등록 요청: {}", dto);
-        NoticeResponseDTO created = noticeService.createNotice(dto, files);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        try {
+            log.info("📨 공지 등록 요청: {}", dto);
+            
+            if (files != null && !files.isEmpty()) {
+                log.info("📨 첨부파일 정보: 개수={}", files.size());
+                for (int i = 0; i < files.size(); i++) {
+                    MultipartFile file = files.get(i);
+                    log.info("📨 파일[{}]: 이름={}, 크기={}, 타입={}", 
+                        i, file.getOriginalFilename(), file.getSize(), file.getContentType());
+                }
+            } else {
+                log.info("📨 첨부파일 없음");
+            }
+            
+            NoticeResponseDTO created = noticeService.createNotice(dto, files);
+            log.info("📨 공지 등록 성공: ID={}", created.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception e) {
+            log.error("📨 공지 등록 실패", e);
+            throw e; // 예외를 다시 던져서 글로벌 예외 핸들러가 처리할 수 있도록 함
+        }
     }
 
     @Operation(summary = "공지 수정")

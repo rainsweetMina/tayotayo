@@ -34,12 +34,14 @@ public class NoticeResponseDTO {
         private String originalName;
         private String storedName;
         private String fileType;
+        private long fileSize;
 
         public static FileDTO from(NoticeFile file) {
             FileDTO dto = new FileDTO();
             dto.setOriginalName(file.getOriginalName());
             dto.setStoredName(file.getStoredName());
             dto.setFileType(file.getFileType());
+            dto.setFileSize(file.getFileSize());
             return dto;
         }
     }

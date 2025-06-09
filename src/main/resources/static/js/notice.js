@@ -62,6 +62,7 @@ document.getElementById('addNoticeBtn').addEventListener('click', function () {
     fetch(url, {
         method,
         headers,
+        credentials: 'include',  // 인증 정보 포함
         body: formData
     })
         .then(response => {
@@ -77,7 +78,9 @@ document.getElementById('addNoticeBtn').addEventListener('click', function () {
 
 
 function loadNotices() {
-    fetch('/api/admin/notices')
+    fetch('/api/admin/notices', {
+        credentials: 'include'  // 인증 정보 포함
+    })
         .then(response => response.json())
         .then(data => {
             const noticeList = document.getElementById('noticeList');
@@ -211,7 +214,8 @@ function deleteNotice(id) {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     fetch(`/api/admin/notices/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'  // 인증 정보 포함
     })
         .then(response => {
             if (!response.ok) throw new Error('공지 삭제 실패');
