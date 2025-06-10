@@ -132,11 +132,16 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     // 공지 상세 조회
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public NoticeResponseDTO getNoticeById(Long id) {
         Notice notice = noticeRepository.findByIdWithFiles(id)
                 .orElseThrow(() -> new EntityNotFoundException("공지사항 없음"));
+        
+        // 조회수 증가
+        notice.increaseViewCount();
+        notice = noticeRepository.save(notice);
+        
         return new NoticeResponseDTO(notice);
     }
     

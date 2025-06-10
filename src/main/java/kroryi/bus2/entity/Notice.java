@@ -25,13 +25,22 @@ public class Notice {
     private String author;
     private Timestamp createdDate;
     private Timestamp updatedDate;
+    
+    // 조회수 필드 추가
+    @Column(name = "view_count", nullable = false)
+    private Long viewCount = 0L;
 
+    // 조회수 증가 메서드
+    public void increaseViewCount() {
+        this.viewCount = this.viewCount + 1;
+    }
 
     // ✅ 커스텀 생성자 추가
     public Notice(String title, String author, String content) {
         this.title = title;
         this.author = author;
         this.content = content;
+        this.viewCount = 0L;
     }
 
     // 파일 업로드
