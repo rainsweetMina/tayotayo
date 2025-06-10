@@ -6,6 +6,8 @@ import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.UserRepository;
 import kroryi.bus2.repository.jpa.mypage.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -72,4 +74,11 @@ public class NotificationService {
 
         notificationRepository.deleteByUser(user);
     }
+
+    public Page<NotificationDTO> getUserNotifications(String userId, Pageable pageable) {
+        return notificationRepository.findByUser_UserId(userId, pageable)
+                .map(NotificationDTO::fromEntity);
+    }
+
+
 }

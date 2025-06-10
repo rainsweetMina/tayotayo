@@ -30,7 +30,7 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@RequestMapping("/api/admin/apikey")
+@RequestMapping("/api/admin")
 @Tag(name = "관리자-API키-관리", description = "관리자용 API 키 발급 및 관리 기능 제공")
 public class AdminApiKeyController {
 
@@ -40,7 +40,7 @@ public class AdminApiKeyController {
 
     @Hidden
     @Operation(summary = "API 키 대시보드 (뷰)", description = "최근 발급된 API 키 목록을 대시보드 뷰로 반환합니다.")
-    @GetMapping("/dashboard")
+    @GetMapping("/apikey/dashboard")
     public String dashboard(Model model) {
         List<ApiKey> recent = apiKeyRepository.findAll(Sort.by(Sort.Direction.DESC, "issuedAt"));
         model.addAttribute("recentKeys", recent);
@@ -48,7 +48,7 @@ public class AdminApiKeyController {
     }
 
     @Operation(summary = "API 키 전체 목록 조회", description = "모든 API 키를 조회하는 관리자용 뷰를 반환합니다.")
-    @GetMapping("/list")
+    @GetMapping("/apikey/list")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ApiKeyResponseDTO>> getApiKeyList() {
         List<ApiKey> apiKeyList = apiKeyRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
@@ -72,7 +72,7 @@ public class AdminApiKeyController {
     }
 
     @Operation(summary = "단일 API 키 조회", description = "지정한 ID에 해당하는 API 키 정보를 반환합니다.")
-    @GetMapping("/{id}")
+    @GetMapping("/apikey/{id}")
     public ResponseEntity<ApiKeyResponseDTO> getApiKey(@PathVariable Long id) {
         return apiKeyRepository.findById(id)
                 .map(apiKey -> {
@@ -87,7 +87,7 @@ public class AdminApiKeyController {
     }
 
     @Operation(summary = "API 키 생성", description = "새로운 API 키를 생성합니다.")
-    @PostMapping("/create")
+    @PostMapping("/apikey/create")
     public ApiKeyResponseDTO createKey(@RequestBody CreateApiKeyRequestDTO request) {
         ApiKey.ApiKeyBuilder builder = ApiKey.builder()
                 .user_name(request.getUser_name())
@@ -136,7 +136,7 @@ public class AdminApiKeyController {
 
 
     @Operation(summary = "API 키 상태 변경", description = "지정한 API 키의 활성화 상태를 변경합니다.")
-    @PutMapping("/{id}/status")
+    @PutMapping("/apikey/{id}/active")
     public ResponseEntity<?> toggleStatus(@PathVariable Long id, @RequestBody UpdateApiKeyStatusRequestDTO request) {
         return apiKeyRepository.findById(id)
                 .map(key -> {
@@ -148,7 +148,7 @@ public class AdminApiKeyController {
     }
 
     @Operation(summary = "API 키 승인 상태 토글", description = "API 키 상태를 승인/대기로 토글합니다.")
-    @PutMapping("/{id}/toggle-approval")
+    @PutMapping("/apikey/{id}/toggle-approval")
     public ResponseEntity<String> toggleApprovalStatus(@PathVariable Long id) {
         log.info("🔁 API 키 승인 상태 변경 요청: {}", id); // ← 로그 추가하면 호출 여부 추적 가능
         boolean approved = apiKeyService.toggleActive(id); // 또는 toggleActiveStatus(id)
@@ -160,7 +160,7 @@ public class AdminApiKeyController {
 
 
     @Operation(summary = "API 키 삭제", description = "지정한 ID의 API 키를 삭제합니다.")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/apikey/{id}")
     public ResponseEntity<String> deleteKey(@PathVariable Long id) {
         if (!apiKeyRepository.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -169,5 +169,20 @@ public class AdminApiKeyController {
 
         apiKeyRepository.deleteById(id);
         return ResponseEntity.ok("API 키가 성공적으로 삭제되었습니다.");
+    }
+
+    @Operation(summary = "API 키 상태 변경", description = "관리자가 API 키의 상태(PENDING, APPROVED, EXPIRED)를 변경합니다.")
+    @PostMapping("/apikey/{id}/status")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<String> updateApiKeyStatus(@PathVariable Long id,
+                                                     @RequestParam ApiKeyStatus status) {
+        return apiKeyRepository.findById(id)
+                .map(apiKey -> {
+                    apiKey.setStatus(status);  // 상태만 변경
+                    apiKeyRepository.save(apiKey);
+                    return ResponseEntity.ok("API 키 상태가 " + status + "로 변경되었습니다.");
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("해당 ID의 API 키를 찾을 수 없습니다."));
     }
 }

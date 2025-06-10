@@ -88,14 +88,17 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/{spring:[\\w\\-]+}")
-                .setViewName("forward:/index.html");
+        // Vue 라우터에서 사용하는 경로를 index.html로 포워딩
+        registry.addViewController("/admin").setViewName("forward:/index.html");
+        registry.addViewController("/admin/**").setViewName("forward:/index.html");
 
-        registry.addViewController("/{spring:^(?!api|swagger-ui|v3|files|uploads|static).*}/**")
-                .setViewName("forward:/index.html");
+        registry.addViewController("/mypage").setViewName("forward:/index.html");
+        registry.addViewController("/mypage/**").setViewName("forward:/index.html");
+
+        registry.addViewController("/login").setViewName("forward:/index.html");
+
+        // 기본 홈 경로도 index.html로
+        registry.addViewController("/").setViewName("forward:/index.html");
     }
-
-
-
 }
 
