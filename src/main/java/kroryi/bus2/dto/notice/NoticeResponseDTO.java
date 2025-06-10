@@ -20,6 +20,8 @@ public class NoticeResponseDTO {
     private String content;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    // 조회수 필드 추가
+    private Long viewCount;
     //팝업관련
     private boolean showPopup;
     private LocalDateTime popupStart;
@@ -55,6 +57,7 @@ public class NoticeResponseDTO {
         this.content = notice.getContent();
         this.createdDate = toLocalDateTimeSafe(notice.getCreatedDate());
         this.updatedDate = toLocalDateTimeSafe(notice.getUpdatedDate());
+        this.viewCount = notice.getViewCount();
         this.files = notice.getFiles().stream()
                 .map(FileDTO::from)
                 .collect(Collectors.toList());

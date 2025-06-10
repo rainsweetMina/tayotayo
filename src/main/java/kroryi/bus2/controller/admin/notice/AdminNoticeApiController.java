@@ -44,7 +44,9 @@ public class AdminNoticeApiController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NoticeResponseDTO> getNotice(@PathVariable Long id) {
         log.info("🔴 ADMIN API 호출됨 - /api/admin/notices/{}", id);
-        return ResponseEntity.ok(noticeService.getNoticeById(id));
+        NoticeResponseDTO notice = noticeService.getNoticeById(id);
+        log.info("🔴 공지사항 조회 완료 - ID: {}, 제목: {}, 조회수: {}", id, notice.getTitle(), notice.getViewCount());
+        return ResponseEntity.ok(notice);
     }
 
     @Operation(summary = "공지 등록")
