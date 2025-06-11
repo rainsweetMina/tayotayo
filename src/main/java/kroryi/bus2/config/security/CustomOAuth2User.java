@@ -62,7 +62,15 @@ public class CustomOAuth2User implements OAuth2User, UserDetails {
 
     @Override
     public Map<String, Object> getAttributes() {
-        return attributes; // 소셜 로그인 사용자 속성
+        // ✅ Vue가 기대하는 정보들을 attributes에 포함시켜야 함
+        return Map.of(
+                "id", userId,                     // 백엔드 User 엔티티의 id 값이면 String이면 그대로, Long이면 수정
+                "userId", userId,
+                "username", nickname,
+                "email", email,
+                "role", role
+                // 👉 필요하다면 phoneNumber, signupDate, signupType, lastLoginAt 등 추가 가능
+        );
     }
 
     @Override

@@ -2,23 +2,31 @@ package kroryi.bus2.config.security;
 
 import kroryi.bus2.entity.user.User;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 @Getter
-@RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, Serializable {
+
+    private static final long serialVersionUID = 1L; // 권장
 
     private final User user;
 
+    public CustomUserDetails(User user) {
+        this.user = user;
+    }
+
+    public String getUserId() {
+        return user.getUserId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return List.of(() -> "ROLE_" + user.getRole().name());
     }
 
     @Override
@@ -28,7 +36,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUserId();  // 로그인 시 사용할 아이디
+        return user.getUserId(); // userId 사용
     }
 
     @Override
@@ -48,14 +56,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !user.isWithdraw(); // 탈퇴 여부 반영
     }
-
-    public String getUserId() {
-        return user.getUserId(); // 또는 실제 User 객체에서 userId 가져오는 방식에 맞게 수정
-    }
-
-    public User toEntity() {return this.user;}
-
-
 }
