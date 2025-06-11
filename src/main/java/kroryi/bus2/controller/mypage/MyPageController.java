@@ -53,6 +53,7 @@ public class MyPageController {
 
     private String extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.info("✅ /api/user/info 인증 정보: {}", auth);
         Object principal = auth.getPrincipal();
 
         if (principal instanceof CustomOAuth2User customUser) {
