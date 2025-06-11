@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -59,5 +60,8 @@ public class AuditLogServiceImpl implements AuditLogService {
         return adminAuditLogRepository.findAllByOrderByTimestampDesc(pageable);
     }
 
+    public Optional<AdminAuditLog> getLogById(Long id) {
+        return adminAuditLogRepository.findById(id);
+    }
 
 }
