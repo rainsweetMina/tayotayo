@@ -32,23 +32,33 @@ public class AdminAuditAspect {
     private final ObjectMapper objectMapper;
     private final AdminAuditLogRepository logRepository;
 
-    // ✅ 관리자 서비스 메서드 (등록/수정/삭제 등)를 감지
-    @AfterReturning(
-            pointcut = "execution(* kroryi.bus2.service..*.create*(..)) || " +
-                    "execution(* kroryi.bus2.service..*.update*(..)) || " +
-                    "execution(* kroryi.bus2.service..*.delete*(..)) || " +
-                    "@annotation(kroryi.bus2.aop.AdminTracked)",
-            returning = "result"
-    )
+    // ✅ 관리자 서비스 메서드 (등록/수정/삭제 등)를 감지하는 포인트컷
+    @Pointcut("execution(* kroryi.bus2.service..*.create*(..)) || " +
+            "execution(* kroryi.bus2.service..*.update*(..)) || " +
+            "execution(* kroryi.bus2.service..*.delete*(..)) || " +
+            "@annotation(kroryi.bus2.aop.AdminTracked)")
+    public void adminActions() {}
 
-    @Around("adminActions()")
+    // ✅ BusCompany 관련 메서드를 제외하는 포인트컷
+    @Pointcut("!execution(* kroryi.bus2.service..*BusCompany*.*(..)) && " +
+            "!execution(* kroryi.bus2.service..*.find*BusCompany*(..)) && " +
+            "!execution(* kroryi.bus2.service..*.get*BusCompany*(..))")
+    public void excludeBusCompanyOperations() {}
+
+    // ✅ 로깅 대상 포인트컷 (관리자 작업 && BusCompany 제외)
+    @Pointcut("adminActions() && excludeBusCompanyOperations() && !execution(* kroryi.bus2.service.NoticeServiceImpl.deleteNotice(..))")
+    public void loggableAdminActions() {}
+
+    @Around("loggableAdminActions()")
     public Object logAdminOperation(ProceedingJoinPoint joinPoint) throws Throwable {
         Object result = null;
         String action = joinPoint.getSignature().getName();
         String className = joinPoint.getTarget().getClass().getSimpleName();
-
-        // 🚫 Redis 등 제외
-        if (className.contains("Redis")) return joinPoint.proceed();
+        
+        // 🚫 Redis 관련 작업 제외
+        if (className.contains("Redis")) {
+            return joinPoint.proceed();
+        }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal().equals("anonymousUser")) return joinPoint.proceed();
@@ -99,6 +109,16 @@ public class AdminAuditAspect {
     @AfterReturning(value = "@annotation(adminAudit)", returning = "result")
     public void logAuditedOperation(JoinPoint joinPoint, AdminAudit adminAudit, Object result) {
         try {
+            // BusCompany 관련 작업이면 로깅 제외
+            String className = joinPoint.getTarget().getClass().getSimpleName();
+            String methodName = joinPoint.getSignature().getName();
+            
+            if (className.contains("BusCompany") || 
+                methodName.contains("getBusCompany") || 
+                methodName.contains("findBusCompany")) {
+                return;
+            }
+            
             String adminId = getCurrentAdminUsername();
             String action = adminAudit.action();
             String target = adminAudit.target();
@@ -158,7 +178,4 @@ public class AdminAuditAspect {
             log.error("🚨 관리자 작업 로그 기록 실패", e);
         }
     }
-
-
-
 }
