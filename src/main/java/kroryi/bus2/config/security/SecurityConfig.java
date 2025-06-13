@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
 import kroryi.bus2.handler.CustomLoginSuccessHandler;
+import kroryi.bus2.handler.CustomLogoutSuccessHandler;
 import kroryi.bus2.handler.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,7 @@ public class SecurityConfig {
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
     private final SwaggerAuthFilter swaggerAuthFilter;
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     private boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -99,12 +101,10 @@ public class SecurityConfig {
                 )
 
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/auth/login")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessHandler(new CustomLogoutSuccessHandler())
                         .deleteCookies("JSESSIONID")
-                        .permitAll()
+                        .invalidateHttpSession(true)
                 )
 
                 .authorizeHttpRequests(auth -> auth
