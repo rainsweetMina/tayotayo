@@ -24,7 +24,8 @@ public class FoundItemAdminResponseDTO {
     private String handlerContact;
     private String handlerEmail;
     private FoundStatus status;
-    private boolean isHidden;
+    //    private boolean isHidden;
+    private boolean visible;
     private boolean isDeleted;
     private String photoUrl;
     @Getter
@@ -51,7 +52,8 @@ public class FoundItemAdminResponseDTO {
                 .status(entity.getStatus())
                 .statusName(entity.getStatus().getDisplayName()) // 추가!
                 .photoUrl(entity.getPhoto() != null ? entity.getPhoto().getUrl() : null)
-                .isHidden(entity.isHidden())
+//                .isHidden(entity.isHidden())
+                .visible(entity.isVisible())      // ← 여기도 추가!
                 .isDeleted(entity.getIsDeleted())
                 .handlerId(entity.getHandler() != null ? entity.getHandler().getId() : null)
                 .matched(entity.isMatched())

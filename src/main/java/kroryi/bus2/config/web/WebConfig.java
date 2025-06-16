@@ -35,7 +35,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://192.168.10.13:5173",
                         "http://192.168.10.13:5174"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
                 .allowedHeaders("*")
                 .maxAge(3600)
                 .allowCredentials(true);
@@ -49,10 +49,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("https://docs.yi.or.kr:8094", "https://192.168.10.47:8094","https://localhost:8094")
                 .allowedMethods("*");
 
-        registry.addMapping("/api/**")  // ✅ 추가
-                .allowedOrigins("https://localhost:5173")
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowCredentials(true);
+//        registry.addMapping("/api/**")  // ✅ 추가
+//                .allowedOrigins("https://localhost:5173")
+//                .allowedMethods("GET", "POST", "PUT", "DELETE")
+//                .allowCredentials(true);
     }
 
     @Override

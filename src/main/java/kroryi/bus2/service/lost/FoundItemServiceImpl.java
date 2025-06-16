@@ -271,12 +271,8 @@ public class FoundItemServiceImpl implements FoundItemService {
         User handler = userRepository.findById(handlerId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
-        LostFoundMatch match = new LostFoundMatch();
-        match.setFoundItem(foundItem);
-        match.setMatchedBy(handler);
-        match.setMatchedAt(LocalDateTime.now());
-
         if (lostItemId != null) {
+            // ========== 기존 매칭 처리 (분실물ID 있을 때) ==========
             LostItem lostItem = lostItemRepository.findById(lostItemId)
                     .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 분실물 ID입니다."));
 
@@ -292,14 +288,27 @@ public class FoundItemServiceImpl implements FoundItemService {
 
             lostItem.setMatched(true);
             lostItemRepository.save(lostItem);
-            match.setLostItem(lostItem);
-        }
 
-        foundItem.setMatched(true);
-        foundItem.matchAndComplete();
-        matchRepository.save(match);
-        foundItemRepository.save(foundItem);
+            LostFoundMatch match = new LostFoundMatch();
+            match.setFoundItem(foundItem);
+            match.setMatchedBy(handler);
+            match.setMatchedAt(LocalDateTime.now());
+            match.setLostItem(lostItem);
+
+            foundItem.setMatched(true);
+            foundItem.matchAndComplete();
+            matchRepository.save(match);
+            foundItemRepository.save(foundItem);
+
+        } else {
+            // ========== 분실물 없이 회수 처리만 할 때 ==========
+            foundItem.setStatus(FoundStatus.RETURNED); // "수령완료" 상태로
+            foundItem.setMatched(true);                // 필요하면 true로
+            foundItemRepository.save(foundItem);
+            // 매칭 테이블에는 기록 안 해도 됨
+        }
     }
+
 
 
     // ✅ 관리자용 전체 조회
