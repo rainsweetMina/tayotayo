@@ -2,6 +2,8 @@ package kroryi.bus2.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kroryi.bus2.config.security.CustomOAuth2User;
+import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -12,10 +14,12 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-@Log4j2
 @Component
 @RequiredArgsConstructor
+@Log4j2
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final ApplicationContext context;
@@ -24,16 +28,28 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String userId = authentication.getName();
-        log.info("✅ 소셜 로그인 성공 - userId: {}", userId);
+        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        String userId = oAuth2User.getUserId();
 
-        // 마지막 로그인 시간 업데이트
         UserService userService = context.getBean(UserService.class);
         userService.updateLastLoginAt(userId);
+        User user = userService.findByUserId(userId);
 
-        // ✅ 프론트 마이페이지로 강제 리다이렉트
-        response.sendRedirect("https://localhost:5173/mypage");
+
+        String role = user.getRole().name();
+        String path = switch (role) {
+            case "ADMIN" -> "/admin/dashboard";
+            case "BUS" -> "/bus";
+            default -> "/mypage";
+        };
+
+        // ✅ 프론트에서 redirect 쿼리 파라미터를 읽어 처리할 수 있게 보냄
+        String redirectUrl = "https://localhost:5173" + path;
+
+        log.info("✅ 소셜 로그인 성공! userId={}, role={}, redirect={}", userId, role, redirectUrl);
+        response.sendRedirect(redirectUrl);
     }
 }

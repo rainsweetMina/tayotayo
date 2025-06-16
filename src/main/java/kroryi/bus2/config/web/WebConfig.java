@@ -89,9 +89,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         // Vue 라우터에서 사용하는 경로를 index.html로 포워딩
+        registry.addViewController("/login/oauth2/success").setViewName("forward:/index.html");
         registry.addViewController("/admin").setViewName("forward:/index.html");
         registry.addViewController("/admin/**").setViewName("forward:/index.html");
-
+        registry.addViewController("/bus").setViewName("forward:/index.html");
+        registry.addViewController("/bus/**").setViewName("forward:/index.html");
         registry.addViewController("/mypage").setViewName("forward:/index.html");
         registry.addViewController("/mypage/**").setViewName("forward:/index.html");
 

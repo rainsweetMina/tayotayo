@@ -37,7 +37,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         User user = userService.findByUserId(userId);
 
         // 기본 리다이렉트 경로
-        String redirectUrl = "https://localhost:5173/main";
+        String redirectUrl = "https://localhost:5173/";
 
         switch (user.getRole().name()) {
             case "ADMIN" -> redirectUrl = "/admin/dashboard";
