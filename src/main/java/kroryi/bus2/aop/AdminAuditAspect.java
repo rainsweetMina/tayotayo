@@ -141,7 +141,7 @@ public class AdminAuditAspect {
                 } else if (arg instanceof FoundItemRequestDTO dto) {
                     Map<String, Object> safeDto = new LinkedHashMap<>();
                     safeDto.put("itemName", dto.getItemName());
-                    safeDto.put("busCompany", dto.getBusCompany());
+//                    safeDto.put("busCompany", dto.getBusCompany());
                     safeDto.put("busNumber", dto.getBusNumber());
                     safeDto.put("foundPlace", dto.getFoundPlace());
                     safeDto.put("foundTime", dto.getFoundTime());
