@@ -16,7 +16,6 @@ import java.time.LocalDate;
 public class ModifyUserDTO {
 
     private String userId;
-    private String name;
 
     @NotBlank(message = "이름을 입력하세요.")
     private String username;
@@ -25,9 +24,6 @@ public class ModifyUserDTO {
     private String email;
 
     private String phoneNumber;
-
-    @NotBlank(message = "현재 비밀번호를 입력하세요.")
-    private String currentPassword;
 
     // 읽기 전용 (optional)
     private LocalDate signupDate;

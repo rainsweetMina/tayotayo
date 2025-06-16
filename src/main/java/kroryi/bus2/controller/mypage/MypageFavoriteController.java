@@ -210,12 +210,17 @@ public class MypageFavoriteController {
 
     @GetMapping("/favorites/summary")
     public ResponseEntity<?> getFavoriteSummary(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("🔍 [getFavoriteSummary] 진입");
+        log.info("🧑‍💻 userDetails: {}", userDetails);
+
         if (userDetails == null || userDetails.getUser() == null) {
+            log.warn("⛔ 인증 정보 없음 또는 userDetails.getUser() == null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "로그인이 필요합니다."));
         }
 
         String userId = userDetails.getUser().getUserId();
+        log.info("✅ 인증된 userId: {}", userId);
 
         try {
             int busCount = favoriteRouteRepository.countByUser_UserId(userId);
@@ -225,6 +230,7 @@ public class MypageFavoriteController {
             result.put("busCount", busCount);
             result.put("stopCount", stopCount);
 
+            log.info("📦 즐겨찾기 개수 - 노선: {}, 정류장: {}", busCount, stopCount);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("❌ 즐겨찾기 요약 로딩 중 오류 발생", e);

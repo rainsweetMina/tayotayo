@@ -120,30 +120,10 @@ public class AdminUserController {
     }
 
     @Hidden
-    @PostMapping("/admin/users/{userId}/temp-password")
-    public String generateTempPassword(@PathVariable String userId, RedirectAttributes redirectAttributes) {
-        String tempPassword = adminUserService.generateTemporaryPassword(userId);
-        redirectAttributes.addFlashAttribute("message", userId + "의 임시 비밀번호: " + tempPassword);
-        return "redirect:/admin/user";
-    }
-
-    @Hidden
     @PostMapping("/admin/users/{userId}/withdraw")
     public String withdrawUser(@PathVariable String userId, RedirectAttributes redirectAttributes) {
         adminUserService.withdrawUser(userId);
         redirectAttributes.addFlashAttribute("message", userId + "님이 탈퇴 처리되었습니다.");
         return "redirect:/admin/user";
     }
-
-    @Hidden
-    @PostMapping("/api/admin/user/{userId}/temp-password")
-    @ResponseBody
-    public Map<String, String> generateTempPasswordForVue(@PathVariable String userId) {
-        String tempPassword = adminUserService.generateTemporaryPassword(userId);
-        return Map.of(
-                "userId", userId,
-                "tempPassword", tempPassword
-        );
-    }
-
 }

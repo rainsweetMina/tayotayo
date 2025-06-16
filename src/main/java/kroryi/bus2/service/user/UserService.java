@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     public boolean checkUserIdDuplicate(String userId) {
         return userRepository.existsByUserId(userId);
@@ -91,7 +93,7 @@ public class UserService {
     public boolean modifyUserInfo(String userId, ModifyUserDTO dto) {
         User user = findByUserId(userId);
 
-        user.setUsername(dto.getName());
+        user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
 
@@ -166,6 +168,35 @@ public class UserService {
                 user.getRole().name(),
                 user.getLastLoginAt()
         );
+    }
+
+    @Transactional
+    public void sendTemporaryPassword(String userId, String email) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디를 찾을 수 없습니다."));
+
+        if (!user.getEmail().equals(email)) {
+            throw new IllegalArgumentException("입력한 이메일이 회원정보와 일치하지 않습니다.");
+        }
+
+        // 임시 비밀번호 생성
+        String tempPassword = generateTempPassword();
+
+        // 사용자 비밀번호 변경
+        user.setPassword(passwordEncoder.encode(tempPassword));
+
+        // 이메일 발송
+        emailService.sendTemporaryPassword(email, tempPassword);
+    }
+
+    private String generateTempPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*#?&";
+        StringBuilder sb = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < 10; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     public boolean isUserIdDuplicate(String userId) {
