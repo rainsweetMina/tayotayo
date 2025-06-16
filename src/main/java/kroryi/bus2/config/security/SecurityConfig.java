@@ -4,17 +4,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
 import kroryi.bus2.handler.CustomLoginSuccessHandler;
+import kroryi.bus2.handler.CustomLogoutSuccessHandler;
 import kroryi.bus2.handler.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,14 +41,7 @@ public class SecurityConfig {
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
     private final SwaggerAuthFilter swaggerAuthFilter;
-
-    private boolean isAdmin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getAuthorities() == null) return false;
-
-        return auth.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
-    }
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -58,8 +51,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        builder.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
+        builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         return builder.build();
     }
 
@@ -68,18 +60,15 @@ public class SecurityConfig {
         http
                 .userDetailsService(userDetailsService)
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation().changeSessionId()
                 )
-
                 .addFilterBefore(swaggerAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
@@ -87,52 +76,51 @@ public class SecurityConfig {
                         .failureHandler((request, response, exception) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json; charset=UTF-8");
-
                             String message = "아이디 또는 비밀번호가 올바르지 않습니다.";
                             if (exception instanceof DisabledException) message = "비활성화된 계정입니다.";
                             else if (exception instanceof LockedException) message = "잠긴 계정입니다.";
                             else if (exception instanceof AccountExpiredException) message = "계정이 만료되었습니다.";
-
                             response.getWriter().write("{\"message\": \"" + message + "\"}");
                         })
                         .permitAll()
                 )
-
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/auth/login")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessHandler(customLogoutSuccessHandler)
                         .deleteCookies("JSESSIONID")
-                        .permitAll()
+                        .invalidateHttpSession(true)
                 )
-
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/register", "/css/**", "/js/**", "/bus", "/oauth2/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/login").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
-                        .requestMatchers("/api/user/**").authenticated()
+                        // ✅ 공개 경로
+                        .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/auth/login", "/auth/logout", "/register", "/oauth2/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
+
+                        // ✅ Vue 라우터 경로 허용 (Vue가 내부에서 라우팅 처리)
+                        .requestMatchers("/mypage/**", "/admin/**", "/bus/**").permitAll()
+
+                        // ✅ API는 인증 필요
+                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/mypage/**").hasRole("USER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/mypage/favorites").hasRole("USER")
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
-                        .requestMatchers("/mypage/**").hasRole("USER")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
+
+                        // ✅ 기타 경로 모두 허용
                         .requestMatchers("/**").permitAll()
+
+                        // ✅ 보안 누락 방지
                         .anyRequest().authenticated()
                 )
-
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/auth/login")
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customOAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
-                            String encodedMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("/login?error=" + encodedMessage);
+                            String encoded = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
+                            response.sendRedirect("https://localhost:5173/login?error=" + encoded);
                         })
                 )
-
                 .rememberMe(remember -> remember
                         .key("remember-me-key")
                         .tokenValiditySeconds(7 * 24 * 60 * 60)
@@ -151,10 +139,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "https://localhost:5173",
                 "http://localhost:5173",
-                "https://localhost:5174",
-                "http://localhost:5174",
-                "http://localhost:8081",
-                "https://localhost:8081"
+                "https://localhost:8081",
+                "http://localhost:8081"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
