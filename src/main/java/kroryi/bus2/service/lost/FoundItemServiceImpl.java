@@ -13,7 +13,6 @@ import kroryi.bus2.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -336,11 +335,12 @@ public class FoundItemServiceImpl implements FoundItemService {
     //일반회원용 조회
     @Override
     public List<FoundItemResponseDTO> getVisibleFoundItemsForUser() {
-        return foundItemRepository.findByIsDeletedFalseAndVisibleTrue().stream()
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
+        return foundItemRepository.findVisibleForUserWithin7Days(cutoff)
+                .stream()
                 .map(FoundItemResponseDTO::fromEntity)
                 .toList();
     }
-
     @Override
     public FoundItemResponseDTO getFoundItemDetailForUser(Long id) {
         FoundItem item = foundItemRepository.findByIdAndIsDeletedFalseAndVisibleTrue(id)
@@ -368,15 +368,20 @@ public class FoundItemServiceImpl implements FoundItemService {
     }
 
     @Override
-    public List<FoundItemResponseDTO> searchFoundItems(String keyword, String busCompany, String busNumber, LocalDate startDate, LocalDate endDate) {
+    public List<FoundItemResponseDTO> searchFoundItems(
+            String keyword, String busCompany, String busNumber,
+            LocalDate startDate, LocalDate endDate
+    ) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
         List<FoundItem> results = foundItemRepository.searchFoundItems(
                 keyword != null && !keyword.isBlank() ? keyword : null,
                 busCompany != null && !busCompany.isBlank() ? busCompany : null,
                 busNumber != null && !busNumber.isBlank() ? busNumber : null,
-                startDate, endDate
+                startDateTime, endDateTime
         );
         return results.stream().map(FoundItemResponseDTO::fromEntity).toList();
     }
-
 
 }

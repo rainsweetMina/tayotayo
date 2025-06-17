@@ -22,4 +22,5 @@ public class LostItemAdminResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long memberId;
+    private String memberName;    // 신고자명(추가!)
 }

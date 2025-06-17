@@ -127,7 +127,9 @@ public class LostItemService {
                             .title(lost.getTitle())
                             .busNumber(lost.getBusNumber())
                             .busCompany(lost.getBusCompany())
+                            .lostTime(lost.getLostTime())  // ⭐️⭐️⭐️ 반드시 추가!!
                             .memberId(lost.getReporter().getId())
+                            .memberName(lost.getReporter() != null ? lost.getReporter().getUsername() : null) // 🔥 추가!
                             .deleted(lost.isDeleted())
                             .visible(lost.isVisible())
                             .createdAt(lost.getCreatedAt())
@@ -203,6 +205,7 @@ public class LostItemService {
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
                 .memberId(item.getReporter().getId())
+                .memberName(item.getReporter() != null ? item.getReporter().getUsername() : null) // 🔥 추가!
                 .build();
     }
 
