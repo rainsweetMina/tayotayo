@@ -1,6 +1,7 @@
 package kroryi.bus2.controller.mypage;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -163,24 +164,25 @@ public class UserApiController {
         }
     }
 
-    @GetMapping("/mypage/debug-session")
-    public ResponseEntity<?> debugSession(HttpServletRequest request) {
-        log.info("⚙️ /debug-session 진입");
-
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie c : cookies) {
-                log.info("🍪 쿠키: {} = {}", c.getName(), c.getValue());
-            }
-        } else {
-            log.warn("❌ 쿠키 없음");
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info("🔐 SecurityContext 인증: {}", auth);
-
-        return ResponseEntity.ok("ok");
-    }
+//    // 디버깅용
+//    @GetMapping("/mypage/debug-session")
+//    public ResponseEntity<?> debugSession(HttpServletRequest request) {
+//        log.info("⚙️ /debug-session 진입");
+//
+//        Cookie[] cookies = request.getCookies();
+//        if (cookies != null) {
+//            for (Cookie c : cookies) {
+//                log.info("🍪 쿠키: {} = {}", c.getName(), c.getValue());
+//            }
+//        } else {
+//            log.warn("❌ 쿠키 없음");
+//        }
+//
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        log.info("🔐 SecurityContext 인증: {}", auth);
+//
+//        return ResponseEntity.ok("ok");
+//    }
 
     @PostMapping("/find-password")
     public ResponseEntity<String> sendTemporaryPassword(@RequestBody PasswordRequestDTO request) {
@@ -194,4 +196,29 @@ public class UserApiController {
         return ResponseEntity.ok("임시 비밀번호가 전송되었습니다.");
     }
 
+    @Operation(summary = "회원 탈퇴 처리", description = "현재 로그인된 사용자를 탈퇴 처리합니다.")
+    @PostMapping("/mypage/withdraw")
+    public ResponseEntity<?> handleWithdraw(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody Map<String, String> body
+    ) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        String password = body.get("password");
+        if (password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "비밀번호가 누락되었습니다."));
+        }
+
+        try {
+            userService.withdrawUser(user.getUserId(), password);
+            SecurityContextHolder.clearContext();
+            return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 완료되었습니다."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "서버 오류"));
+        }
+    }
 }
