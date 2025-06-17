@@ -3,6 +3,7 @@ package kroryi.bus2.controller.api;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.dto.apiKey.CreateApiKeyRequestDTO;
 import kroryi.bus2.dto.apiKey.ApiKeyResponseDTO;
 import kroryi.bus2.dto.apiKey.UpdateApiKeyStatusRequestDTO;
@@ -41,6 +42,7 @@ public class AdminApiKeyController {
     @Hidden
     @Operation(summary = "API 키 대시보드 (뷰)", description = "최근 발급된 API 키 목록을 대시보드 뷰로 반환합니다.")
     @GetMapping("/apikey/dashboard")
+    @AdminTracked
     public String dashboard(Model model) {
         List<ApiKey> recent = apiKeyRepository.findAll(Sort.by(Sort.Direction.DESC, "issuedAt"));
         model.addAttribute("recentKeys", recent);
@@ -50,6 +52,7 @@ public class AdminApiKeyController {
     @Operation(summary = "API 키 전체 목록 조회", description = "모든 API 키를 조회하는 관리자용 뷰를 반환합니다.")
     @GetMapping("/apikey/list")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @AdminTracked
     public ResponseEntity<List<ApiKeyResponseDTO>> getApiKeyList() {
         List<ApiKey> apiKeyList = apiKeyRepository.findAll(Sort.by(Sort.Order.desc("createdAt")));
 
@@ -73,6 +76,7 @@ public class AdminApiKeyController {
 
     @Operation(summary = "단일 API 키 조회", description = "지정한 ID에 해당하는 API 키 정보를 반환합니다.")
     @GetMapping("/apikey/{id}")
+    @AdminTracked
     public ResponseEntity<ApiKeyResponseDTO> getApiKey(@PathVariable Long id) {
         return apiKeyRepository.findById(id)
                 .map(apiKey -> {
@@ -88,6 +92,7 @@ public class AdminApiKeyController {
 
     @Operation(summary = "API 키 생성", description = "새로운 API 키를 생성합니다.")
     @PostMapping("/apikey/create")
+    @AdminTracked
     public ApiKeyResponseDTO createKey(@RequestBody CreateApiKeyRequestDTO request) {
         ApiKey.ApiKeyBuilder builder = ApiKey.builder()
                 .user_name(request.getUser_name())
@@ -137,6 +142,7 @@ public class AdminApiKeyController {
 
     @Operation(summary = "API 키 상태 변경", description = "지정한 API 키의 활성화 상태를 변경합니다.")
     @PutMapping("/apikey/{id}/active")
+    @AdminTracked
     public ResponseEntity<?> toggleStatus(@PathVariable Long id, @RequestBody UpdateApiKeyStatusRequestDTO request) {
         return apiKeyRepository.findById(id)
                 .map(key -> {
@@ -149,6 +155,7 @@ public class AdminApiKeyController {
 
     @Operation(summary = "API 키 승인 상태 토글", description = "API 키 상태를 승인/대기로 토글합니다.")
     @PutMapping("/apikey/{id}/toggle-approval")
+    @AdminTracked
     public ResponseEntity<String> toggleApprovalStatus(@PathVariable Long id) {
         log.info("🔁 API 키 승인 상태 변경 요청: {}", id); // ← 로그 추가하면 호출 여부 추적 가능
         boolean approved = apiKeyService.toggleActive(id); // 또는 toggleActiveStatus(id)
@@ -161,6 +168,7 @@ public class AdminApiKeyController {
 
     @Operation(summary = "API 키 삭제", description = "지정한 ID의 API 키를 삭제합니다.")
     @DeleteMapping("/apikey/{id}")
+    @AdminTracked
     public ResponseEntity<String> deleteKey(@PathVariable Long id) {
         if (!apiKeyRepository.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -174,6 +182,7 @@ public class AdminApiKeyController {
     @Operation(summary = "API 키 상태 변경", description = "관리자가 API 키의 상태(PENDING, APPROVED, EXPIRED)를 변경합니다.")
     @PostMapping("/apikey/{id}/status")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @AdminTracked
     public ResponseEntity<String> updateApiKeyStatus(@PathVariable Long id,
                                                      @RequestParam ApiKeyStatus status) {
         return apiKeyRepository.findById(id)
