@@ -98,6 +98,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addViewController("/mypage/**").setViewName("forward:/index.html");
 
         registry.addViewController("/login").setViewName("forward:/index.html");
+        registry.addViewController("/find-password").setViewName("forward:/index.html");
 
         // 기본 홈 경로도 index.html로
         registry.addViewController("/").setViewName("forward:/index.html");

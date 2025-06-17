@@ -1,5 +1,7 @@
 package kroryi.bus2.config.security;
 
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
@@ -7,8 +9,11 @@ import kroryi.bus2.handler.CustomLoginSuccessHandler;
 import kroryi.bus2.handler.CustomLogoutSuccessHandler;
 import kroryi.bus2.handler.CustomOAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.Customizer;
@@ -27,12 +32,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
+@Log4j2
 public class SecurityConfig {
 
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService;
@@ -91,25 +99,24 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ 공개 경로
+                        // ✅ 정적 리소스
                         .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout", "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
 
-                        // ✅ Vue 라우터 경로 허용 (Vue가 내부에서 라우팅 처리)
+                        // ✅ 마이페이지 라우팅 허용 (Vue에서 처리)
                         .requestMatchers("/mypage/**", "/admin/**", "/bus/**").permitAll()
 
-                        // ✅ API는 인증 필요
+                        // ✅ API 별 권한 설정 (순서 중요!)
+                        .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/mypage/**").hasRole("USER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
 
-                        // ✅ 기타 경로 모두 허용
+                        // ✅ 나머지는 맨 마지막에
                         .requestMatchers("/**").permitAll()
-
-                        // ✅ 보안 누락 방지
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -150,5 +157,39 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    // ✅ SameSite=None; Secure 쿠키 속성 설정 필터
+    @Bean
+    public FilterRegistrationBean<Filter> sameSiteCookieFilter() {
+        FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>();
+
+        registrationBean.setFilter(new Filter() {
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                    throws IOException, ServletException {
+
+                chain.doFilter(request, response);
+
+                if (response instanceof HttpServletResponse httpServletResponse) {
+                    Collection<String> headers = httpServletResponse.getHeaders(HttpHeaders.SET_COOKIE);
+                    boolean firstHeader = true;
+                    for (String header : headers) {
+                        if (header.contains("JSESSIONID")) {
+                            String newHeader = header + "; SameSite=None; Secure";
+                            if (firstHeader) {
+                                httpServletResponse.setHeader(HttpHeaders.SET_COOKIE, newHeader);
+                                firstHeader = false;
+                            } else {
+                                httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, newHeader);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        registrationBean.addUrlPatterns("/*");
+        return registrationBean;
     }
 }

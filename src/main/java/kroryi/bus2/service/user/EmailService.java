@@ -1,10 +1,12 @@
 package kroryi.bus2.service.user;
 
+import jakarta.mail.internet.MimeMessage;
 import kroryi.bus2.model.EmailVerificationCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -123,4 +125,34 @@ public class EmailService {
             super(message, cause);
         }
     }
+
+    public void sendTemporaryPassword(String toEmail, String tempPassword) {
+        String subject = "비밀번호 재설정 안내";
+        String body = """
+        <h3>임시 비밀번호 안내</h3>
+        <p>요청하신 계정의 임시 비밀번호는 다음과 같습니다:</p>
+        <p><strong>%s</strong></p>
+        <p>로그인 후 반드시 비밀번호를 변경해 주세요.</p>
+    """.formatted(tempPassword);
+
+        sendEmail(toEmail, subject, body);
+    }
+
+    public void sendEmail(String to, String subject, String body) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(body, true); // true: HTML 형식
+
+            mailSender.send(message);
+            log.info("✅ 이메일 전송 성공: {}", to);
+        } catch (Exception e) {
+            log.error("❌ 이메일 전송 실패: {}", e.getMessage(), e);
+            throw new EmailSendingException("이메일 전송 실패", e);
+        }
+    }
+
 }
