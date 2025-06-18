@@ -384,4 +384,13 @@ public class FoundItemServiceImpl implements FoundItemService {
         return results.stream().map(FoundItemResponseDTO::fromEntity).toList();
     }
 
+    @Override
+    public List<FoundItemAdminResponseDTO> searchByKeywordForAdmin(String keyword) {
+        String searchKeyword = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
+        List<FoundItem> results = foundItemRepository.searchByKeywordForAdmin(searchKeyword);
+        return results.stream()
+                .map(FoundItemAdminResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
 }

@@ -257,6 +257,27 @@ public class LostItemService {
                         .build()
                 ).toList();
     }
+    public List<LostItemAdminResponseDTO> searchForAdmin(String keyword) {
+        // 여러 필드에서 'OR'로 검색
+        List<LostItem> results = lostItemRepository.searchByKeywordForAdmin(keyword);
+
+        return results.stream()
+                .map(lost -> LostItemAdminResponseDTO.builder()
+                        .id(lost.getId())
+                        .title(lost.getTitle())
+                        .busNumber(lost.getBusNumber())
+                        .busCompany(lost.getBusCompany())
+                        .lostTime(lost.getLostTime())
+                        .memberId(lost.getReporter().getId())
+                        .memberName(lost.getReporter() != null ? lost.getReporter().getUsername() : null)
+                        .deleted(lost.isDeleted())
+                        .visible(lost.isVisible())
+                        .createdAt(lost.getCreatedAt())
+                        .updatedAt(lost.getUpdatedAt())
+                        .build()
+                )
+                .toList();
+    }
 
 
 }

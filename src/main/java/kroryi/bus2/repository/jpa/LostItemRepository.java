@@ -43,6 +43,15 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
+    @Query("""
+    SELECT l FROM LostItem l
+    WHERE 
+        (LOWER(l.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(l.busCompany) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(l.busNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(l.reporter.username) LIKE LOWER(CONCAT('%', :keyword, '%')))
+""")
+    List<LostItem> searchByKeywordForAdmin(@Param("keyword") String keyword);
 
 }
 

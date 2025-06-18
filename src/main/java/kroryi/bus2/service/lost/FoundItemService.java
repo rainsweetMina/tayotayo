@@ -59,5 +59,8 @@ public interface FoundItemService {
             LocalDate startDate,
             LocalDate endDate
     );
+    // 관리자용 습득물 통합 검색
+    List<FoundItemAdminResponseDTO> searchByKeywordForAdmin(String keyword);
+
 }
 

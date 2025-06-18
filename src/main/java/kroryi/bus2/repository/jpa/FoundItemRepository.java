@@ -52,4 +52,16 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+    @Query("""
+SELECT f FROM FoundItem f
+WHERE f.isDeleted = false
+  AND (
+    :keyword IS NULL
+    OR LOWER(f.itemName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(f.busCompany) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(f.busNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+  )
+""")
+    List<FoundItem> searchByKeywordForAdmin(@Param("keyword") String keyword);
+
 }
