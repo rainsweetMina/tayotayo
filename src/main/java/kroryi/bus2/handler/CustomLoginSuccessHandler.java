@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.user.UserService;
+import kroryi.bus2.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationContext;
@@ -20,6 +21,8 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Log4j2
 @Component
@@ -59,6 +62,11 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         request.getSession(true)
                 .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
 
+        // JWT 토큰 생성
+        JwtTokenUtil jwtTokenUtil = context.getBean(JwtTokenUtil.class);
+        String accessToken = jwtTokenUtil.generateAccessToken(user);
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user);
+
         // ✅ 리다이렉트 URL 결정
         String redirectUrl = "https://localhost:5173/";
 
@@ -77,7 +85,14 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             }
         }
 
-        log.info("🔑 로그인 성공: {} → {}", userId, redirectUrl);
-        response.sendRedirect("https://localhost:5173" + redirectUrl);
+        // JWT 토큰을 URL 파라미터로 전달
+        String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+        String encodedRefreshToken = URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);
+        
+        String finalRedirectUrl = String.format("https://localhost:5173%s?accessToken=%s&refreshToken=%s", 
+                redirectUrl, encodedAccessToken, encodedRefreshToken);
+
+        log.info("🔑 로그인 성공: {} → {}", userId, finalRedirectUrl);
+        response.sendRedirect(finalRedirectUrl);
     }
 }

@@ -4,6 +4,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
+import kroryi.bus2.filter.JwtAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
 import kroryi.bus2.handler.CustomLoginSuccessHandler;
 import kroryi.bus2.handler.CustomLogoutSuccessHandler;
@@ -31,6 +32,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import kroryi.bus2.utils.JwtTokenUtil;
+import kroryi.bus2.service.user.UserService;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -52,6 +55,11 @@ public class SecurityConfig {
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenUtil jwtTokenUtil, UserService userService) {
+        return new JwtAuthenticationFilter(jwtTokenUtil, userService);
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -64,7 +72,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .userDetailsService(userDetailsService)
                 .csrf(csrf -> csrf.disable())
@@ -73,6 +81,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation().changeSessionId()
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(swaggerAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
@@ -103,6 +112,9 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout", "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
+
+                        // ✅ JWT 인증 엔드포인트 허용
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/validate").permitAll()
 
                         // ✅ 마이페이지 라우팅 허용 (Vue에서 처리)
                         .requestMatchers("/mypage/**", "/admin/**", "/bus/**").permitAll()
@@ -169,7 +181,7 @@ public class SecurityConfig {
             public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
                     throws IOException, ServletException {
 
-                chain.doFilter(request, response);
+                chain.  doFilter(request, response);
 
                 if (response instanceof HttpServletResponse httpServletResponse) {
                     Collection<String> headers = httpServletResponse.getHeaders(HttpHeaders.SET_COOKIE);
