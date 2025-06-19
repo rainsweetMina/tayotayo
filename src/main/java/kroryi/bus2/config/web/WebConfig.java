@@ -49,10 +49,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("https://docs.yi.or.kr:8094", "https://192.168.10.47:8094","https://localhost:8094")
                 .allowedMethods("*");
 
-//        registry.addMapping("/api/**")  // ✅ 추가
-//                .allowedOrigins("https://localhost:5173")
-//                .allowedMethods("GET", "POST", "PUT", "DELETE")
-//                .allowCredentials(true);
+        registry.addMapping("/**")  // ✅ 추가
+                .allowedOrigins("https://localhost:5173")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 
     @Override
