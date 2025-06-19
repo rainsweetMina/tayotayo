@@ -22,39 +22,51 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
 
-        // ✅ 공통 API CORS
+        // API 호출 (withCredentials: true)
         registry.addMapping("/api/**")
                 .allowedOrigins(
-                        "https://docs.yi.or.kr:8094",
-                        "https://192.168.10.47:8094",
-                        "https://localhost:8094",
-                        "http://localhost:5173",  // Vue.js 개발 서버 (HTTP)
-                        "https://localhost:5173", // Vue.js 개발 서버 (HTTPS)
+                        "http://localhost:5173",
+                        "https://localhost:5173",
                         "http://localhost:5174",
-                        "https://localhost:5174",
-                        "http://192.168.10.13:5173",
-                        "http://192.168.10.13:5174"
+                        "https://localhost:5174"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .maxAge(3600)
                 .allowCredentials(true);
 
-        // ✅ Swagger 관련 CORS
+        // 인증/로그인(리다이렉트) 경로 (Vue + Spring Security 리다이렉트 및 쿠키 세팅 이슈 방지)
+        registry.addMapping("/auth/**")
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "https://localhost:5173",
+                        "http://localhost:5174",
+                        "https://localhost:5174"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+
+        registry.addMapping("/login/**")
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "https://localhost:5173",
+                        "http://localhost:5174",
+                        "https://localhost:5174"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+
+        // Swagger (선택)
         registry.addMapping("/v3/api-docs/**")
                 .allowedOrigins("https://docs.yi.or.kr:8094", "https://192.168.10.47:8094","https://localhost:8094")
                 .allowedMethods("*");
-
-        registry.addMapping("/swagger-ui/**") // 만약 Swagger UI 경로도 CORS 걸리면 추가
+        registry.addMapping("/swagger-ui/**")
                 .allowedOrigins("https://docs.yi.or.kr:8094", "https://192.168.10.47:8094","https://localhost:8094")
                 .allowedMethods("*");
-
-        registry.addMapping("/**")  // ✅ 추가
-                .allowedOrigins("https://localhost:5173")
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("*")
-                .allowCredentials(true);
     }
+
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
