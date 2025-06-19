@@ -231,11 +231,15 @@ public class UserApiController {
                 throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
             }
             userService.join(dto);
-            return ResponseEntity.ok("회원가입 완료");
+            return ResponseEntity.ok(Map.of("message", "회원가입 완료"));
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ 회원가입 실패 - 잘못된 입력: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            log.error("❌ 회원가입 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
+            log.error("❌ 회원가입 실패 - 서버 오류: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of("message", "서버 오류가 발생했습니다."));
         }
     }
+
 
 }

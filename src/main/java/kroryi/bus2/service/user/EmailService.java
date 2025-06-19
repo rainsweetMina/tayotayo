@@ -1,11 +1,15 @@
 package kroryi.bus2.service.user;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.mail.Transport;
 import jakarta.mail.internet.MimeMessage;
 import kroryi.bus2.model.EmailVerificationCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final Environment env;
 
     // 인증 코드 저장소
     private final Map<String, EmailVerificationCode> verificationCodes = new ConcurrentHashMap<>();
@@ -152,6 +157,29 @@ public class EmailService {
             log.error("❌ 이메일 전송 실패: {}", e.getMessage(), e);
             throw new EmailSendingException("이메일 전송 실패", e);
         }
+    }
+
+    @PostConstruct
+    public void testMailConnection() {
+        try {
+            log.info("📨 [메일 테스트] SMTP 서버 연결 시도 중...");
+            Transport transport = ((JavaMailSenderImpl) mailSender)
+                    .getSession()
+                    .getTransport("smtp");
+            transport.connect(); // 연결 테스트
+            transport.close();
+            log.info("✅ [메일 테스트] SMTP 서버 연결 성공");
+        } catch (Exception e) {
+            log.error("❌ [메일 테스트] SMTP 서버 연결 실패: {}", e.getMessage(), e);
+        }
+    }
+
+    @PostConstruct
+    public void checkMailProperty() {
+        JavaMailSenderImpl impl = (JavaMailSenderImpl) mailSender;
+        log.warn("🔐 메일 유저: {}", impl.getUsername());
+        log.warn("🔐 메일 비번: {}", impl.getPassword()); // 확인용
+        log.warn("🔐 설정파일에서 가져온 비번: {}", env.getProperty("spring.mail.password"));
     }
 
 }

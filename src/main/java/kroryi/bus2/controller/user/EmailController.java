@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Hidden
 @RestController
 @RequiredArgsConstructor
@@ -41,15 +43,14 @@ public class EmailController {
         }
     }
 
+    @PostMapping("/user/email/verify")
     @Operation(summary = "이메일 인증 코드 검증", description = "입력한 이메일 주소와 인증 코드를 검증하여 유효한지 확인합니다.")
-    @PostMapping("/verify")
-    public ResponseEntity<String> verifyCode(@RequestParam String email, @RequestParam String code) {
-        boolean verified = emailService.verifyCode(email, code);
-        if (verified) {
-            return ResponseEntity.ok("이메일 인증 성공");
-        } else {
-            return ResponseEntity.badRequest().body("인증 실패 또는 코드 만료");
-        }
+    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String code = body.get("code");
+
+        boolean success = emailService.verifyCode(email, code);
+        return ResponseEntity.ok(Map.of("success", success));
     }
 
     // 이메일 형식 검증
