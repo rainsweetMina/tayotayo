@@ -21,6 +21,7 @@ import java.util.Optional;
 @Log4j2
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
@@ -33,8 +34,8 @@ public class UserService {
     }
 
     public void join(JoinRequestDTO dto) {
-        if (dto.getEmailVerified() == null || !dto.getEmailVerified()) {
-            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        if (!emailService.verifyCode(dto.getEmail(), dto.getEmailVerificationCode())) {
+            throw new IllegalArgumentException("이메일 인증 실패 (코드 불일치 또는 만료)");
         }
 
         if (userRepository.existsByUserId(dto.getUserId())) {
@@ -50,12 +51,14 @@ public class UserService {
         }
 
         if (!isValidPassword(dto.getPassword())) {
-            throw new IllegalArgumentException("비밀번호는 8자 이상이며, 문자, 숫자, 특수문자를 포함해야 합니다.");
+            throw new IllegalArgumentException("비밀번호 조건이 맞지 않습니다.");
         }
 
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
         User user = dto.toEntity(encodedPassword);
         userRepository.save(user);
+        log.info("✅ 사용자 저장 성공: {}", user.getUserId());
+        emailService.removeVerifiedEmail(dto.getEmail()); // 1회성 인증 상태 삭제
     }
 
     public User login(LoginRequestDTO ldto) {

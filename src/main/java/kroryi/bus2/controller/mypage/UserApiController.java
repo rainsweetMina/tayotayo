@@ -10,6 +10,7 @@ import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.dto.mypage.ChangePasswordDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
+import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.PasswordRequestDTO;
 import kroryi.bus2.dto.user.UserInfoDTO;
 import kroryi.bus2.entity.user.SignupType;
@@ -221,4 +222,20 @@ public class UserApiController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "서버 오류"));
         }
     }
+
+    @PostMapping("/user/join")
+    @ResponseBody
+    public ResponseEntity<?> registerApi(@RequestBody JoinRequestDTO dto) {
+        try {
+            if (!dto.getEmailVerified()) {
+                throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
+            }
+            userService.join(dto);
+            return ResponseEntity.ok("회원가입 완료");
+        } catch (Exception e) {
+            log.error("❌ 회원가입 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
+        }
+    }
+
 }

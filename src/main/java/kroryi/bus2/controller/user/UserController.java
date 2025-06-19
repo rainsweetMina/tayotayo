@@ -151,8 +151,17 @@ public class UserController {
     }
 
     @GetMapping("/api/user/check-id")
-    public Map<String, Boolean> checkUserIdDuplicate(@RequestParam String userId) {
-        boolean duplicate = userService.isUserIdDuplicate(userId);
-        return Map.of("duplicate", duplicate);
+    public ResponseEntity<?> checkUserIdDuplicate(@RequestParam(required = false) String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "아이디는 필수입니다."));
+        }
+
+        try {
+            boolean duplicate = userService.isUserIdDuplicate(userId);
+            return ResponseEntity.ok(Map.of("duplicate", duplicate));
+        } catch (Exception e) {
+            log.error("❌ 아이디 중복 확인 중 오류 발생", e);
+            return ResponseEntity.status(500).body(Map.of("message", "서버 오류"));
+        }
     }
 }
