@@ -34,8 +34,8 @@ public class FoundItemAdminController {
     @PostMapping("/update/{id}")
     public ResponseEntity<String> updateFoundItem(
             @PathVariable Long id,
-            @ModelAttribute FoundItemRequestDTO dto,
-            @RequestParam(value = "image", required = false) MultipartFile image) {
+            @RequestPart("dto") FoundItemRequestDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         foundItemService.updateFoundItem(id, dto, image);
         return ResponseEntity.ok("습득물 수정 완료");
     }
