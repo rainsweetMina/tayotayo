@@ -30,29 +30,28 @@ public class EmailService {
      * @param email 인증 코드를 받을 이메일 주소
      */
     public void sendVerificationCode(String email) {
-        log.debug("이메일 인증 코드 전송 시작: {}", email);
-        try {
-            // 인증 코드 생성 (6자리 숫자)
-            String code = String.valueOf((int) (Math.random() * 900000) + 100000);
+        log.debug("📨 [이메일 인증] 전송 요청 시작 - 대상: {}", email);
 
-            // 인증 코드 만료 시간 (3분)
+        try {
+            String code = String.valueOf((int) (Math.random() * 900000) + 100000);
             LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(3);
 
-            // 이메일 인증 코드 저장
             verificationCodes.put(email, new EmailVerificationCode(code, expiresAt));
 
-            // 이메일 메시지 생성
+            log.debug("✅ [이메일 인증] 코드 생성 - 이메일: {}, 코드: {}, 만료: {}", email, code, expiresAt);
+
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
             message.setSubject("이메일 인증 코드");
             message.setText("인증 코드: " + code + "\n3분 내로 입력해주세요.");
 
-            // 이메일 전송
             mailSender.send(message);
-            log.info("이메일 전송 완료: {} -> 인증 코드 전송", email);
+            log.info("📤 [이메일 인증] 이메일 전송 완료 - 대상: {}", email);
         } catch (Exception e) {
-            log.error("이메일 전송 중 오류 발생: {}", e.getMessage(), e);
-            throw new EmailSendingException("이메일 전송에 실패했습니다.", e); // EmailSendingException 예외 클래스를 만들어서 던지기
+            // 🔍 전체 스택 트레이스 출력
+            e.printStackTrace(); // ✅ 이거 추가
+            log.error("❌ [이메일 인증] 전송 실패 - 대상: {}, 오류: {}", email, e.getMessage(), e);
+            throw new EmailSendingException("이메일 전송에 실패했습니다.", e);
         }
     }
 
@@ -63,30 +62,29 @@ public class EmailService {
      * @return 인증 코드가 유효하면 true, 그렇지 않으면 false
      */
     public boolean verifyCode(String email, String code) {
+        log.debug("🔍 [인증 검증] 시작 - 이메일: {}, 입력된 코드: {}", email, code);
+
         EmailVerificationCode stored = verificationCodes.get(email);
 
-        // 이메일 인증 코드가 존재하지 않으면
         if (stored == null) {
-            log.warn("인증 코드가 존재하지 않음: {}", email);
+            log.warn("❌ [인증 검증] 실패 - 저장된 코드 없음 (이메일: {})", email);
             return false;
         }
 
-        // 인증 코드가 만료되었으면
         if (stored.isExpired()) {
-            verificationCodes.remove(email);  // 만료된 인증 코드는 삭제
-            log.warn("인증 코드가 만료되었습니다: {}", email);
+            verificationCodes.remove(email);
+            log.warn("⌛ [인증 검증] 실패 - 코드 만료 (이메일: {}, 만료시각: {})", email, stored.getExpiresAt());
             return false;
         }
 
-        // 인증 코드가 맞으면
         if (stored.getCode().equals(code)) {
-            verificationCodes.remove(email); // 1회성 코드 사용 후 삭제
-            verifiedEmails.add(email);  // 인증 완료된 이메일 추가
-            log.info("인증 코드 확인 완료: {}", email);
+            verificationCodes.remove(email);
+            verifiedEmails.add(email);
+            log.info("✅ [인증 검증] 성공 - 이메일: {}, 코드 일치", email);
             return true;
         }
 
-        log.warn("잘못된 인증 코드 입력: {}", email);
+        log.warn("❌ [인증 검증] 실패 - 코드 불일치 (이메일: {}, 저장된: {}, 입력된: {})", email, stored.getCode(), code);
         return false;
     }
 
@@ -97,9 +95,10 @@ public class EmailService {
      */
     public boolean isEmailVerified(String email) {
         boolean isVerified = verifiedEmails.contains(email);
-        log.debug("이메일 인증 상태 확인: 이메일 = {}, 인증됨 = {}", email, isVerified);
+        log.debug("🔎 [인증 여부 확인] 이메일: {}, 인증 상태: {}", email, isVerified);
         return isVerified;
     }
+
 
     /**
      * 인증 완료 후 이메일 인증 상태를 제거합니다.
@@ -107,7 +106,7 @@ public class EmailService {
      */
     public void removeVerifiedEmail(String email) {
         verifiedEmails.remove(email);
-        log.info("인증 완료 후 상태 제거: {}", email);
+        log.info("🧹 [인증 상태 제거] 완료 - 대상 이메일: {}", email);
     }
 
     /**

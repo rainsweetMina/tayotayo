@@ -112,12 +112,16 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout", "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/user/check-id").permitAll()
 
                         // ✅ JWT 인증 엔드포인트 허용
                         .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/validate").permitAll()
 
                         // ✅ 마이페이지 라우팅 허용 (Vue에서 처리)
                         .requestMatchers("/mypage/**", "/admin/**", "/bus/**").permitAll()
+
+                        .requestMatchers("/api/user/email/send").permitAll()
+                        .requestMatchers("/api/user/email/verify").permitAll()
 
                         // ✅ API 별 권한 설정 (순서 중요!)
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
@@ -126,6 +130,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
+
 
                         // ✅ 나머지는 맨 마지막에
                         .requestMatchers("/**").permitAll()
