@@ -55,9 +55,25 @@ public class RedisConfig {
                         RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
                 )
                 .entryTtl(Duration.ofMinutes(1)); // TTL 설정
+                
+        // 역지오코딩 캐시 설정 (30분 TTL)
+        RedisCacheConfiguration reverseGeocodeConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
+                )
+                .entryTtl(Duration.ofMinutes(30)); // 역지오코딩 결과는 30분 캐싱
+                
+        // 정방향 지오코딩 캐시 설정 (30분 TTL)
+        RedisCacheConfiguration geocodeConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
+                )
+                .entryTtl(Duration.ofMinutes(30)); // 정방향 지오코딩 결과도 30분 캐싱
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
+                .withCacheConfiguration("reverseGeocodeCache", reverseGeocodeConfig)
+                .withCacheConfiguration("geocodeCache", geocodeConfig)
                 .build();
     }
 

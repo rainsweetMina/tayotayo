@@ -1,12 +1,20 @@
 package kroryi.bus2.config;
 
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import reactor.netty.http.client.HttpClient;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 // 외부 API 호출을 위한 RestTemplate의 Bean을 생성하여 Spring 컨테이너에 등록합니다.
@@ -16,6 +24,19 @@ public class AppConfig {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+    
+    @Bean
+    public WebClient.Builder webClientBuilder() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofSeconds(5))
+                .doOnConnected(conn ->
+                        conn.addHandlerLast(new ReadTimeoutHandler(5, TimeUnit.SECONDS))
+                                .addHandlerLast(new WriteTimeoutHandler(5, TimeUnit.SECONDS)));
+
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient));
     }
 
     @Bean
