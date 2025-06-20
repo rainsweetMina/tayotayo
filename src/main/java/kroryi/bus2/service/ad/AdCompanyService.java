@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,9 +45,10 @@ public class AdCompanyService {
         return adCompanyRepository.save(company);
     }
     public List<AdCompanyDropdownDTO> getCompanyDropdownList() {
-        return adCompanyRepository.findAll().stream()
+        return adCompanyRepository.findByDeletedFalse()
+                .stream()
                 .map(company -> new AdCompanyDropdownDTO(company.getId(), company.getName()))
-                .toList();
+                .collect(Collectors.toList());
     }
     public void softDeleteCompany(Long id) {
         AdCompany company = adCompanyRepository.findById(id)
