@@ -3,7 +3,7 @@
 // markers: 현재 마커들을 저장한 배열 (기존 마커 제거용)
 // minZoom: 최소 줌 레벨 (기본값 15) → 이보다 작으면 마커 안 보여줌
 // apiUrl: 정류장 정보를 가져올 API 주소
-window.loadBusStopsInView = async function (map, markers, minZoom = 16, apiUrl = "/api/bus/busStopsInBounds") {
+window.loadBusStopsInView = async function (map, markers, minZoom = 16, apiUrl = "/api/bus/user-busStopsInBounds") {
 
     // 현재 줌레벨 확인
     // 현재 지도 줌 레벨을 확인해서 minZoom보다 작으면

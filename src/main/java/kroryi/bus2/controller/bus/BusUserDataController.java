@@ -69,7 +69,7 @@ public class BusUserDataController {
     private String orsApiKey;
 
     @Operation(summary = "좌표기반 정류소 서칭", description = "전체 버스정류장을 좌표기반으로 불러오는거")
-    @GetMapping("/busStopsInBounds")
+    @GetMapping("/user-busStopsInBounds")
     public ResponseEntity<List<BusStopDTO>> getBusStopsInBounds(
             @RequestParam double minX,
             @RequestParam double minY,

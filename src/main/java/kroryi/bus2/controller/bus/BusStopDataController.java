@@ -113,4 +113,16 @@ public class BusStopDataController {
         return ResponseEntity.ok(nearbyStops);
     }
 
+    @Operation(summary = "지도 영역 내 정류장 검색", description = "지도 영역의 좌표 범위 내에 있는 모든 정류장을 검색합니다.")
+    @GetMapping("/busStopsInBounds")
+    public ResponseEntity<List<BusStopListDTO>> getBusStopsInBounds(
+            @RequestParam double minX,  // 남서쪽 경도
+            @RequestParam double minY,  // 남서쪽 위도
+            @RequestParam double maxX,  // 북동쪽 경도
+            @RequestParam double maxY   // 북동쪽 위도
+    ) {
+        List<BusStopListDTO> stopsInBounds = busStopDataService.findBusStopsInBounds(minX, minY, maxX, maxY);
+        return ResponseEntity.ok(stopsInBounds);
+    }
+
 }

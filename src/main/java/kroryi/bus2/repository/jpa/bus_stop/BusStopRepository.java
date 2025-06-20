@@ -74,4 +74,17 @@ ABS(bs.yPos - :y) * 110540 <= :radius
             @Param("radius") double radius
     );
 
+    @Query(value = """
+    SELECT *
+    FROM bus_stop
+    WHERE x_pos BETWEEN :minX AND :maxX
+    AND y_pos BETWEEN :minY AND :maxY
+    """, nativeQuery = true)
+    List<BusStop> findStopsInBounds(
+            @Param("minX") double minX,
+            @Param("minY") double minY,
+            @Param("maxX") double maxX,
+            @Param("maxY") double maxY
+    );
+
 }
