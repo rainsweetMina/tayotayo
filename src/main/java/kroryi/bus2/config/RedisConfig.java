@@ -17,6 +17,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 // Spring 애플리케이션에서 Redis를 사용하기 위한 설정 클래스
@@ -48,33 +50,32 @@ public class RedisConfig {
 
         return template;
     }
+    
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+        // 기본 캐시 설정 - 복잡한 객체용
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
                 )
                 .entryTtl(Duration.ofMinutes(1)); // TTL 설정
                 
-        // 역지오코딩 캐시 설정 (30분 TTL)
-        RedisCacheConfiguration reverseGeocodeConfig = RedisCacheConfiguration.defaultCacheConfig()
+        // 문자열 값을 위한 캐시 설정 - 지오코딩 API용
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+        RedisCacheConfiguration stringValueConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
+                        RedisSerializationContext.SerializationPair.fromSerializer(stringSerializer)
                 )
-                .entryTtl(Duration.ofMinutes(30)); // 역지오코딩 결과는 30분 캐싱
-                
-        // 정방향 지오코딩 캐시 설정 (30분 TTL)
-        RedisCacheConfiguration geocodeConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
-                )
-                .entryTtl(Duration.ofMinutes(30)); // 정방향 지오코딩 결과도 30분 캐싱
+                .entryTtl(Duration.ofMinutes(30)); // 30분 TTL
+        
+        // 각 캐시별 설정
+        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+        cacheConfigurations.put("reverseGeocodeCache", stringValueConfig);
+        cacheConfigurations.put("geocodeCache", stringValueConfig);
 
         return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(config)
-                .withCacheConfiguration("reverseGeocodeCache", reverseGeocodeConfig)
-                .withCacheConfiguration("geocodeCache", geocodeConfig)
+                .cacheDefaults(defaultConfig)
+                .withInitialCacheConfigurations(cacheConfigurations)
                 .build();
     }
-
 }

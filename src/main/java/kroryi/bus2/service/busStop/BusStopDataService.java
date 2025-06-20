@@ -205,5 +205,27 @@ public class BusStopDataService {
         
         return R * c * 1000; // 미터 단위로 변환
     }
+    
+    // 지도 영역 내 정류장 검색 (좌표 범위 기준)
+    public List<BusStopListDTO> findBusStopsInBounds(double minX, double minY, double maxX, double maxY) {
+        log.info("지도 영역 내 정류장 검색: 좌표 범위 ({}, {}) ~ ({}, {})", minX, minY, maxX, maxY);
+        
+        // 데이터베이스에서 좌표 범위 내 정류장 검색
+        List<BusStop> stopsInBounds = busStopRepository.findStopsInBounds(minX, minY, maxX, maxY);
+        
+        log.info("지도 영역 내 정류장 검색 결과: {}개", stopsInBounds.size());
+        
+        // 검색된 정류장을 DTO로 변환
+        return stopsInBounds.stream()
+            .map(stop -> new BusStopListDTO(
+                stop.getId(),
+                stop.getBsId(),
+                stop.getBsNm(),
+                stop.getXPos(),
+                stop.getYPos(),
+                0.0 // 거리는 계산하지 않음 (영역 내 검색이므로)
+            ))
+            .collect(Collectors.toList());
+    }
 
 }
