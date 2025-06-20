@@ -85,14 +85,15 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             }
         }
 
-        // JWT 토큰을 URL 파라미터로 전달
-        String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
-        String encodedRefreshToken = URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);
-        
-        String finalRedirectUrl = String.format("https://localhost:5173%s?accessToken=%s&refreshToken=%s", 
-                redirectUrl, encodedAccessToken, encodedRefreshToken);
+        // JWT 토큰을 JSON으로 응답
+        response.setContentType("application/json; charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_OK);
 
-        log.info("🔑 로그인 성공: {} → {}", userId, finalRedirectUrl);
-        response.sendRedirect(finalRedirectUrl);
+        String json = String.format(
+            "{\"accessToken\": \"%s\", \"refreshToken\": \"%s\", \"role\": \"%s\"}",
+            accessToken, refreshToken, user.getRole().name()
+        );
+
+        response.getWriter().write(json);
     }
 }

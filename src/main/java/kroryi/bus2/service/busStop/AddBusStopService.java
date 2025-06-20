@@ -1,6 +1,5 @@
 package kroryi.bus2.service.busStop;
 
-import kroryi.bus2.dto.busStop.BusStopDTO;
 import kroryi.bus2.dto.busStop.BusStopDetailResponseDTO;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.busStop.BusStopInfo;
