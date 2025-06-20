@@ -21,7 +21,7 @@ public class LostItemAdminController {
     private final LostItemService lostItemService;
 
     @Operation(summary = "전체 분실물 관리자용 조회", description = "숨김 여부와 상관없이 모든 분실물을 관리자 페이지에서 조회합니다.")
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<List<LostItemAdminResponseDTO>> getAllLostItemsForAdmin() {
         List<LostItemAdminResponseDTO> list = lostItemService.getAllForAdmin();
         return ResponseEntity.ok(list);
@@ -78,4 +78,20 @@ public class LostItemAdminController {
         List<LostItemListResponseDTO> results = lostItemService.getAllLostItems();
         return ResponseEntity.ok(results);
     }
+    @Operation(summary = "관리자용 분실물 목록/검색", description = "키워드가 없으면 전체, 있으면 통합검색")
+    @GetMapping
+    public ResponseEntity<List<LostItemAdminResponseDTO>> getAllOrSearchLostItemsForAdmin(
+            @RequestParam(value = "keyword", required = false) String keyword
+    ) {
+        List<LostItemAdminResponseDTO> list;
+        if (keyword == null || keyword.isBlank()) {
+            // 전체 목록 (기존 전체조회 로직 재사용)
+            list = lostItemService.getAllForAdmin();
+        } else {
+            // 통합 검색 (제목/버스회사/버스번호/신고자 or 검색)
+            list = lostItemService.searchForAdmin(keyword);
+        }
+        return ResponseEntity.ok(list);
+    }
+
 }

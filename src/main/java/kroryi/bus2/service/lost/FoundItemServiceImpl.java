@@ -13,7 +13,6 @@ import kroryi.bus2.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -271,12 +270,8 @@ public class FoundItemServiceImpl implements FoundItemService {
         User handler = userRepository.findById(handlerId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
-        LostFoundMatch match = new LostFoundMatch();
-        match.setFoundItem(foundItem);
-        match.setMatchedBy(handler);
-        match.setMatchedAt(LocalDateTime.now());
-
         if (lostItemId != null) {
+            // ========== 기존 매칭 처리 (분실물ID 있을 때) ==========
             LostItem lostItem = lostItemRepository.findById(lostItemId)
                     .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 분실물 ID입니다."));
 
@@ -292,14 +287,27 @@ public class FoundItemServiceImpl implements FoundItemService {
 
             lostItem.setMatched(true);
             lostItemRepository.save(lostItem);
-            match.setLostItem(lostItem);
-        }
 
-        foundItem.setMatched(true);
-        foundItem.matchAndComplete();
-        matchRepository.save(match);
-        foundItemRepository.save(foundItem);
+            LostFoundMatch match = new LostFoundMatch();
+            match.setFoundItem(foundItem);
+            match.setMatchedBy(handler);
+            match.setMatchedAt(LocalDateTime.now());
+            match.setLostItem(lostItem);
+
+            foundItem.setMatched(true);
+            foundItem.matchAndComplete();
+            matchRepository.save(match);
+            foundItemRepository.save(foundItem);
+
+        } else {
+            // ========== 분실물 없이 회수 처리만 할 때 ==========
+            foundItem.setStatus(FoundStatus.RETURNED); // "수령완료" 상태로
+            foundItem.setMatched(true);                // 필요하면 true로
+            foundItemRepository.save(foundItem);
+            // 매칭 테이블에는 기록 안 해도 됨
+        }
     }
+
 
 
     // ✅ 관리자용 전체 조회
@@ -327,11 +335,12 @@ public class FoundItemServiceImpl implements FoundItemService {
     //일반회원용 조회
     @Override
     public List<FoundItemResponseDTO> getVisibleFoundItemsForUser() {
-        return foundItemRepository.findByIsDeletedFalseAndVisibleTrue().stream()
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
+        return foundItemRepository.findVisibleForUserWithin7Days(cutoff)
+                .stream()
                 .map(FoundItemResponseDTO::fromEntity)
                 .toList();
     }
-
     @Override
     public FoundItemResponseDTO getFoundItemDetailForUser(Long id) {
         FoundItem item = foundItemRepository.findByIdAndIsDeletedFalseAndVisibleTrue(id)
@@ -359,15 +368,29 @@ public class FoundItemServiceImpl implements FoundItemService {
     }
 
     @Override
-    public List<FoundItemResponseDTO> searchFoundItems(String keyword, String busCompany, String busNumber, LocalDate startDate, LocalDate endDate) {
+    public List<FoundItemResponseDTO> searchFoundItems(
+            String keyword, String busCompany, String busNumber,
+            LocalDate startDate, LocalDate endDate
+    ) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
         List<FoundItem> results = foundItemRepository.searchFoundItems(
                 keyword != null && !keyword.isBlank() ? keyword : null,
                 busCompany != null && !busCompany.isBlank() ? busCompany : null,
                 busNumber != null && !busNumber.isBlank() ? busNumber : null,
-                startDate, endDate
+                startDateTime, endDateTime
         );
         return results.stream().map(FoundItemResponseDTO::fromEntity).toList();
     }
 
+    @Override
+    public List<FoundItemAdminResponseDTO> searchByKeywordForAdmin(String keyword) {
+        String searchKeyword = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
+        List<FoundItem> results = foundItemRepository.searchByKeywordForAdmin(searchKeyword);
+        return results.stream()
+                .map(FoundItemAdminResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 
 }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "습득물-일반", description = "")
@@ -39,9 +40,14 @@ public class FoundItemController {
             @RequestParam String startDate,
             @RequestParam String endDate
     ) {
+        // 1. 문자열 → LocalDate
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
-        List<FoundItemResponseDTO> result = foundItemService.searchFoundItems(keyword, busCompany, busNumber, start, end);
+
+        // 2. 서비스에 LocalDate로 넘김 (변환 필요 없음!)
+        List<FoundItemResponseDTO> result =
+                foundItemService.searchFoundItems(keyword, busCompany, busNumber, start, end);
+
         return ResponseEntity.ok(result);
     }
 }

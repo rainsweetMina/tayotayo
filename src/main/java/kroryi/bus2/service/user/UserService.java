@@ -14,25 +14,28 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     public boolean checkUserIdDuplicate(String userId) {
         return userRepository.existsByUserId(userId);
     }
 
     public void join(JoinRequestDTO dto) {
-        if (dto.getEmailVerified() == null || !dto.getEmailVerified()) {
-            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        if (!emailService.verifyCode(dto.getEmail(), dto.getEmailVerificationCode())) {
+            throw new IllegalArgumentException("이메일 인증 실패 (코드 불일치 또는 만료)");
         }
 
         if (userRepository.existsByUserId(dto.getUserId())) {
@@ -48,12 +51,14 @@ public class UserService {
         }
 
         if (!isValidPassword(dto.getPassword())) {
-            throw new IllegalArgumentException("비밀번호는 8자 이상이며, 문자, 숫자, 특수문자를 포함해야 합니다.");
+            throw new IllegalArgumentException("비밀번호 조건이 맞지 않습니다.");
         }
 
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
         User user = dto.toEntity(encodedPassword);
         userRepository.save(user);
+        log.info("✅ 사용자 저장 성공: {}", user.getUserId());
+        emailService.removeVerifiedEmail(dto.getEmail()); // 1회성 인증 상태 삭제
     }
 
     public User login(LoginRequestDTO ldto) {
@@ -79,7 +84,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
     }
 
-
     @Transactional
     public void deleteByUserId(String userId) {
         User user = userRepository.findByUserId(userId)
@@ -91,7 +95,7 @@ public class UserService {
     public boolean modifyUserInfo(String userId, ModifyUserDTO dto) {
         User user = findByUserId(userId);
 
-        user.setUsername(dto.getName());
+        user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
 
@@ -102,7 +106,6 @@ public class UserService {
 
         return true;
     }
-
 
     private boolean isValidPassword(String password) {
         String regex = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
@@ -143,10 +146,30 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * ✅ Vue API에서 사용하는 탈퇴 - 비밀번호 검증 포함
+     */
+    @Transactional
+    public void withdrawUser(String userId, String password) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        user.setWithdraw(true);
+        userRepository.save(user);
+    }
+
+    /**
+     * ✅ HTML 뷰에서 사용하는 탈퇴 - 비밀번호 검증 없이 바로 처리
+     */
     @Transactional
     public void withdrawUser(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
         user.setWithdraw(true);
         userRepository.save(user);
     }
@@ -156,7 +179,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         return new UserInfoDTO(
-                user.getId(),             // ✅ 숫자형 ID 추가
+                user.getId(),
                 user.getUserId(),
                 user.getUsername(),
                 user.getEmail(),
@@ -166,6 +189,30 @@ public class UserService {
                 user.getRole().name(),
                 user.getLastLoginAt()
         );
+    }
+
+    @Transactional
+    public void sendTemporaryPassword(String userId, String email) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디를 찾을 수 없습니다."));
+
+        if (!user.getEmail().equals(email)) {
+            throw new IllegalArgumentException("입력한 이메일이 회원정보와 일치하지 않습니다.");
+        }
+
+        String tempPassword = generateTempPassword();
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        emailService.sendTemporaryPassword(email, tempPassword);
+    }
+
+    private String generateTempPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*#?&";
+        StringBuilder sb = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < 10; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     public boolean isUserIdDuplicate(String userId) {

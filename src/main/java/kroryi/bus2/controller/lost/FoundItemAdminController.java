@@ -34,8 +34,8 @@ public class FoundItemAdminController {
     @PostMapping("/update/{id}")
     public ResponseEntity<String> updateFoundItem(
             @PathVariable Long id,
-            @ModelAttribute FoundItemRequestDTO dto,
-            @RequestParam(value = "image", required = false) MultipartFile image) {
+            @RequestPart("dto") FoundItemRequestDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         foundItemService.updateFoundItem(id, dto, image);
         return ResponseEntity.ok("습득물 수정 완료");
     }
@@ -61,7 +61,7 @@ public class FoundItemAdminController {
     }
 
     @Operation(summary = "습득물 전체 조회", description = "관리자용 전체 습득물 리스트를 조회합니다.")
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<List<FoundItemAdminResponseDTO>> getAllFoundItems() {
         return ResponseEntity.ok(foundItemService.getAllFoundItems());
     }
@@ -74,4 +74,20 @@ public class FoundItemAdminController {
         foundItemService.matchFoundItem(foundItemId, lostItemId);
         return ResponseEntity.ok("매칭 완료");
     }
+
+    @Operation(summary = "관리자용 습득물 목록/검색", description = "키워드 없으면 전체, 있으면 통합검색")
+    @GetMapping
+    public ResponseEntity<List<FoundItemAdminResponseDTO>> getAllOrSearchFoundItemsForAdmin(
+            @RequestParam(value = "keyword", required = false) String keyword) {
+        List<FoundItemAdminResponseDTO> list;
+        if (keyword == null || keyword.isBlank()) {
+            list = foundItemService.getAllFoundItems();
+        } else {
+            list = foundItemService.searchByKeywordForAdmin(keyword);
+        }
+        return ResponseEntity.ok(list);
+    }
+
+
+
 }

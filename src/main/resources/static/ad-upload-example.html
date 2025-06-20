@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>광고 업로드 예시</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"], input[type="url"], input[type="datetime-local"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+            cursor: pointer;
+        }
+        
+        input[type="file"]:hover {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .preview-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        #imagePreview {
+            max-width: 300px;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .token-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .token-info h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .test-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .test-buttons button {
+            flex: 1;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>광고 업로드 예시</h1>
+        
+        <!-- 토큰 정보 표시 -->
+        <div class="token-info">
+            <h3>JWT 토큰 상태</h3>
+            <div id="tokenStatus">토큰 상태 확인 중...</div>
+            <div id="tokenInfo"></div>
+        </div>
+        
+        <!-- 광고 등록 폼 -->
+        <form id="adForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">광고 제목 *</label>
+                <input type="text" id="title" name="title" required placeholder="광고 제목을 입력하세요">
+            </div>
+            
+            <div class="form-group">
+                <label for="linkUrl">링크 URL *</label>
+                <input type="url" id="linkUrl" name="linkUrl" required placeholder="https://example.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="startDateTime">시작 일시 *</label>
+                <input type="datetime-local" id="startDateTime" name="startDateTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="endDateTime">종료 일시 *</label>
+                <input type="datetime-local" id="endDateTime" name="endDateTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="companyId">광고회사 *</label>
+                <select id="companyId" name="companyId" required>
+                    <option value="">광고회사를 선택하세요</option>
+                    <option value="1">테스트 회사 1</option>
+                    <option value="2">테스트 회사 2</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showPopup" name="showPopup">
+                    <label for="showPopup">팝업으로 표시</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="imageInput">이미지 파일 *</label>
+                <input type="file" id="imageInput" name="image" accept="image/*" required>
+                <div class="preview-container">
+                    <img id="imagePreview" alt="이미지 미리보기">
+                </div>
+            </div>
+            
+            <button type="submit">광고 등록</button>
+        </form>
+        
+        <!-- 테스트 섹션 -->
+        <div class="test-section">
+            <h3>테스트 기능</h3>
+            <div class="test-buttons">
+                <button type="button" onclick="testFileUpload()">파일 업로드 테스트</button>
+                <button type="button" onclick="getAdsList()">광고 목록 조회</button>
+                <button type="button" onclick="validateToken()">토큰 검증</button>
+                <button type="button" onclick="logout()">로그아웃</button>
+            </div>
+        </div>
+        
+        <!-- 결과 표시 영역 -->
+        <div id="resultArea"></div>
+    </div>
+
+    <!-- JavaScript 파일 로드 -->
+    <script src="/js/jwt-token-manager.js"></script>
+    <script src="/js/ad-upload-example.js"></script>
+    
+    <script>
+        // 토큰 상태 업데이트 함수
+        function updateTokenStatus() {
+            const statusDiv = document.getElementById('tokenStatus');
+            const infoDiv = document.getElementById('tokenInfo');
+            
+            if (tokenManager.hasValidToken()) {
+                statusDiv.innerHTML = '<div class="status success">✅ 토큰이 유효합니다</div>';
+                const token = tokenManager.getAccessToken();
+                infoDiv.innerHTML = `
+                    <p><strong>Access Token:</strong> ${token.substring(0, 20)}...</p>
+                    <p><strong>만료 시간:</strong> ${new Date(parseInt(localStorage.getItem('tokenExpiry'))).toLocaleString()}</p>
+                `;
+            } else {
+                statusDiv.innerHTML = '<div class="status error">❌ 유효한 토큰이 없습니다</div>';
+                infoDiv.innerHTML = '<p>로그인이 필요합니다.</p>';
+            }
+        }
+        
+        // 파일 업로드 테스트
+        async function testFileUpload() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResult('파일을 선택해주세요.', 'error');
+                return;
+            }
+            
+            try {
+                const result = await testFileUpload(file);
+                showResult(`파일 업로드 테스트 성공: ${result.originalFilename}`, 'success');
+            } catch (error) {
+                showResult(`파일 업로드 테스트 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 광고 목록 조회
+        async function getAdsList() {
+            try {
+                const ads = await getAds();
+                showResult(`광고 목록 조회 성공: ${ads.length}개의 광고`, 'success');
+                console.log('광고 목록:', ads);
+            } catch (error) {
+                showResult(`광고 목록 조회 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 토큰 검증
+        async function validateToken() {
+            try {
+                const isValid = await tokenManager.validateToken();
+                if (isValid) {
+                    showResult('토큰이 유효합니다.', 'success');
+                } else {
+                    showResult('토큰이 유효하지 않습니다.', 'error');
+                }
+            } catch (error) {
+                showResult(`토큰 검증 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 로그아웃
+        async function logout() {
+            try {
+                await tokenManager.logout();
+                showResult('로그아웃되었습니다.', 'success');
+            } catch (error) {
+                showResult(`로그아웃 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 결과 표시
+        function showResult(message, type) {
+            const resultArea = document.getElementById('resultArea');
+            const statusClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            resultArea.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+            
+            // 3초 후 자동 제거
+            setTimeout(() => {
+                resultArea.innerHTML = '';
+            }, 3000);
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 토큰 상태 업데이트
+            updateTokenStatus();
+            
+            // 1초마다 토큰 상태 업데이트
+            setInterval(updateTokenStatus, 1000);
+            
+            // 기본 날짜 설정
+            const now = new Date();
+            const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            
+            document.getElementById('startDateTime').value = now.toISOString().slice(0, 16);
+            document.getElementById('endDateTime').value = tomorrow.toISOString().slice(0, 16);
+        });
+    </script>
+</body>
+</html> 

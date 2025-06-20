@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface FoundItemService {
@@ -51,7 +52,15 @@ public interface FoundItemService {
 
     List<FoundItemListResponseDTO> getFoundItemsForPublic();
 
-    List<FoundItemResponseDTO> searchFoundItems(String keyword, String busCompany, String busNumber, LocalDate startDate, LocalDate endDate);
+    List<FoundItemResponseDTO> searchFoundItems(
+            String keyword,
+            String busCompany,
+            String busNumber,
+            LocalDate startDate,
+            LocalDate endDate
+    );
+    // 관리자용 습득물 통합 검색
+    List<FoundItemAdminResponseDTO> searchByKeywordForAdmin(String keyword);
 
 }
 

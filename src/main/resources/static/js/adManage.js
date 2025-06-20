@@ -35,9 +35,17 @@ function handleAdSubmit(e) {
     const method = id ? "PUT" : "POST";
     const url = id ? `/api/ad/${id}` : "/api/ad";
 
+    console.log("광고 등록 ---->{}",imageFile)
+
     fetch(url, {
         method,
-        body: formData
+        body: formData,
+        headers: {
+            headers: {
+                ...tokenManager.getAuthHeaders()
+                // Content-Type은 지정하지 마세요!
+            },
+        },
     }).then(() => {
         e.target.reset();
         document.getElementById("adId").value = "";
