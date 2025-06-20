@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import kroryi.bus2.model.EmailVerificationCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -20,16 +21,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final Environment env;
 
-    // 인증 코드 저장소
     private final Map<String, EmailVerificationCode> verificationCodes = new ConcurrentHashMap<>();
     private final Set<String> verifiedEmails = ConcurrentHashMap.newKeySet();
 
-    /**
-     * 이메일 인증 코드를 생성하고 전송합니다.
-     * @param email 인증 코드를 받을 이메일 주소
-     */
-    public void sendVerificationCode(String email) {
+    private String normalize(String email) {
+        return email == null ? null : email.trim().toLowerCase();
+    }
+
+    public void sendVerificationCode(String rawEmail) {
+        String email = normalize(rawEmail);
         log.debug("📨 [이메일 인증] 전송 요청 시작 - 대상: {}", email);
 
         try {
@@ -37,7 +39,6 @@ public class EmailService {
             LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(3);
 
             verificationCodes.put(email, new EmailVerificationCode(code, expiresAt));
-
             log.debug("✅ [이메일 인증] 코드 생성 - 이메일: {}, 코드: {}, 만료: {}", email, code, expiresAt);
 
             SimpleMailMessage message = new SimpleMailMessage();
@@ -48,21 +49,15 @@ public class EmailService {
             mailSender.send(message);
             log.info("📤 [이메일 인증] 이메일 전송 완료 - 대상: {}", email);
         } catch (Exception e) {
-            // 🔍 전체 스택 트레이스 출력
-            e.printStackTrace(); // ✅ 이거 추가
-            log.error("❌ [이메일 인증] 전송 실패 - 대상: {}, 오류: {}", email, e.getMessage(), e);
+            log.error("❌ [이메일 인증] 전송 실패 - 대상: {}, 오류: {}", rawEmail, e.getMessage(), e);
             throw new EmailSendingException("이메일 전송에 실패했습니다.", e);
         }
     }
 
-    /**
-     * 인증 코드를 검증합니다.
-     * @param email 인증 코드가 전송된 이메일 주소
-     * @param code 사용자가 입력한 인증 코드
-     * @return 인증 코드가 유효하면 true, 그렇지 않으면 false
-     */
     public boolean verifyCode(String email, String code) {
+        email = normalize(email);
         log.debug("🔍 [인증 검증] 시작 - 이메일: {}, 입력된 코드: {}", email, code);
+        log.debug("📦 현재 verificationCodes: {}", verificationCodes.keySet());
 
         EmailVerificationCode stored = verificationCodes.get(email);
 
@@ -81,6 +76,7 @@ public class EmailService {
             verificationCodes.remove(email);
             verifiedEmails.add(email);
             log.info("✅ [인증 검증] 성공 - 이메일: {}, 코드 일치", email);
+            log.info("📌 인증 성공 후 verifiedEmails 목록: {}", verifiedEmails);
             return true;
         }
 
@@ -88,53 +84,35 @@ public class EmailService {
         return false;
     }
 
-    /**
-     * 이메일이 인증되었는지 확인합니다.
-     * @param email 인증 여부를 확인할 이메일 주소
-     * @return 이메일이 인증되었으면 true, 그렇지 않으면 false
-     */
     public boolean isEmailVerified(String email) {
+        email = normalize(email);
         boolean isVerified = verifiedEmails.contains(email);
-        log.debug("🔎 [인증 여부 확인] 이메일: {}, 인증 상태: {}", email, isVerified);
+        log.info("🔎 [인증 여부 확인] 이메일: {}, 인증 상태: {}, 현재 인증된 목록: {}", email, isVerified, verifiedEmails);
         return isVerified;
     }
 
-
-    /**
-     * 인증 완료 후 이메일 인증 상태를 제거합니다.
-     * @param email 인증 완료 후 상태를 제거할 이메일 주소
-     */
-    public void removeVerifiedEmail(String email) {
-        verifiedEmails.remove(email);
-        log.info("🧹 [인증 상태 제거] 완료 - 대상 이메일: {}", email);
+    public void removeVerifiedEmail(String rawEmail) {
+        String email = normalize(rawEmail);
+        boolean removed = verifiedEmails.remove(email);
+        log.info("🧹 [인증 상태 제거] 대상 이메일: {}, 제거 성공 여부: {}", email, removed);
     }
 
-    /**
-     * 이메일 인증 코드를 생성하고 전송합니다.
-     * @param email 인증 코드를 전송할 이메일 주소
-     */
-    public void generateAndSendVerificationCode(String email) {
-        log.debug("이메일 인증 코드 생성 및 전송 시작: {}", email);
-        sendVerificationCode(email);  // 이메일 인증 코드 생성 및 전송
+    public void generateAndSendVerificationCode(String rawEmail) {
+        log.debug("🚀 이메일 인증 코드 생성 및 전송 요청: {}", rawEmail);
+        sendVerificationCode(rawEmail);
     }
 
-    // 이메일 전송 실패 시 던지는 예외 클래스
-    public static class EmailSendingException extends RuntimeException {
-        public EmailSendingException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    public void sendTemporaryPassword(String toEmail, String tempPassword) {
+    public void sendTemporaryPassword(String rawEmail, String tempPassword) {
+        String email = normalize(rawEmail);
         String subject = "비밀번호 재설정 안내";
         String body = """
-        <h3>임시 비밀번호 안내</h3>
-        <p>요청하신 계정의 임시 비밀번호는 다음과 같습니다:</p>
-        <p><strong>%s</strong></p>
-        <p>로그인 후 반드시 비밀번호를 변경해 주세요.</p>
-    """.formatted(tempPassword);
+            <h3>임시 비밀번호 안내</h3>
+            <p>요청하신 계정의 임시 비밀번호는 다음과 같습니다:</p>
+            <p><strong>%s</strong></p>
+            <p>로그인 후 반드시 비밀번호를 변경해 주세요.</p>
+        """.formatted(tempPassword);
 
-        sendEmail(toEmail, subject, body);
+        sendEmail(email, subject, body);
     }
 
     public void sendEmail(String to, String subject, String body) {
@@ -144,7 +122,7 @@ public class EmailService {
 
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(body, true); // true: HTML 형식
+            helper.setText(body, true);
 
             mailSender.send(message);
             log.info("✅ 이메일 전송 성공: {}", to);
@@ -154,4 +132,13 @@ public class EmailService {
         }
     }
 
+    public static class EmailSendingException extends RuntimeException {
+        public EmailSendingException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public void logVerifiedEmails() {
+        log.info("🧾 현재 인증된 이메일 목록: {}", verifiedEmails);
+    }
 }
