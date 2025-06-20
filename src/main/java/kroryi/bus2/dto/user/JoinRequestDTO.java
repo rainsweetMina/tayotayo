@@ -1,5 +1,6 @@
 package kroryi.bus2.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -10,7 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -38,20 +38,18 @@ public class JoinRequestDTO {
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
-    // 인증 여부 (폼에선 hidden으로 true/false 값 전달)
-    private boolean emailVerified = false;
+    // ✅ 이메일 인증 여부
+    private Boolean emailVerified = false;
 
-    // 사용자가 입력한 인증 코드 (백엔드 인증 처리용)
-    private String emailVerificationCode;
+    // ✅ 프론트에서 verificationCode 또는 emailVerificationCode로 보내도 받도록 처리
+    @JsonAlias({"emailVerificationCode", "verificationCode"})
+    private String verificationCode;
 
+    // 선택 사항
     private String phoneNumber;
 
-    // 일반/소셜 회원가입 구분
     private SignupType signupType = SignupType.GENERAL;
 
-    /**
-     * 비밀번호 암호화 후 엔티티로 변환
-     */
     public User toEntity(String encodedPassword) {
         return User.builder()
                 .userId(this.userId)
@@ -65,19 +63,16 @@ public class JoinRequestDTO {
                 .build();
     }
 
-    // 전화번호 하이픈(-) 제거
     private String normalizePhoneNumber(String phone) {
         return (phone != null) ? phone.replaceAll("-", "") : null;
     }
 
-    // Boolean 타입 강제 Getter/Setter (Thymeleaf와의 호환을 위해)
+    // Boolean 강제 getter (Thymeleaf 호환용)
     public Boolean getEmailVerified() {
-        return emailVerified;
+        return emailVerified != null && emailVerified;
     }
 
     public void setEmailVerified(Boolean emailVerified) {
         this.emailVerified = (emailVerified != null) && emailVerified;
     }
-
-
 }

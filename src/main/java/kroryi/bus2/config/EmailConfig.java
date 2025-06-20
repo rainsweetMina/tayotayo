@@ -18,7 +18,7 @@ public class EmailConfig {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
         mailSender.setUsername("kyb4218@gmail.com");  // 자신의 Gmail 주소
-        mailSender.setPassword("bfqrlfyijanfsnve");  // 자신의 Gmail 앱 비밀번호
+        mailSender.setPassword("ewyipwgnthghsmno");  // 자신의 Gmail 앱 비밀번호
 
         // 메일 서버 설정
         Properties properties = mailSender.getJavaMailProperties();
