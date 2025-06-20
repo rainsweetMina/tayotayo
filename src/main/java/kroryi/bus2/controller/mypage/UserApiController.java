@@ -15,6 +15,7 @@ import kroryi.bus2.dto.user.PasswordRequestDTO;
 import kroryi.bus2.dto.user.UserInfoDTO;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
+import kroryi.bus2.service.user.EmailService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -34,6 +35,7 @@ import java.util.Map;
 public class UserApiController {
 
     private final UserService userService;
+    private final EmailService emailService;
 
     // ✅ 로그인된 유저 정보 반환
     @Hidden
@@ -227,15 +229,21 @@ public class UserApiController {
     @ResponseBody
     public ResponseEntity<?> registerApi(@RequestBody JoinRequestDTO dto) {
         try {
-            if (!dto.getEmailVerified()) {
-                throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
+            // 1. 이메일 인증 코드 검증
+            boolean verified = emailService.verifyCode(dto.getEmail(), dto.getVerificationCode());
+            if (!verified) {
+                return ResponseEntity.badRequest().body(Map.of("message", "이메일 인증 실패 (코드 불일치 또는 만료)"));
             }
+
+            // 2. 회원가입 진행
             userService.join(dto);
-            return ResponseEntity.ok("회원가입 완료");
+            return ResponseEntity.ok(Map.of("message", "회원가입 완료"));
+
         } catch (Exception e) {
             log.error("❌ 회원가입 실패: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
+            return ResponseEntity.internalServerError().body(Map.of("message", "서버 오류: " + e.getMessage()));
         }
     }
+
 
 }

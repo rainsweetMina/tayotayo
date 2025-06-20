@@ -34,18 +34,30 @@ public class UserService {
     }
 
     public void join(JoinRequestDTO dto) {
-        if (!emailService.verifyCode(dto.getEmail(), dto.getEmailVerificationCode())) {
-            throw new IllegalArgumentException("이메일 인증 실패 (코드 불일치 또는 만료)");
+        // ✅ 이메일 정규화 (공백 제거 + 소문자 통일)
+        String normalizedEmail = dto.getEmail().trim().toLowerCase();
+        dto.setEmail(normalizedEmail); // DTO에도 반영해 저장 일관성 확보
+        log.debug("📧 [회원가입] 정규화된 이메일: {}", normalizedEmail);
+
+        // ✅ 프론트에서 전달된 인증 여부 확인
+        log.info("📌 회원가입 시 DTO 인증 상태: {}", dto.getEmailVerified());
+
+        // ✅ 인증 여부 검사 (EmailService 대신 DTO 값으로 확인)
+        if (!dto.getEmailVerified()) {
+            throw new IllegalArgumentException("이메일 인증을 먼저 완료해주세요.");
         }
 
+        // ✅ 아이디 중복 확인
         if (userRepository.existsByUserId(dto.getUserId())) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
 
-        if (userRepository.existsByEmail(dto.getEmail())) {
+        // ✅ 이메일 중복 확인
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalArgumentException("이미 등록된 이메일입니다.");
         }
 
+        // ✅ 비밀번호 확인
         if (!dto.getPassword().equals(dto.getPasswordCheck())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
@@ -54,11 +66,14 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호 조건이 맞지 않습니다.");
         }
 
+        // ✅ 비밀번호 암호화 및 사용자 생성
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
         User user = dto.toEntity(encodedPassword);
+        user.setEmail(normalizedEmail); // 중복 방지용 DTO 보정 외에도 엔티티에 명시
+
+        // ✅ 사용자 저장
         userRepository.save(user);
         log.info("✅ 사용자 저장 성공: {}", user.getUserId());
-        emailService.removeVerifiedEmail(dto.getEmail()); // 1회성 인증 상태 삭제
     }
 
     public User login(LoginRequestDTO ldto) {

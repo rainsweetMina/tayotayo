@@ -63,6 +63,7 @@ public class User {
     @OneToMany(mappedBy = "reporter")
     private Set<LostItem> lostItems = new LinkedHashSet<>();
 
+    @Builder.Default
     @Column(name = "withdraw", nullable = false)
     private boolean withdraw = false;  // 기본값은 false
 

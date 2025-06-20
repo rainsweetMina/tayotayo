@@ -12,17 +12,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Hidden
 @RestController
 @RequiredArgsConstructor
-@Log4j2
 @RequestMapping("/api/user/email")
 @Tag(name = "이메일-인증-API", description = "회원가입 시 이메일 인증 관련 API입니다.")
+@Log4j2
 public class EmailController {
 
     private final EmailService emailService;
 
-    @Operation(summary = "이메일 인증 코드 전송", description = "입력한 이메일로 인증 코드를 전송합니다.")
     @PostMapping("/send")
     public ResponseEntity<String> sendCode(@RequestParam String email) {
         if (!isValidEmail(email)) {
@@ -41,18 +42,23 @@ public class EmailController {
         }
     }
 
-    @Operation(summary = "이메일 인증 코드 검증", description = "입력한 이메일 주소와 인증 코드를 검증하여 유효한지 확인합니다.")
     @PostMapping("/verify")
-    public ResponseEntity<String> verifyCode(@RequestParam String email, @RequestParam String code) {
-        boolean verified = emailService.verifyCode(email, code);
-        if (verified) {
-            return ResponseEntity.ok("이메일 인증 성공");
-        } else {
-            return ResponseEntity.badRequest().body("인증 실패 또는 코드 만료");
+    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String code = body.get("code");
+
+        try {
+            boolean success = emailService.verifyCode(email, code);
+            return ResponseEntity.ok(Map.of("success", success));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("🔴 이메일 인증 중 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류"));
         }
     }
 
-    // 이메일 형식 검증
+    // ✅ 클래스 안에 정확히 위치할 것
     private boolean isValidEmail(String email) {
         try {
             new InternetAddress(email).validate();
@@ -61,23 +67,4 @@ public class EmailController {
             return false;
         }
     }
-
-    @RestController
-    @RequestMapping
-    public class MailTestController {
-
-        private final EmailService emailService;
-
-        public MailTestController(EmailService emailService) {
-            this.emailService = emailService;
-        }
-
-        @GetMapping("/mail-test")
-        public ResponseEntity<String> sendTestEmail(@RequestParam String email) {
-            emailService.generateAndSendVerificationCode(email);
-            return ResponseEntity.ok("메일 전송 성공!");
-        }
-    }
-
-
 }
