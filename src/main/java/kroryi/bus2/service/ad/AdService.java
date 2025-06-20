@@ -27,7 +27,7 @@ public class AdService {
     private final FileUploadUtil fileUploadUtil; // ✅ 이미지 저장 유틸 주입
 
     // ✅ FormData 기반 광고 등록 메서드 추가됨
-    @AdminAudit(action = "광고 등록 (파일업로드)", target = "Ad")
+    @AdminAudit(action = "광고 등록", target = "Ad")
     public Ad saveAdWithImage(AdRequestDTO dto, MultipartFile imageFile) {
         AdCompany company = adCompanyRepository.findById(dto.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다."));
@@ -101,7 +101,7 @@ public class AdService {
                 .collect(Collectors.toList());
     }
 
-    @AdminAudit(action = "광고 수정 (파일업로드)", target = "Ad")
+    @AdminAudit(action = "광고 수정 및 연장", target = "Ad")
     public Ad updateAdWithImage(Long id, AdUpdateRequestDTO dto, MultipartFile imageFile) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고를 찾을 수 없습니다."));
