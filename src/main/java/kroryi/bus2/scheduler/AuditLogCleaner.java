@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 /**
- * 매일 자정에 하루 지난 로그를 삭제하는 스케줄러
+ * 일주일에 한번 로그를 삭제하는 스케줄러
  */
 public class AuditLogCleaner {
 
@@ -23,7 +23,7 @@ public class AuditLogCleaner {
     @Transactional
     @Scheduled(cron = "0 15 9 * * *")
     public void deleteOldLogs() {
-        LocalDateTime cutoff = LocalDateTime.now().minusDays(1);
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
         int deleted = adminAuditLogRepository.deleteByTimestampBefore(cutoff);
         log.info("🧹 하루 지난 로그 {}건 삭제됨", deleted);
     }
