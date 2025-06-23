@@ -113,6 +113,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login", "/auth/logout", "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/user/check-id").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/bus/getRouteInfo").permitAll()
 
                         // ✅ 회원가입 허용 (중요!)
                         .requestMatchers(HttpMethod.POST, "/api/user/join").permitAll()
