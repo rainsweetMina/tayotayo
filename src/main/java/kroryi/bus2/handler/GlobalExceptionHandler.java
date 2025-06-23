@@ -11,61 +11,70 @@ import org.springframework.web.multipart.MultipartException;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Log4j2
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message, String errorType) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", message);
+        errorResponse.put("error", errorType);
+        return ResponseEntity.status(status).body(errorResponse);
+    }
+
     // 400 - 잘못된 요청
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("IllegalArgumentException: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), "IllegalArgumentException");
     }
 
     // 파일 업로드 관련 예외
     @ExceptionHandler(MultipartException.class)
-    public ResponseEntity<String> handleMultipartException(MultipartException e) {
+    public ResponseEntity<Object> handleMultipartException(MultipartException e) {
         log.error("MultipartException: {}", e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("파일 업로드 중 오류가 발생했습니다: " + e.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "파일 업로드 중 오류가 발생했습니다.", "MultipartException");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<String> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+    public ResponseEntity<Object> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.error("MaxUploadSizeExceededException: {}", e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("파일 크기가 허용된 최대 크기를 초과했습니다.");
+        return buildErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 허용된 최대 크기를 초과했습니다.", "MaxUploadSizeExceededException");
     }
 
     @ExceptionHandler(IOException.class)
-    public ResponseEntity<String> handleIOException(IOException e) {
+    public ResponseEntity<Object> handleIOException(IOException e) {
         log.error("IOException: {}", e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("파일 처리 중 I/O 오류가 발생했습니다: " + e.getMessage());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 I/O 오류가 발생했습니다.", "IOException");
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException e) {
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
         log.error("AccessDeniedException: {}", e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("파일 접근 권한이 없습니다: " + e.getMessage());
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "파일 접근 권한이 없습니다.", "AccessDeniedException");
     }
 
     // 500 - 서버 오류
-
     @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<String> handleNullPointerException(NullPointerException e) {
+    public ResponseEntity<Object> handleNullPointerException(NullPointerException e) {
         log.error("NullPointerException: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Null 포인터 예외가 발생했습니다.");
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Null 포인터 예외가 발생했습니다.", "NullPointerException");
     }
 
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<String> handleDataAccessException(DataAccessException e) {
+    public ResponseEntity<Object> handleDataAccessException(DataAccessException e) {
         log.error("DataAccessException: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 접근 오류가 발생했습니다.");
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 접근 오류가 발생했습니다.", "DataAccessException");
     }
-    
+
     // 모든 예외에 대한 처리
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGlobalException(Exception e) {
+    public ResponseEntity<Object> handleGlobalException(Exception e) {
         log.error("Unhandled Exception: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다: " + e.getMessage());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.", e.getClass().getSimpleName());
     }
 }
