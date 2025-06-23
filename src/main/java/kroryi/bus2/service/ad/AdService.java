@@ -150,6 +150,7 @@ public class AdService {
                 .startDateTime(ad.getStartDateTime())
                 .endDateTime(ad.getEndDateTime())
                 .status(ad.getStatus() != null ? ad.getStatus() : "UNKNOWN")
+                .showPopup(ad.isShowPopup())
                 .extensionCount(ad.getExtensionCount()) // 광고연장횟수
                 .company(company != null ? AdCompanyDTO.builder()
                         .id(company.getId())

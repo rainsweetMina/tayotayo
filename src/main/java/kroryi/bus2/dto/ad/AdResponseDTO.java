@@ -16,6 +16,8 @@ public class AdResponseDTO {
     private LocalDateTime endDateTime;
     private String status;
     private AdCompanyDTO company;
+    private Boolean showPopup;
+
 
     private String companyName;
     private String managerName;
