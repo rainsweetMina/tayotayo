@@ -229,14 +229,17 @@ public class UserApiController {
     @ResponseBody
     public ResponseEntity<?> registerApi(@RequestBody JoinRequestDTO dto) {
         try {
-            // 1. 이메일 인증 코드 검증
-            boolean verified = emailService.verifyCode(dto.getEmail(), dto.getVerificationCode());
-            if (!verified) {
-                return ResponseEntity.badRequest().body(Map.of("message", "이메일 인증 실패 (코드 불일치 또는 만료)"));
+            String normalizedEmail = dto.getEmail().trim().toLowerCase();
+            dto.setEmail(normalizedEmail);
+
+            // ✅ 인증 상태만 확인
+            if (!emailService.isEmailVerified(normalizedEmail)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "이메일 인증을 먼저 완료해주세요."));
             }
 
-            // 2. 회원가입 진행
+            // ✅ 회원가입
             userService.join(dto);
+
             return ResponseEntity.ok(Map.of("message", "회원가입 완료"));
 
         } catch (Exception e) {
@@ -244,6 +247,4 @@ public class UserApiController {
             return ResponseEntity.internalServerError().body(Map.of("message", "서버 오류: " + e.getMessage()));
         }
     }
-
-
 }

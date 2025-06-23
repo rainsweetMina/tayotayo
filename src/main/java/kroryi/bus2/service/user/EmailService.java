@@ -86,10 +86,16 @@ public class EmailService {
 
     public boolean isEmailVerified(String email) {
         email = normalize(email);
-        boolean isVerified = verifiedEmails.contains(email);
-        log.info("🔎 [인증 여부 확인] 이메일: {}, 인증 상태: {}, 현재 인증된 목록: {}", email, isVerified, verifiedEmails);
-        return isVerified;
+        boolean result = verifiedEmails.contains(email);
+
+        // ✅ 디버깅용 로그
+        log.info("🔎 [isEmailVerified] 이메일: {}", email);
+        log.info("📌 [verifiedEmails 목록] {}", verifiedEmails);
+        log.info("📬 [결과] {}", result);
+
+        return result;
     }
+
 
     public void removeVerifiedEmail(String rawEmail) {
         String email = normalize(rawEmail);
