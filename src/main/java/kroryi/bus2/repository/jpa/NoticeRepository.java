@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,5 +21,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 
     Optional<Notice> findFirstByShowPopupTrueAndPopupStartBeforeAndPopupEndAfterOrderByPopupStartDesc(
             LocalDateTime now1, LocalDateTime now2);
+
+    long countByCreatedDateBetween(Timestamp start, Timestamp end);
 
 }
