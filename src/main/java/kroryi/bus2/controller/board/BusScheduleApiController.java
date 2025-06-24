@@ -17,11 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @Tag(name = "버스-노선-시간표", description = "")
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class BusScheduleApiController {
     private final BusScheduleService busScheduleService;
@@ -208,6 +209,23 @@ public class BusScheduleApiController {
             return busScheduleRepository.findByRouteIdAndMoveDirAndBusTCd(routeId, moveDir, "D");
         }
         return busScheduleRepository.findByRouteIdAndBusTCd(routeId, "D");
+    }
+
+    @Hidden
+    @Operation(summary = "스케줄이 존재하는 노선 번호 목록 조회")
+    @GetMapping("/route-nos")
+    @ResponseBody
+    public List<String> getRouteNos() {
+        return busScheduleRepository.findDistinctRouteNos();
+    }
+
+    @Hidden
+    @GetMapping("/route-nos-low")
+    @Operation(summary = "저상버스 시간표가 존재하는 노선번호 목록 조회")
+    public List<String> getLowBusRouteNos() {
+        List<String> routeNos = busScheduleRepository.getRouteNosWithLowBus("D");
+        Collections.sort(routeNos);
+        return routeNos;
     }
 
 }
