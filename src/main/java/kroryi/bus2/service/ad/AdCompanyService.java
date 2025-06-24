@@ -8,6 +8,7 @@ import kroryi.bus2.entity.ad.AdCompany;
 import kroryi.bus2.repository.jpa.AdCompanyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import kroryi.bus2.aop.AdminAudit;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ public class AdCompanyService {
     }
 
 
+    @AdminAudit(action = "광고회사 등록", target = "AdCompany")
     public AdCompany registerCompany(AdCompanyRequestDTO dto) {
         AdCompany company = AdCompany.builder()
                 .name(dto.getName())
@@ -33,6 +35,8 @@ public class AdCompanyService {
 
         return adCompanyRepository.save(company);
     }
+
+    @AdminAudit(action = "광고회사 수정", target = "AdCompany")
     public AdCompany updateCompany(Long id, AdCompanyUpdateRequestDTO dto) {
         AdCompany company = adCompanyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다."));
@@ -44,12 +48,8 @@ public class AdCompanyService {
 
         return adCompanyRepository.save(company);
     }
-    public List<AdCompanyDropdownDTO> getCompanyDropdownList() {
-        return adCompanyRepository.findByDeletedFalse()
-                .stream()
-                .map(company -> new AdCompanyDropdownDTO(company.getId(), company.getName()))
-                .collect(Collectors.toList());
-    }
+
+    @AdminAudit(action = "광고회사 삭제", target = "AdCompany")
     public void softDeleteCompany(Long id) {
         AdCompany company = adCompanyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고회사를 찾을 수 없습니다."));
@@ -58,6 +58,11 @@ public class AdCompanyService {
         adCompanyRepository.save(company); // 삭제 대신 상태만 바꿈
     }
 
-
+    public List<AdCompanyDropdownDTO> getCompanyDropdownList() {
+        return adCompanyRepository.findByDeletedFalse()
+                .stream()
+                .map(company -> new AdCompanyDropdownDTO(company.getId(), company.getName()))
+                .collect(Collectors.toList());
+    }
 
 }

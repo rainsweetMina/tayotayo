@@ -28,5 +28,7 @@ public class QnaResponseDTO {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private String username; // 작성자 이름
 }
 

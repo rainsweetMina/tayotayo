@@ -129,7 +129,7 @@ public class FoundItemServiceImpl implements FoundItemService {
     // ✅ 목록 조회
     @Override
     public List<FoundItemAdminResponseDTO> getAllFoundItems() {
-        return foundItemRepository.findByIsDeletedFalse().stream()
+        return foundItemRepository.findAll().stream()
                 .map(FoundItemAdminResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }

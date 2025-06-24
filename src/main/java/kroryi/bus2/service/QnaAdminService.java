@@ -5,7 +5,9 @@ import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.qna.*;
 import kroryi.bus2.entity.Qna;
 import kroryi.bus2.entity.QnaStatus;
+import kroryi.bus2.entity.user.User;
 import kroryi.bus2.repository.jpa.QnaRepository;
+import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -21,13 +23,13 @@ import java.util.stream.Collectors;
 public class QnaAdminService {
 
     private final QnaRepository qnaRepository;
+    private final UserService userService;
 
 
     // 단건 조회 (권한 체크는 컨트롤러 또는 서비스 확장 시 구현)
     public QnaResponseDTO getQnaDetail(Long qnaId, Long requesterId, boolean isAdmin) {
-        Qna qna = qnaRepository.findByIdAndIsDeletedFalse(qnaId)
+        Qna qna = qnaRepository.findById(qnaId)
                 .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
-
         // 비공개인데 본인이 아니고 관리자도 아닐 경우
         if (qna.isSecret() && !qna.getMemberId().equals(requesterId) && !isAdmin) {
             throw new AccessDeniedException("비공개 글은 작성자 본인만 열람할 수 있습니다.");
@@ -37,6 +39,7 @@ public class QnaAdminService {
 
     // Entity → DTO 변환
     private QnaResponseDTO toResponseDTO(Qna qna) {
+        String username = qna.getMemberId() != null ? userService.getUsernameById(qna.getMemberId()) : "알수없음";
         return QnaResponseDTO.builder()
                 .id(qna.getId())
                 .memberId(qna.getMemberId())
@@ -49,6 +52,7 @@ public class QnaAdminService {
                 .visible(qna.isVisible())
                 .createdAt(qna.getCreatedAt())
                 .updatedAt(qna.getUpdatedAt())
+                .username(username)
                 .build();
     }
     @Transactional
@@ -97,6 +101,7 @@ public class QnaAdminService {
         Qna qna = qnaRepository.findById(qnaId)
                 .orElseThrow(() -> new EntityNotFoundException("Q&A not found"));
         qna.setDeleted(true);
+        qnaRepository.save(qna);
     }
 
 

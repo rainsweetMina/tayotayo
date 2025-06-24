@@ -233,4 +233,10 @@ public class UserService {
     public boolean isUserIdDuplicate(String userId) {
         return userRepository.existsByUserId(userId);
     }
+
+    public String getUsernameById(Long id) {
+        return userRepository.findById(id)
+                .map(User::getUsername)
+                .orElse("알수없음");
+    }
 }
