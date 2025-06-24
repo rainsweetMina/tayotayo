@@ -33,7 +33,7 @@ public class UserDataInputTest {
 
         User user = User.builder()
                 .userId(userId)
-                .username("테스트 유저")
+                .username("테스트 유저111")
                 .password(passwordEncoder.encode("1234"))
                 .email("testuser@example.com")
                 .phoneNumber("010-1234-5678")
