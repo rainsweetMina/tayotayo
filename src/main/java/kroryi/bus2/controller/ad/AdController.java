@@ -73,6 +73,18 @@ public class AdController {
         }
     }
 
+    @PutMapping("/{id}/extend")
+    public ResponseEntity<AdResponseDTO> extendAd(
+            @PathVariable Long id,
+            @RequestBody AdExtensionRequestDTO extendDTO
+    ) {
+        Ad extendedAd = adService.extendAd(id, extendDTO.getNewEndDateTime());
+        AdResponseDTO dto = adService.getAdById(extendedAd.getId()); // 이미 DTO 변환 메서드 있음
+        return ResponseEntity.ok(dto);
+    }
+
+
+
     // ✅ 광고 수정 - FormData 방식 (JSON DTO + 이미지 파일)
     @Operation(summary = "광고 수정", description = "기존 광고 정보를 수정합니다. 이미지 파일은 선택적으로 포함할 수 있습니다.")
     @ApiResponses({

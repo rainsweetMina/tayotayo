@@ -101,16 +101,12 @@ public class AdService {
                 .collect(Collectors.toList());
     }
 
-    @AdminAudit(action = "광고 수정 및 연장", target = "Ad")
+    @AdminAudit(action = "광고 수정", target = "Ad")
     public Ad updateAdWithImage(Long id, AdUpdateRequestDTO dto, MultipartFile imageFile) {
         Ad ad = adRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("광고를 찾을 수 없습니다."));
 
-        // ✅ 연장일 경우 extensionCount 증가
-        if (dto.getEndDateTime().isAfter(ad.getEndDateTime())) {
-            ad.setExtensionCount(ad.getExtensionCount() + 1);
-        }
-
+        // ✅ 연장 로직 제거
         ad.setTitle(dto.getTitle());
         ad.setLinkUrl(dto.getLinkUrl());
         ad.setStartDateTime(dto.getStartDateTime());
@@ -125,12 +121,32 @@ public class AdService {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             String fullPath = fileUploadUtil.saveAdImage(imageFile);
-            String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1); // ✅ 파일명만 저장
+            String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1);
             ad.setImageUrl(fileName);
         }
 
         return adRepository.save(ad);
     }
+
+    @AdminAudit(action = "광고 연장", target = "Ad")
+    public Ad extendAd(Long id, LocalDateTime newEndDateTime) {
+        Ad ad = adRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("광고를 찾을 수 없습니다."));
+
+        if (ad.isDeleted()) {
+            throw new IllegalStateException("삭제된 광고는 연장할 수 없습니다.");
+        }
+
+        if (newEndDateTime.isBefore(ad.getEndDateTime())) {
+            throw new IllegalArgumentException("종료일은 현재 종료일보다 이후여야 합니다.");
+        }
+
+        ad.setEndDateTime(newEndDateTime);
+        ad.setExtensionCount(ad.getExtensionCount() + 1);
+
+        return adRepository.save(ad);
+    }
+
 
 
     public AdResponseDTO getAdById(Long id) {
@@ -139,7 +155,7 @@ public class AdService {
         return convertToDTO(ad);
     }
 
-    private AdResponseDTO convertToDTO(Ad ad) {
+    public AdResponseDTO convertToDTO(Ad ad) {
         AdCompany company = ad.getCompany();
 
         return AdResponseDTO.builder()
@@ -166,17 +182,17 @@ public class AdService {
                 .build();
     }
 
-    // AdServiceImpl.java
-    public Optional<Ad> findValidPopupAd() {
-        LocalDateTime now = LocalDateTime.now();
-        return adRepository.findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now);
-    }
+//    public Optional<Ad> findValidPopupAd() {
+//        LocalDateTime now = LocalDateTime.now();
+//        return adRepository.findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now);
+//    }
 
     public Optional<AdPopupResponseDTO> findPopupAd() {
         LocalDateTime now = LocalDateTime.now();
         return adRepository
-                .findFirstByDeletedFalseAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now)
+                .findFirstByDeletedFalseAndShowPopupTrueAndStartDateTimeBeforeAndEndDateTimeAfterOrderByStartDateTimeDesc(now, now)
                 .map(AdPopupResponseDTO::new);
     }
+
 
 }
