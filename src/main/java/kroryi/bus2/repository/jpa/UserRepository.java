@@ -1,8 +1,10 @@
 package kroryi.bus2.repository.jpa;
 
+import kroryi.bus2.entity.user.Role;
 import kroryi.bus2.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,5 +31,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByUsernameContaining(String keyword);
 
     List<User> findByWithdrawFalse();
+
+    // 특정 기간 내 가입한 회원 수 조회
+    long countBySignupDateBetween(LocalDateTime start, LocalDateTime end);
+    
+    // 특정 권한을 가진 회원 수 조회
+    long countByRole(Role role);
+    
+    // 특정 기간 내 가입한 특정 권한의 회원 수 조회
+    long countByRoleAndSignupDateBetween(Role role, LocalDateTime start, LocalDateTime end);
+
+    // 특정 기간 내 가입한 회원 목록 조회
+    List<User> findBySignupDateBetween(LocalDateTime start, LocalDateTime end);
 
 }

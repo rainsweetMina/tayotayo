@@ -19,66 +19,6 @@ public class WebConfig implements WebMvcConfigurer {
         this.interceptor = interceptor;
     }
 
-//     @Override
-//     public void addCorsMappings(CorsRegistry registry) {
-
-//         // API 호출 (withCredentials: true)
-//         registry.addMapping("/api/**")
-//                 .allowedOrigins(
-//                         "http://localhost:5173",
-//                         "https://localhost:5173",
-//                         "http://localhost:5174",
-//                         "https://localhost:5174"
-//                 )
-//                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-//                 .allowedHeaders("*")
-//                 .maxAge(3600)
-//                 .allowCredentials(true);
-
-//         // 인증/로그인(리다이렉트) 경로 (Vue + Spring Security 리다이렉트 및 쿠키 세팅 이슈 방지)
-//         registry.addMapping("/auth/**")
-//                 .allowedOrigins(
-//                         "http://localhost:5173",
-//                         "https://localhost:5173",
-//                         "http://localhost:5174",
-//                         "https://localhost:5174"
-//                 )
-//                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-//                 .allowedHeaders("*")
-//                 .allowCredentials(true);
-
-//         // 인증/로그인(리다이렉트) 경로 (Vue + Spring Security 리다이렉트 및 쿠키 세팅 이슈 방지)
-//         registry.addMapping("/admin/**")
-//                 .allowedOrigins(
-//                         "http://localhost:5173",
-//                         "https://localhost:5173",
-//                         "http://localhost:5174",
-//                         "https://localhost:5174"
-//                 )
-//                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-//                 .allowedHeaders("*")
-//                 .allowCredentials(true);
-
-//         registry.addMapping("/login/**")
-//                 .allowedOrigins(
-//                         "http://localhost:5173",
-//                         "https://localhost:5173",
-//                         "http://localhost:5174",
-//                         "https://localhost:5174"
-//                 )
-//                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-//                 .allowedHeaders("*")
-//                 .allowCredentials(true);
-
-//         // Swagger (선택)
-//         registry.addMapping("/v3/api-docs/**")
-//                 .allowedOrigins("https://docs.yi.or.kr:8094", "https://192.168.10.47:8094","https://localhost:8094")
-//                 .allowedMethods("*");
-//         registry.addMapping("/swagger-ui/**")
-//                 .allowedOrigins("https://docs.yi.or.kr:8094", "https://192.168.10.47:8094","https://localhost:8094")
-//                 .allowedMethods("*");
-//     }
-
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -105,11 +45,11 @@ public class WebConfig implements WebMvcConfigurer {
 //                .addResourceLocations("file:"+ filePath);
 //    }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(interceptor)
-                .addPathPatterns("/api/**"); // 감시할 경로 지정
-    }
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        registry.addInterceptor(interceptor)
+//                .addPathPatterns("/api/**"); // 감시할 경로 지정
+//    }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
