@@ -129,6 +129,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/email/send").permitAll()
                         .requestMatchers("/api/user/email/verify").permitAll()
 
+                        // ✅ 로그인한 USER·ADMIN·BUS 모두 자신의 정보 조회 가능
+                        .requestMatchers("/api/user/info").hasAnyRole("USER", "ADMIN", "BUS")
+
                         // ✅ JWT 인증 엔드포인트 허용
                         .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/validate").permitAll()
 
