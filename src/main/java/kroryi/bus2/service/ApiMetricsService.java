@@ -48,5 +48,29 @@ public class ApiMetricsService {
                 .toList();
     }
 
-
+    // 오늘 5분 단위 평균 응답시간을 구하는 메서드
+    public List<ApiResponseStatDTO> getFiveMinuteIntervalsToday() {
+        // 오늘 자정부터 현재까지
+        LocalDateTime startTime = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        
+        return apiLogEntryRepository.findByFiveMinuteIntervalsToday(startTime).stream()
+                .map(row -> new ApiResponseStatDTO(
+                        (String) row[0],
+                        ((Number) row[1]).doubleValue()
+                ))
+                .toList();
+    }
+    
+    // 최근 N시간 동안 5분 단위 평균 응답시간을 구하는 메서드
+    public List<ApiResponseStatDTO> getFiveMinuteIntervals(int hours) {
+        // 현재 시간에서 N시간 전
+        LocalDateTime startTime = LocalDateTime.now().minusHours(hours);
+        
+        return apiLogEntryRepository.findByFiveMinuteIntervals(startTime).stream()
+                .map(row -> new ApiResponseStatDTO(
+                        (String) row[0],
+                        ((Number) row[1]).doubleValue()
+                ))
+                .toList();
+    }
 }

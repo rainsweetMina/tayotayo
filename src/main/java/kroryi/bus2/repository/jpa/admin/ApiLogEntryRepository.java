@@ -25,4 +25,20 @@ public interface ApiLogEntryRepository extends JpaRepository<ApiLogEntry, Long> 
             "ORDER BY FUNCTION('DATE_FORMAT', a.timestamp, '%H:00')")
     List<Object[]> findHourlyAvgToday();
 
+    // 5분 단위로 평균 응답시간을 구하는 쿼리 (수정)
+    @Query(value = "SELECT DATE_FORMAT(timestamp, '%H:%i') AS time_slot, AVG(response_time_ms) " +
+            "FROM api_log_entry " +
+            "WHERE DATE(timestamp) = CURRENT_DATE " +
+            "AND timestamp >= :startTime " +
+            "GROUP BY DATE_FORMAT(timestamp, '%H:%i') " +
+            "ORDER BY time_slot", nativeQuery = true)
+    List<Object[]> findByFiveMinuteIntervalsToday(LocalDateTime startTime);
+    
+    // 최근 N시간 동안 5분 단위로 평균 응답시간을 구하는 쿼리 (수정)
+    @Query(value = "SELECT DATE_FORMAT(timestamp, '%H:%i') AS time_slot, AVG(response_time_ms) " +
+            "FROM api_log_entry " +
+            "WHERE timestamp >= :startTime " +
+            "GROUP BY DATE_FORMAT(timestamp, '%H:%i') " +
+            "ORDER BY time_slot", nativeQuery = true)
+    List<Object[]> findByFiveMinuteIntervals(LocalDateTime startTime);
 }
