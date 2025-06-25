@@ -6,9 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.filter.JwtAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
-import kroryi.bus2.handler.CustomLoginSuccessHandler;
-import kroryi.bus2.handler.CustomLogoutSuccessHandler;
-import kroryi.bus2.handler.CustomOAuth2SuccessHandler;
+import kroryi.bus2.handler.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -53,6 +51,8 @@ public class SecurityConfig {
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
     private final SwaggerAuthFilter swaggerAuthFilter;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenUtil jwtTokenUtil, UserService userService) {
@@ -81,6 +81,13 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation().changeSessionId()
                 )
+
+                // 🔐 인증/인가 실패 핸들러 추가
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint) // 401 - 로그인 필요
+                        .accessDeniedHandler(customAccessDeniedHandler)           // 403 - 권한 부족
+                )
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(swaggerAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -125,8 +132,15 @@ public class SecurityConfig {
                         // ✅ JWT 인증 엔드포인트 허용
                         .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/validate").permitAll()
 
-                        // ✅ 공개 API 엔드포인트 허용
-                        .requestMatchers("/api/public/**").permitAll()
+                        // ✅ BUS & ADMIN 접근 허용
+                        .requestMatchers("/admin/dashboard").hasAnyRole("ADMIN", "BUS")
+                        .requestMatchers("/admin/found", "/admin/lost").hasAnyRole("ADMIN", "BUS")
+                        .requestMatchers("/api/admin/found/**", "/api/admin/lost/**").hasAnyRole("ADMIN", "BUS")
+
+                        // 🔒 ADMIN만 접근 가능 (그 외 모든 admin 관련 경로는 ADMIN만 허용)
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
 
                         // ✅ 마이페이지 라우팅 허용 (Vue에서 처리)
                         .requestMatchers("/mypage/**", "/admin/**", "/bus/**").permitAll()
@@ -167,26 +181,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        
-        // 여러 출처를 배열로 설정하는 대신 setAllowedOriginPatterns 사용
-        config.setAllowedOriginPatterns(List.of(
+        config.setAllowedOrigins(List.of(
                 "https://localhost:5173",
                 "http://localhost:5173",
                 "https://localhost:5174",
                 "http://localhost:5174"
         ));
-        
-        // 모든 HTTP 메서드 허용
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        
-        // 모든 헤더 허용
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));
-        
-        // 자격 증명 허용 (쿠키, 인증 헤더 등)
         config.setAllowCredentials(true);
-        
-        // 브라우저가 Access-Control-Allow-* 헤더를 캐시하는 시간 (초)
-        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

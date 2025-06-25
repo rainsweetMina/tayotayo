@@ -71,8 +71,10 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         String redirectUrl = "https://localhost:5173/";
 
         switch (user.getRole().name()) {
-            case "ADMIN" -> redirectUrl = "/admin/dashboard";
-            case "BUS" -> redirectUrl = "/bus";
+            case "ADMIN", "BUS" -> {
+                redirectUrl = "/admin/dashboard";
+                log.info("🔐 {} 권한으로 관리자 대시보드로 이동", user.getRole().name());
+            }
             case "USER" -> {
                 SavedRequest savedRequest = new HttpSessionRequestCache().getRequest(request, response);
                 if (savedRequest != null) {

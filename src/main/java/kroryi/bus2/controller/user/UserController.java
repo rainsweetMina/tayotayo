@@ -30,6 +30,7 @@ public class UserController {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @GetMapping("/")
     public String home() {
@@ -135,14 +136,18 @@ public class UserController {
     public String register(@ModelAttribute("joinRequestDTO") JoinRequestDTO jdto,
                            RedirectAttributes redirectAttributes) {
         try {
-            if (!jdto.getEmailVerified()) {
-                throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
-            }
+            String normalizedEmail = jdto.getEmail().trim().toLowerCase();
+            jdto.setEmail(normalizedEmail);
+
+            // ✅ 디버깅용 로그 추가
+            log.info("📥 [회원가입 요청 DTO] {}", jdto);
+            log.info("📧 [이메일 인증 여부] {} = {}", normalizedEmail, emailService.isEmailVerified(normalizedEmail));
 
             userService.join(jdto);
             return "redirect:/auth/login?registerSuccess=true";
+
         } catch (Exception e) {
-            log.error("회원가입 오류: {}", e.getMessage());
+            log.error("❌ [회원가입 오류] {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             redirectAttributes.addFlashAttribute("registrationSuccess", false);
             redirectAttributes.addFlashAttribute("joinRequestDTO", jdto);
