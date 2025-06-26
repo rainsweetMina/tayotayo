@@ -146,6 +146,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
 
+
+                        .requestMatchers("/api/**").permitAll()
+
                         /* 나머지는 인증만 필요 */
                         .anyRequest().authenticated()
                 )
