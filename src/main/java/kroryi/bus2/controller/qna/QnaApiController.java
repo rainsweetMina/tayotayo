@@ -13,6 +13,7 @@ import kroryi.bus2.service.QnaAdminService;
 import kroryi.bus2.service.QnaService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -145,6 +146,16 @@ public class QnaApiController {
         String userId = authentication.getName();
         int count = qnaService.countUnansweredQnaByUser(userId);
         return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    @Operation(summary = "QnA 전체 목록 조회 (일반 회원용, 페이징/검색)", description = "공개된 QnA 전체 목록을 페이징/검색과 함께 조회합니다.")
+    @GetMapping("/page")
+    public ResponseEntity<Page<QnaListDTO>> getQnaPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "title") String field
+    ) {
+        return ResponseEntity.ok(qnaService.getQnaPage(keyword, field, page));
     }
 
 }
