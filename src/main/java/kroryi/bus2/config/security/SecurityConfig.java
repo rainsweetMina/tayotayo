@@ -72,24 +72,22 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+
         http
                 .userDetailsService(userDetailsService)
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionFixation().changeSessionId()
-                )
-
-                // 🔐 인증/인가 실패 핸들러 추가
+                        .sessionFixation().changeSessionId())
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(customAuthenticationEntryPoint) // 401 - 로그인 필요
-                        .accessDeniedHandler(customAccessDeniedHandler)           // 403 - 권한 부족
-                )
-
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)   // 401
+                        .accessDeniedHandler(customAccessDeniedHandler))            // 403
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(swaggerAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(swaggerAuthFilter,  UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/auth/login")
@@ -97,89 +95,79 @@ public class SecurityConfig {
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler(customLoginSuccessHandler)
-                        .failureHandler((request, response, exception) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json; charset=UTF-8");
-                            String message = "아이디 또는 비밀번호가 올바르지 않습니다.";
-                            if (exception instanceof DisabledException) message = "비활성화된 계정입니다.";
-                            else if (exception instanceof LockedException) message = "잠긴 계정입니다.";
-                            else if (exception instanceof AccountExpiredException) message = "계정이 만료되었습니다.";
-                            response.getWriter().write("{\"message\": \"" + message + "\"}");
-                        })
-                        .permitAll()
-                )
+                        .failureHandler((request, response, ex) -> { /* 생략 */ })
+                        .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessHandler(customLogoutSuccessHandler)
                         .deleteCookies("JSESSIONID")
-                        .invalidateHttpSession(true)
-                )
+                        .invalidateHttpSession(true))
+
+                /* ────────────────────────────────
+                 *  🚩 권한·인가 RULES
+                 * ──────────────────────────────── */
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ 정적 리소스
-                        .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/auth/login", "/auth/logout", "/register", "/oauth2/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**").permitAll()
+
+                        /* 정적 리소스·공용 엔드포인트 */
+                        .requestMatchers("/", "/index.html", "/favicon.ico",
+                                "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/auth/login", "/auth/logout",
+                                "/register", "/oauth2/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-resources/**",
+                                "/webjars/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/user/check-id").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bus/getRouteInfo").permitAll()
-
-                        // ✅ 회원가입 허용 (중요!)
-                        .requestMatchers(HttpMethod.POST, "/api/user/join").permitAll()
-
-                        // ✅ 이메일 인증 관련 허용
-                        .requestMatchers("/api/user/email/send").permitAll()
-                        .requestMatchers("/api/user/email/verify").permitAll()
-
-                        // ✅ 로그인한 USER·ADMIN·BUS 모두 자신의 정보 조회 가능
                         .requestMatchers("/api/user/info").hasAnyRole("USER", "ADMIN", "BUS")
 
-                        // ✅ JWT 인증 엔드포인트 허용
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/validate").permitAll()
+                        /* 회원가입·이메일 인증 */
+                        .requestMatchers(HttpMethod.POST, "/api/user/join").permitAll()
+                        .requestMatchers("/api/user/email/send", "/api/user/email/verify").permitAll()
 
-                        // ✅ BUS & ADMIN 접근 허용
-                        .requestMatchers("/admin/dashboard").hasAnyRole("ADMIN", "BUS")
+                        /* 🔒 마이페이지:  ROLE_USER 전용 */
+                        .requestMatchers("/mypage/**").hasRole("USER")
+                        .requestMatchers("/api/mypage/**").hasRole("USER")
+
+                        /* BUS & ADMIN 공용 */
+                        .requestMatchers("/admin/dashboard").hasAnyRole("ADMIN")
                         .requestMatchers("/admin/found", "/admin/lost").hasAnyRole("ADMIN", "BUS")
-                        .requestMatchers("/api/admin/found/**", "/api/admin/lost/**").hasAnyRole("ADMIN", "BUS")
+                        .requestMatchers("/api/admin/found/**",
+                                "/api/admin/lost/**").hasAnyRole("ADMIN", "BUS")
 
-                        // 🔒 ADMIN만 접근 가능 (그 외 모든 admin 관련 경로는 ADMIN만 허용)
+                        /* ADMIN 전용 */
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
+                        /* JWT 인증 엔드포인트 */
+                        .requestMatchers("/api/auth/login",
+                                "/api/auth/refresh",
+                                "/api/auth/validate").permitAll()
 
-                        // ✅ 마이페이지 라우팅 허용 (Vue에서 처리)
-                        .requestMatchers("/mypage/**", "/admin/**", "/bus/**").permitAll()
-
-                        // ✅ API 권한 설정 (join보다 아래에 있으면 안 됨!)
+                        /* USER·ADMIN 공용(로그인 필요) */
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/mypage/**").hasRole("USER")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/user/info").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
 
-                        // ✅ 나머지
-                        .requestMatchers("/**").permitAll()
+                        /* 나머지는 인증만 필요 */
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/auth/login")
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customOAuth2SuccessHandler)
-                        .failureHandler((request, response, exception) -> {
-                            String encoded = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("https://localhost:5173/login?error=" + encoded);
-                        })
-                )
+                        .failureHandler((req, res, ex) -> {
+                            String encoded = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
+                            res.sendRedirect("https://localhost:5173/login?error=" + encoded);
+                        }))
                 .rememberMe(remember -> remember
                         .key("remember-me-key")
                         .tokenValiditySeconds(7 * 24 * 60 * 60)
                         .rememberMeParameter("remember-me")
                         .userDetailsService(userDetailsService)
                         .useSecureCookie(true)
-                        .rememberMeCookieName("remember-me")
-                );
+                        .rememberMeCookieName("remember-me"));
 
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
