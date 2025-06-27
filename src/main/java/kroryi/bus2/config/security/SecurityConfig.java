@@ -111,6 +111,7 @@ public class SecurityConfig {
                         /* 정적 리소스·공용 엔드포인트 */
                         .requestMatchers("/", "/index.html", "/favicon.ico",
                                 "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout",
                                 "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**",

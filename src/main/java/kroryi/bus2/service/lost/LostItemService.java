@@ -279,5 +279,8 @@ public class LostItemService {
                 .toList();
     }
 
+    public long countMyLostItems(Long reporterId) {
+        return lostItemRepository.countByReporter_IdAndDeletedFalse(reporterId);
+    }
 
 }

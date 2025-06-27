@@ -15,6 +15,7 @@ import kroryi.bus2.dto.user.PasswordRequestDTO;
 import kroryi.bus2.dto.user.UserInfoDTO;
 import kroryi.bus2.entity.user.SignupType;
 import kroryi.bus2.entity.user.User;
+import kroryi.bus2.service.lost.LostItemService;
 import kroryi.bus2.service.user.EmailService;
 import kroryi.bus2.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class UserApiController {
 
     private final UserService userService;
     private final EmailService emailService;
+    private final LostItemService lostItemService;
 
     // ✅ 로그인된 유저 정보 반환
     @Hidden
@@ -247,4 +249,34 @@ public class UserApiController {
             return ResponseEntity.internalServerError().body(Map.of("message", "서버 오류: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/mypage/lost/count")
+    public ResponseEntity<?> countMyLostItems(@AuthenticationPrincipal Object principal) {
+
+        /* ① 로그인 체크 & userId 추출 */
+        String userId = null;
+        if (principal instanceof CustomUserDetails cd) {
+            userId = cd.getUser().getUserId();
+        } else if (principal instanceof CustomOAuth2User ou) {
+            userId = ou.getUserId();
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        /* ② User 조회 */
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "사용자를 찾을 수 없습니다."));
+        }
+
+        /* ③ 분실물 개수 조회 */
+        long count = lostItemService.countMyLostItems(user.getId());
+
+        /* ④ JSON 응답 */
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
 }
