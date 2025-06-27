@@ -11,12 +11,19 @@ import kroryi.bus2.repository.jpa.AdCompanyRepository;
 import kroryi.bus2.service.ad.AdService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -216,23 +223,214 @@ public class AdController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> testFileUpload(@RequestParam("file") MultipartFile file) {
         try {
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "파일이 비어있습니다."));
-            }
-
-            // 파일 정보 반환
-            Map<String, Object> fileInfo = new HashMap<>();
-            fileInfo.put("originalFilename", file.getOriginalFilename());
-            fileInfo.put("contentType", file.getContentType());
-            fileInfo.put("size", file.getSize());
-            fileInfo.put("message", "파일 업로드 테스트 성공");
-
-            log.info("파일 업로드 테스트 성공: {}", file.getOriginalFilename());
-            return ResponseEntity.ok(fileInfo);
-
+            // 파일 정보 로깅
+            log.info("업로드된 파일 정보:");
+            log.info("- 파일명: {}", file.getOriginalFilename());
+            log.info("- 파일 크기: {} bytes", file.getSize());
+            log.info("- Content-Type: {}", file.getContentType());
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "파일 업로드 테스트 성공",
+                "filename", file.getOriginalFilename(),
+                "size", file.getSize(),
+                "contentType", file.getContentType()
+            ));
+            
         } catch (Exception e) {
             log.error("파일 업로드 테스트 실패: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(Map.of("error", "파일 업로드 테스트 실패: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", "파일 업로드 테스트에 실패했습니다: " + e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "광고 데이터 엑셀 다운로드", description = "광고 데이터를 엑셀 파일로 다운로드합니다.")
+    @PostMapping("/download")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> downloadAdsAsExcel(@RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> ads = (List<Map<String, Object>>) request.get("ads");
+            String filter = (String) request.get("filter");
+            String searchKeyword = (String) request.get("searchKeyword");
+            
+            if (ads == null || ads.isEmpty()) {
+                return ResponseEntity.badRequest().body("다운로드할 광고 데이터가 없습니다.".getBytes());
+            }
+            
+            // Excel 워크북 생성
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("광고 목록");
+                
+                // 헤더 스타일 생성
+                CellStyle headerStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerFont.setColor(IndexedColors.WHITE.getIndex());
+                headerStyle.setFont(headerFont);
+                headerStyle.setFillForegroundColor(IndexedColors.BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                headerStyle.setAlignment(HorizontalAlignment.CENTER);
+                headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                
+                // 헤더 생성
+                Row headerRow = sheet.createRow(0);
+                String[] headers = {"ID", "제목", "광고회사", "상태", "연장횟수", "시작일", "종료일", "링크 URL", "이미지 URL"};
+                
+                for (int i = 0; i < headers.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(headers[i]);
+                    cell.setCellStyle(headerStyle);
+                    sheet.setColumnWidth(i, 4000); // 컬럼 너비 설정
+                }
+                
+                // 데이터 행 생성
+                int rowNum = 1;
+                for (Map<String, Object> ad : ads) {
+                    Row row = sheet.createRow(rowNum++);
+                    
+                    row.createCell(0).setCellValue(ad.get("id") != null ? ad.get("id").toString() : "");
+                    row.createCell(1).setCellValue(ad.get("title") != null ? ad.get("title").toString() : "");
+                    row.createCell(2).setCellValue(ad.get("companyName") != null ? ad.get("companyName").toString() : "");
+                    
+                    // 상태 한글 변환
+                    String status = ad.get("status") != null ? ad.get("status").toString() : "";
+                    String statusText = switch (status) {
+                        case "SCHEDULED" -> "예정";
+                        case "ONGOING" -> "진행중";
+                        case "ENDING_SOON" -> "종료임박";
+                        case "ENDED" -> "종료됨";
+                        case "DELETED" -> "삭제됨";
+                        default -> status;
+                    };
+                    row.createCell(3).setCellValue(statusText);
+                    
+                    row.createCell(4).setCellValue(ad.get("extensionCount") != null ? ad.get("extensionCount").toString() : "0");
+                    row.createCell(5).setCellValue(ad.get("startDateTime") != null ? ad.get("startDateTime").toString() : "");
+                    row.createCell(6).setCellValue(ad.get("endDateTime") != null ? ad.get("endDateTime").toString() : "");
+                    row.createCell(7).setCellValue(ad.get("linkUrl") != null ? ad.get("linkUrl").toString() : "");
+                    row.createCell(8).setCellValue(ad.get("imageUrl") != null ? ad.get("imageUrl").toString() : "");
+                }
+                
+                // 파일명 생성
+                String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                String filterText = switch (filter) {
+                    case "all" -> "전체";
+                    case "scheduled" -> "예정";
+                    case "ongoing" -> "진행중";
+                    case "ending_soon" -> "종료임박";
+                    case "ended" -> "종료됨";
+                    default -> "전체";
+                };
+                String filename = String.format("광고목록_%s_%s.xlsx", filterText, now);
+                
+                // Excel 파일을 바이트 배열로 변환
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                workbook.write(outputStream);
+                byte[] excelBytes = outputStream.toByteArray();
+                
+                // HTTP 헤더 설정
+                HttpHeaders headers_response = new HttpHeaders();
+                headers_response.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+                headers_response.setContentDispositionFormData("attachment", filename);
+                headers_response.setContentLength(excelBytes.length);
+                
+                log.info("광고 데이터 엑셀 다운로드 성공: {}개 항목, 파일명: {}", ads.size(), filename);
+                
+                return ResponseEntity.ok()
+                    .headers(headers_response)
+                    .body(excelBytes);
+                    
+            } catch (IOException e) {
+                log.error("Excel 파일 생성 실패: {}", e.getMessage(), e);
+                return ResponseEntity.internalServerError().body("Excel 파일 생성에 실패했습니다.".getBytes());
+            }
+            
+        } catch (Exception e) {
+            log.error("광고 데이터 다운로드 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body("광고 데이터 다운로드에 실패했습니다.".getBytes());
+        }
+    }
+
+    @Operation(summary = "광고 회사 데이터 엑셀 다운로드", description = "광고 회사 데이터를 엑셀 파일로 다운로드합니다.")
+    @PostMapping("/companies/download")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> downloadAdCompaniesAsExcel(@RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> companies = (List<Map<String, Object>>) request.get("companies");
+            String searchKeyword = (String) request.get("searchKeyword");
+            
+            if (companies == null || companies.isEmpty()) {
+                return ResponseEntity.badRequest().body("다운로드할 광고 회사 데이터가 없습니다.".getBytes());
+            }
+            
+            // Excel 워크북 생성
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("광고 회사 목록");
+                
+                // 헤더 스타일 생성
+                CellStyle headerStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerFont.setColor(IndexedColors.WHITE.getIndex());
+                headerStyle.setFont(headerFont);
+                headerStyle.setFillForegroundColor(IndexedColors.BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                headerStyle.setAlignment(HorizontalAlignment.CENTER);
+                headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                
+                // 헤더 생성
+                Row headerRow = sheet.createRow(0);
+                String[] headers = {"ID", "회사명", "담당자명", "연락처", "이메일"};
+                
+                for (int i = 0; i < headers.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(headers[i]);
+                    cell.setCellStyle(headerStyle);
+                    sheet.setColumnWidth(i, 4000); // 컬럼 너비 설정
+                }
+                
+                // 데이터 행 생성
+                int rowNum = 1;
+                for (Map<String, Object> company : companies) {
+                    Row row = sheet.createRow(rowNum++);
+                    
+                    row.createCell(0).setCellValue(company.get("id") != null ? company.get("id").toString() : "");
+                    row.createCell(1).setCellValue(company.get("name") != null ? company.get("name").toString() : "");
+                    row.createCell(2).setCellValue(company.get("managerName") != null ? company.get("managerName").toString() : "");
+                    row.createCell(3).setCellValue(company.get("contactNumber") != null ? company.get("contactNumber").toString() : "");
+                    row.createCell(4).setCellValue(company.get("email") != null ? company.get("email").toString() : "");
+                }
+                
+                // 파일명 생성
+                String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                String searchText = searchKeyword != null && !searchKeyword.isEmpty() ? "_" + searchKeyword : "";
+                String filename = String.format("광고회사목록%s_%s.xlsx", searchText, now);
+                
+                // Excel 파일을 바이트 배열로 변환
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                workbook.write(outputStream);
+                byte[] excelBytes = outputStream.toByteArray();
+                
+                // HTTP 헤더 설정
+                HttpHeaders headers_response = new HttpHeaders();
+                headers_response.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+                headers_response.setContentDispositionFormData("attachment", filename);
+                headers_response.setContentLength(excelBytes.length);
+                
+                log.info("광고 회사 데이터 엑셀 다운로드 성공: {}개 항목, 파일명: {}", companies.size(), filename);
+                
+                return ResponseEntity.ok()
+                    .headers(headers_response)
+                    .body(excelBytes);
+                    
+            } catch (IOException e) {
+                log.error("Excel 파일 생성 실패: {}", e.getMessage(), e);
+                return ResponseEntity.internalServerError().body("Excel 파일 생성에 실패했습니다.".getBytes());
+            }
+            
+        } catch (Exception e) {
+            log.error("광고 회사 데이터 다운로드 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body("광고 회사 데이터 다운로드에 실패했습니다.".getBytes());
         }
     }
 }

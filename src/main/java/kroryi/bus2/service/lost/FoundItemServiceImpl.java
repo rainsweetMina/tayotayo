@@ -149,6 +149,13 @@ public class FoundItemServiceImpl implements FoundItemService {
     @Override
     @AdminAudit(action = "습득물 수정", target = "FoundItem")
     public void updateFoundItem(Long id, FoundItemRequestDTO dto, MultipartFile image) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_BUS"))) {
+            throw new SecurityException("습득물 수정은 BUS 권한만 가능합니다.");
+        }
+        String userId = auth.getName();
+        User handler = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("로그인된 사용자를 찾을 수 없습니다."));
         FoundItem item = foundItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("수정할 습득물이 존재하지 않습니다."));
 
@@ -161,11 +168,6 @@ public class FoundItemServiceImpl implements FoundItemService {
             if (!item.isMatched()) {
                 item.setMatched(true);
             }
-
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
-            User handler = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException("로그인된 사용자를 찾을 수 없습니다."));
 
             // 이미 매칭 기록이 있으면 중복 방지
             boolean alreadyMatched = matchRepository.existsByFoundItemId(item.getId());
@@ -255,8 +257,8 @@ public class FoundItemServiceImpl implements FoundItemService {
     @AdminAudit(action = "습득물 매칭", target = "FoundItem")
     public void matchFoundItem(Long foundItemId, Long lostItemId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User handler = userRepository.findByUsername(username)
+        String userId = auth.getName();
+        User handler = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인된 사용자를 찾을 수 없습니다."));
         matchFoundItem(foundItemId, lostItemId, handler.getId());
     }
