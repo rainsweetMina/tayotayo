@@ -111,6 +111,7 @@ public class SecurityConfig {
                         /* 정적 리소스·공용 엔드포인트 */
                         .requestMatchers("/", "/index.html", "/favicon.ico",
                                 "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout",
                                 "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**",
@@ -130,7 +131,8 @@ public class SecurityConfig {
                         /* BUS & ADMIN 공용 */
                         .requestMatchers("/admin/dashboard").hasAnyRole("ADMIN")
                         .requestMatchers("/admin/found", "/admin/lost").hasAnyRole("ADMIN", "BUS")
-                        .requestMatchers("/api/admin/found/**",
+                .requestMatchers("/api/admin/found/match/**").hasRole("BUS") //추가된거
+                .requestMatchers("/api/admin/found/**",
                                 "/api/admin/lost/**").hasAnyRole("ADMIN", "BUS")
 
                         /* ADMIN 전용 */
