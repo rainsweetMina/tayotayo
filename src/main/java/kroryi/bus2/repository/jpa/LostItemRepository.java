@@ -53,5 +53,6 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
 """)
     List<LostItem> searchByKeywordForAdmin(@Param("keyword") String keyword);
 
+    long countByReporter_IdAndDeletedFalse(Long reporterId);
 }
 
