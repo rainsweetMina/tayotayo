@@ -57,5 +57,8 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
 
 
     List<Qna> findByMemberId(Long memberId);
+
+    // 사용자용: 삭제되지 않았고, 관리자에 의해 숨겨지지 않은 Q&A만 조회
+    List<Qna> findByMemberIdAndIsDeletedFalseAndVisibleTrueOrderByCreatedAtDesc(Long memberId);
 }
 

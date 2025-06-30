@@ -140,17 +140,16 @@ public class QnaService {
     @Transactional(readOnly = true)
     public List<QnaListDTO> getQnaByUser(String userId) {
         User user = userRepository.findByUserId(userId).orElseThrow();
-        List<Qna> qnas = qnaRepository.findByMemberId(user.getId());
+        List<Qna> qnas = qnaRepository.findByMemberIdAndIsDeletedFalseAndVisibleTrueOrderByCreatedAtDesc(user.getId());
 
         return qnas.stream()
-                .filter(q -> !q.isDeleted())
-                .map(q -> QnaListDTO.from(q, userRepository)) // ✅ 수정
+                .map(q -> QnaListDTO.from(q, userRepository))
                 .collect(Collectors.toList());
     }
 
     public List<QnaListDTO> getQnaListByUserId(Long userId) {
-        return qnaRepository.findByMemberId(userId).stream()
-                .map(q -> QnaListDTO.from(q, userRepository)) // ✅ 수정
+        return qnaRepository.findByMemberIdAndIsDeletedFalseAndVisibleTrueOrderByCreatedAtDesc(userId).stream()
+                .map(q -> QnaListDTO.from(q, userRepository))
                 .collect(Collectors.toList());
     }
 }
