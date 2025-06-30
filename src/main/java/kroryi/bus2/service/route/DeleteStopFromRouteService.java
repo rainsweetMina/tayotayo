@@ -1,17 +1,13 @@
 package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
-import kroryi.bus2.entity.route.Route;
-import kroryi.bus2.entity.route.RouteDelete;
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.entity.route.RouteStopLink;
 import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
-import kroryi.bus2.repository.jpa.route.RouteDeleteRepository;
-import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,6 +21,7 @@ public class DeleteStopFromRouteService {
 
 
     @Transactional
+    @AdminAudit(action = "노선 정류장 삭제", target = "RouteStopLink")
     public void deleteStopFromRoute(String routeId, String moveDir, int seqToDelete) {
         // 1. 해당 정류소 찾기
         RouteStopLink stopToDelete = routeStopLinkRepository.findByRouteIdAndMoveDirAndSeq(routeId, moveDir, seqToDelete)

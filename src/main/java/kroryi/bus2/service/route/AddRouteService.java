@@ -1,6 +1,7 @@
 package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
+import kroryi.bus2.aop.AdminAudit;
 import kroryi.bus2.dto.Route.CustomRouteRegisterRequestDTO;
 import kroryi.bus2.dto.Route.CustomRouteDTO;
 import kroryi.bus2.dto.RouteStopLinkDTO;
@@ -28,6 +29,7 @@ public class AddRouteService {
     private final BusStopRepository busStopRepository;
 
     @Transactional
+    @AdminAudit(action = "노선 추가", target = "Route")
     public void saveFullRoute(CustomRouteRegisterRequestDTO request) {
         CustomRouteDTO routeDto = request.getRoute();
         String routeId = routeDto.getRouteId();

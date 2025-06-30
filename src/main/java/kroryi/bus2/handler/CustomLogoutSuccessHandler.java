@@ -15,10 +15,18 @@ import java.io.IOException;
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-            throws IOException, ServletException {
-        log.info("✅ 로그아웃 성공 - 세션 무효화 및 쿠키 삭제 완료");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("Logout successful");
+    public void onLogoutSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication) throws IOException {
+
+        log.info("✅ 로그아웃 성공");
+
+        String referer = request.getHeader("Referer");   // 직전에 보이던 주소
+        if (referer != null && !referer.contains("/auth/login")) {
+            response.sendRedirect(referer);
+        } else {
+            response.sendRedirect("https://localhost:5173/main"); // fallback
+        }
     }
 }

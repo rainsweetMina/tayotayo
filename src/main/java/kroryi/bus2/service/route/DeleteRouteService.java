@@ -1,11 +1,11 @@
 package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
+import kroryi.bus2.aop.AdminAudit;
+import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.entity.route.Route;
 import kroryi.bus2.entity.route.RouteDelete;
-import kroryi.bus2.entity.route.RouteStopLink;
 import kroryi.bus2.repository.jpa.AddRouteStopLinkRepository;
-import kroryi.bus2.repository.jpa.board.RouteStopLinkRepository;
 import kroryi.bus2.repository.jpa.route.RouteDeleteRepository;
 import kroryi.bus2.repository.jpa.route.RouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ public class DeleteRouteService {
     private final RouteDeleteRepository routeDeleteRepository;
 
     @Transactional
+    @AdminAudit(action = "노선 삭제", target = "Route")
     public void deleteRoute(String routeId) {
         log.info("노선 삭제 요청 - routeId: {}", routeId);
 
@@ -36,6 +37,7 @@ public class DeleteRouteService {
     }
 
     @Transactional
+    @AdminAudit(action = "노선 백업", target = "RouteDelete")
     public void backupRoute(String routeId) {
         // 1. 노선 존재 여부 확인
         Route route = routeRepository.findByRouteId(routeId)

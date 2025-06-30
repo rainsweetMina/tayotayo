@@ -1,6 +1,8 @@
 package kroryi.bus2.service.route;
 
 import jakarta.transaction.Transactional;
+import kroryi.bus2.aop.AdminAudit;
+import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.dto.RouteStopLinkDTO;
 import kroryi.bus2.entity.busStop.BusStop;
 import kroryi.bus2.entity.route.RouteStopLink;
@@ -22,6 +24,7 @@ public class InsertStopIntoRouteService {
 
 
     @Transactional
+    @AdminAudit(action = "노선 정류장 추가", target = "RouteStopLink")
     public void insertStopIntoRoute(RouteStopLinkDTO dto) {
         String routeId = dto.getRouteId();
         String moveDir = dto.getMoveDir();
@@ -72,5 +75,4 @@ public class InsertStopIntoRouteService {
             }
         }
     }
-
 }

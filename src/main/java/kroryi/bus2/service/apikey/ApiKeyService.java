@@ -1,5 +1,7 @@
 package kroryi.bus2.service.apikey;
 
+import kroryi.bus2.aop.AdminAudit;
+import kroryi.bus2.aop.AdminTracked;
 import kroryi.bus2.entity.apikey.ApiKey;
 import kroryi.bus2.entity.apikey.ApiKeyStatus;
 import kroryi.bus2.entity.user.User;
@@ -32,6 +34,7 @@ public class ApiKeyService {
     }
 
     @Transactional
+    @AdminAudit(action = "API 키 발급", target = "ApiKey")
     public ApiKey issueApiKey(String user_name, String allowedIp, User user) {
         List<ApiKey> existingKeys = apiKeyRepository.findAllByUser(user);
         for (ApiKey oldKey : existingKeys) {
@@ -56,6 +59,7 @@ public class ApiKeyService {
     }
 
     @Transactional
+    @AdminAudit(action = "API 키 신청", target = "ApiKey")
     public void requestApiKey(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -76,6 +80,7 @@ public class ApiKeyService {
     }
 
     @Transactional
+    @AdminAudit(action = "API 키 갱신", target = "ApiKey")
     public ApiKey renewApiKey(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -116,6 +121,7 @@ public class ApiKeyService {
     }
 
     @Transactional
+    @AdminAudit(action = "API 키 상태 전환", target = "ApiKey")
     public boolean toggleActive(Long id) {
         ApiKey apiKey = apiKeyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("API 키를 찾을 수 없습니다."));
@@ -131,6 +137,7 @@ public class ApiKeyService {
     }
 
     @Transactional
+    @AdminAudit(action = "API 키 재발급", target = "ApiKey")
     public ApiKey reissueApiKey(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -161,6 +168,7 @@ public class ApiKeyService {
     }
 
     @Transactional
+    @AdminAudit(action = "API 키 활성화 토글", target = "ApiKey")
     public void toggleActiveStatus(Long id) {
         ApiKey apiKey = apiKeyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("API 키를 찾을 수 없습니다: " + id));
