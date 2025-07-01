@@ -37,13 +37,20 @@ public class QnaApiController {
     @Operation(summary = "QnA 단건 조회", description = "QnA 상세 정보를 조회합니다.")
     @GetMapping("/{id}")
     public ResponseEntity<QnaResponseDTO> getQnaDetail(@PathVariable Long id, Authentication auth) {
-        String userId = auth.getName(); // 현재 로그인한 사용자의 ID (userId 필드)
-        User user = userRepository.findByUserId(userId).orElseThrow();
+        Long requesterId = null;
+        boolean isAdmin = false;
 
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            String userId = auth.getName();
+            User user = userRepository.findByUserId(userId).orElse(null);
+            if (user != null) {
+                requesterId = user.getId();
+            }
+            isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        }
 
-        QnaResponseDTO response = qnaAdminService.getQnaDetail(id, user.getId(), isAdmin);
+        QnaResponseDTO response = qnaAdminService.getQnaDetail(id, requesterId, isAdmin);
         return ResponseEntity.ok(response);
     }
 

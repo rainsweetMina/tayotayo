@@ -178,4 +178,13 @@ public class PublicNoticeApiController {
                 return MediaType.APPLICATION_OCTET_STREAM_VALUE;
         }
     }
+
+    @Operation(summary = "팝업 공지사항 1건 조회")
+    @GetMapping("/notices/popup")
+    public ResponseEntity<NoticeResponseDTO> getPopupNotice() {
+        // 서비스에 findValidPopup() 메서드가 있다고 가정
+        java.util.Optional<kroryi.bus2.entity.Notice> popup = noticeService.findValidPopup();
+        return popup.map(notice -> ResponseEntity.ok(new NoticeResponseDTO(notice)))
+                .orElse(ResponseEntity.noContent().build());
+    }
 }
