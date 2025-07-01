@@ -169,26 +169,6 @@ public class UserApiController {
         }
     }
 
-//    // 디버깅용
-//    @GetMapping("/mypage/debug-session")
-//    public ResponseEntity<?> debugSession(HttpServletRequest request) {
-//        log.info("⚙️ /debug-session 진입");
-//
-//        Cookie[] cookies = request.getCookies();
-//        if (cookies != null) {
-//            for (Cookie c : cookies) {
-//                log.info("🍪 쿠키: {} = {}", c.getName(), c.getValue());
-//            }
-//        } else {
-//            log.warn("❌ 쿠키 없음");
-//        }
-//
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        log.info("🔐 SecurityContext 인증: {}", auth);
-//
-//        return ResponseEntity.ok("ok");
-//    }
-
     @PostMapping("/find-password")
     public ResponseEntity<String> sendTemporaryPassword(@RequestBody PasswordRequestDTO request) {
         userService.sendTemporaryPassword(request.getUserId(), request.getEmail());
