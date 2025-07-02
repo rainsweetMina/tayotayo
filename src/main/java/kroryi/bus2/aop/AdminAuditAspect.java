@@ -40,6 +40,13 @@ public class AdminAuditAspect {
             "@annotation(kroryi.bus2.aop.AdminTracked)")
     public void adminActions() {}
 
+    // ✅ 분실물/습득물 관련 작업을 위한 포인트컷
+    @Pointcut("execution(* kroryi.bus2.service..*.Lost*(..)) || " +
+            "execution(* kroryi.bus2.service..*.Found*(..)) || " +
+            "execution(* kroryi.bus2.controller.lost.*.*(..)) || " +
+            "within(kroryi.bus2.service.lost.*)")
+    public void lostFoundActions() {}
+
     // ✅ BusCompany 관련 메서드를 제외하는 포인트컷
     @Pointcut("!execution(* kroryi.bus2.service..*BusCompany*.*(..)) && " +
             "!execution(* kroryi.bus2.service..*.find*BusCompany*(..)) && " +
@@ -64,12 +71,17 @@ public class AdminAuditAspect {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal().equals("anonymousUser")) return joinPoint.proceed();
         
-        // ADMIN 권한을 가진 사용자만 로깅
-        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+        // ADMIN 권한 또는 BUS 권한(분실물 관련 작업일 때)인 경우만 로깅
+        boolean isAdmin = auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        boolean isBus = auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_BUS"));
+        boolean isLostFoundClass = className.contains("Lost") || className.contains("Found");
+        
+        // 로깅 조건: ADMIN이거나 (BUS이면서 분실물/습득물 관련 작업)
+        if (!isAdmin && !(isBus && isLostFoundClass)) {
             return joinPoint.proceed();
         }
 
-        String adminId = auth.getName();
+        String userId = auth.getName();
         StringBuilder argInfo = new StringBuilder();
 
 
@@ -84,7 +96,7 @@ public class AdminAuditAspect {
             result = joinPoint.proceed();
 
             auditLogServiceImpl.logAdminAction(AdminAuditLog.builder()
-                    .adminId(adminId)
+                    .adminId(userId)
                     .action(action)
                     .target(className)
                     .beforeValue("") // 필요 시 비교
@@ -95,13 +107,13 @@ public class AdminAuditAspect {
             return result;
 
         } catch (Exception e) {
-            log.error("🚨 관리자 작업 로그 기록 실패", e);
+            log.error("🚨 관리자/버스 작업 로그 기록 실패", e);
             throw e; // 예외를 다시 던져서 원래의 예외를 유지
         }
     }
 
 
-    private String getCurrentAdminUsername() {
+    private String getCurrentUserUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return (auth != null && auth.isAuthenticated()) ? auth.getName() : "anonymous";
     }
@@ -113,18 +125,38 @@ public class AdminAuditAspect {
         return "작업";
     }
     
-    // ADMIN 권한을 가진 사용자인지 확인하는 메서드
-    private boolean isAdminUser() {
+    // ADMIN 또는 BUS(분실물 관련) 권한인지 확인하는 메서드
+    private boolean isAllowedUser(JoinPoint joinPoint) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.getAuthorities().stream()
+        if (auth == null) return false;
+        
+        // ADMIN 권한 체크
+        boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                
+        if (isAdmin) return true;
+        
+        // BUS 권한 & 분실물 관련 작업 체크
+        boolean isBus = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_BUS"));
+                
+        if (isBus) {
+            String className = joinPoint.getTarget().getClass().getSimpleName();
+            String methodName = joinPoint.getSignature().getName();
+            
+            // 분실물/습득물 관련 작업인지 확인
+            return (className.contains("Lost") || className.contains("Found") ||
+                   methodName.contains("Lost") || methodName.contains("Found"));
+        }
+        
+        return false;
     }
     
     @AfterReturning(value = "@annotation(adminAudit)", returning = "result")
     public void logAuditedOperation(JoinPoint joinPoint, AdminAudit adminAudit, Object result) {
         try {
-            // ADMIN 권한을 가진 사용자만 로깅
-            if (!isAdminUser()) {
+            // ADMIN 또는 BUS(분실물 관련) 권한인지 확인
+            if (!isAllowedUser(joinPoint)) {
                 return;
             }
             
@@ -138,7 +170,7 @@ public class AdminAuditAspect {
                 return;
             }
             
-            String adminId = getCurrentAdminUsername();
+            String userId = getCurrentUserUsername();
             String action = adminAudit.action();
             String target = adminAudit.target();
 
@@ -174,7 +206,7 @@ public class AdminAuditAspect {
             }
 
             AdminAuditLog auditLog = AdminAuditLog.builder()
-                    .adminId(adminId)
+                    .adminId(userId)
                     .action(action)
                     .target(target)
                     .beforeValue(null)
@@ -183,11 +215,11 @@ public class AdminAuditAspect {
                     .build();
 
             logRepository.save(auditLog);
-            log.info("[AUDIT ✅] {} - {} by {}", action, target, adminId);
+            log.info("[AUDIT ✅] {} - {} by {}", action, target, userId);
 
 
         } catch (Exception e) {
-            log.error("🚨 관리자 작업 로그 기록 실패", e);
+            log.error("🚨 관리자/버스 작업 로그 기록 실패", e);
         }
     }
 }
