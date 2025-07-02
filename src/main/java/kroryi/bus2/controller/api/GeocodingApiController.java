@@ -66,17 +66,24 @@ public class GeocodingApiController {
     
     @GetMapping("/geocode")
     @Operation(summary = "정방향 지오코딩 API", description = "주소를 위도/경도 좌표로 변환합니다 (Nominatim API 프록시)")
-    @Cacheable(value = "geocodeCache", key = "#q", unless = "#result == null")
+    @Cacheable(value = "geocodeCache", key = "#q != null ? #q : #address", unless = "#result == null")
     public Mono<String> geocode(
-            @Parameter(description = "검색할 주소") @RequestParam String q,
+            @Parameter(description = "검색할 주소") @RequestParam(required = false) String q,
+            @Parameter(description = "검색할 주소 (q와 동일, 프론트엔드 호환용)") @RequestParam(required = false) String address,
             @Parameter(description = "결과 개수 제한") @RequestParam(required = false, defaultValue = "1") int limit) {
         
-        log.info("정방향 지오코딩 요청: q={}, limit={}", q, limit);
+        // address 파라미터를 q로 대체 (둘 다 제공되면 q 우선)
+        String query = q != null ? q : address;
+        if (query == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "주소 파라미터(q 또는 address)가 필요합니다");
+        }
+        
+        log.info("정방향 지오코딩 요청: query={}, limit={}", query, limit);
         
         return webClientBuilder.build()
                 .get()
-                .uri("https://nominatim.openstreetmap.org/search?format=json&q={q}&limit={limit}",
-                        q, limit)
+                .uri("https://nominatim.openstreetmap.org/search?format=json&q={query}&limit={limit}",
+                        query, limit)
                 .header("User-Agent", "TayoTayo/1.0 (contact@tayotayo.com)")
                 .retrieve()
                 .bodyToMono(String.class)
