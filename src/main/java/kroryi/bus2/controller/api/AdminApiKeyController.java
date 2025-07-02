@@ -93,7 +93,6 @@ public class AdminApiKeyController {
 
     @Operation(summary = "API 키 생성", description = "새로운 API 키를 생성합니다.")
     @PostMapping("/apikey/create")
-    @AdminAudit(action = "API 키 생성", target = "ApiKey")
     public ApiKeyResponseDTO createKey(@RequestBody CreateApiKeyRequestDTO request) {
         ApiKey.ApiKeyBuilder builder = ApiKey.builder()
                 .user_name(request.getUser_name())
@@ -156,7 +155,6 @@ public class AdminApiKeyController {
 
     @Operation(summary = "API 키 승인 상태 토글", description = "API 키 상태를 승인/대기로 토글합니다.")
     @PutMapping("/apikey/{id}/toggle-approval")
-    @AdminAudit(action = "API 키 승인 상태 토글", target = "ApiKey")
     public ResponseEntity<String> toggleApprovalStatus(@PathVariable Long id) {
         log.info("🔁 API 키 승인 상태 변경 요청: {}", id); // ← 로그 추가하면 호출 여부 추적 가능
         boolean approved = apiKeyService.toggleActive(id); // 또는 toggleActiveStatus(id)
