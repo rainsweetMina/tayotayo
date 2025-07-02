@@ -1,6 +1,7 @@
 package kroryi.bus2.service.user;
 
-import jakarta.transaction.Transactional;
+import kroryi.bus2.config.security.CustomUserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import kroryi.bus2.dto.user.JoinRequestDTO;
 import kroryi.bus2.dto.user.LoginRequestDTO;
 import kroryi.bus2.dto.mypage.ModifyUserDTO;
@@ -13,6 +14,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -112,10 +115,22 @@ public class UserService {
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
 
-        notificationService.createNotification(
-                userId,
-                "회원 정보 변경 완료"
-        );
+        notificationService.createNotification(userId, "회원 정보 변경 완료");
+
+        // ✅ 현재 세션 사용자 정보도 업데이트 (Principal 교체)
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = auth.getPrincipal();
+
+        if (principal instanceof CustomUserDetails cud) {
+            cud.getUser().setUsername(dto.getUsername());
+            cud.getUser().setEmail(dto.getEmail());
+            cud.getUser().setPhoneNumber(dto.getPhoneNumber());
+
+            // 🔁 Authentication 객체 갱신 (optional)
+            UsernamePasswordAuthenticationToken newAuth =
+                    new UsernamePasswordAuthenticationToken(cud, auth.getCredentials(), cud.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+        }
 
         return true;
     }
@@ -153,11 +168,11 @@ public class UserService {
 
     @Transactional
     public void updateLastLoginAt(String userId) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        user.setLastLoginAt(LocalDateTime.now());
-        userRepository.save(user);
+        LocalDateTime now = LocalDateTime.now();
+        userRepository.updateLastLoginAt(userId, now);
+        log.info("📝 lastLoginAt 업데이트: {}, {}", userId, now);
     }
+
 
     /**
      * ✅ Vue API에서 사용하는 탈퇴 - 비밀번호 검증 포함

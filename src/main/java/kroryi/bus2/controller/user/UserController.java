@@ -86,16 +86,25 @@ public class UserController {
         return "redirect:/auth/login?logout=true"; // 로그인 페이지로 이동
     }
 
-
     @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestParam String username,
                                    @RequestParam String password,
                                    HttpSession session) {
+
         User user = userService.findByUserId(username);
+
+        // ① 아이디/비밀번호 검증
         if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
-            return ResponseEntity.status(401).body("로그인 실패");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인 실패");
         }
+
+        // ② ✅ 마지막 로그인 시각 업데이트
+        userService.updateLastLoginAt(username);
+
+        // ③ 세션 저장(필요 시)
         session.setAttribute("user", user);
+
         return ResponseEntity.ok("로그인 성공");
     }
 
