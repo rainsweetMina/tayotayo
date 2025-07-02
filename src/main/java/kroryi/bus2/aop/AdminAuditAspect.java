@@ -12,6 +12,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,6 +63,11 @@ public class AdminAuditAspect {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal().equals("anonymousUser")) return joinPoint.proceed();
+        
+        // ADMIN 권한을 가진 사용자만 로깅
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            return joinPoint.proceed();
+        }
 
         String adminId = auth.getName();
         StringBuilder argInfo = new StringBuilder();
@@ -106,9 +112,22 @@ public class AdminAuditAspect {
         if (method.startsWith("delete")) return "삭제";
         return "작업";
     }
+    
+    // ADMIN 권한을 가진 사용자인지 확인하는 메서드
+    private boolean isAdminUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+    
     @AfterReturning(value = "@annotation(adminAudit)", returning = "result")
     public void logAuditedOperation(JoinPoint joinPoint, AdminAudit adminAudit, Object result) {
         try {
+            // ADMIN 권한을 가진 사용자만 로깅
+            if (!isAdminUser()) {
+                return;
+            }
+            
             // BusCompany 관련 작업이면 로깅 제외
             String className = joinPoint.getTarget().getClass().getSimpleName();
             String methodName = joinPoint.getSignature().getName();
@@ -126,12 +145,6 @@ public class AdminAuditAspect {
             Map<String, Object> paramMap = new LinkedHashMap<>();
             Object[] args = joinPoint.getArgs();
 
-//            auditLogServiceImpl.logAdminAction(
-//                    adminAudit.action(),
-//                    adminAudit.target(),
-//                    argsJson,
-//                    resultJson
-//            );
             for (int i = 0; i < args.length; i++) {
                 Object arg = args[i];
                 String key = "arg" + i;
@@ -141,7 +154,6 @@ public class AdminAuditAspect {
                 } else if (arg instanceof FoundItemRequestDTO dto) {
                     Map<String, Object> safeDto = new LinkedHashMap<>();
                     safeDto.put("itemName", dto.getItemName());
-//                    safeDto.put("busCompany", dto.getBusCompany());
                     safeDto.put("busNumber", dto.getBusNumber());
                     safeDto.put("foundPlace", dto.getFoundPlace());
                     safeDto.put("foundTime", dto.getFoundTime());
