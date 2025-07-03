@@ -24,4 +24,7 @@ public class CreateLowFloorBusRequestDTO {
     @Schema(description = "내용", example = "금일 저상버스 3231호 차량 정비로 인해 일반 버스로 대체 운행됩니다.")
     @NotBlank
     private String content;
+    
+    @Schema(description = "탑공지 여부", example = "false")
+    private boolean topNotice;
 } 

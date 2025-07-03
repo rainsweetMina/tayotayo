@@ -14,4 +14,6 @@ public class UpdateLowFloorBusRequestDTO {
 
     @NotBlank
     private String content;
+    
+    private boolean topNotice;
 } 

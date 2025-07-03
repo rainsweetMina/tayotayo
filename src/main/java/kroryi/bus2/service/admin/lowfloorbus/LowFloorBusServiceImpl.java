@@ -35,6 +35,7 @@ public class LowFloorBusServiceImpl implements LowFloorBusService {
         try {
             log.info("저상버스 대체 안내 생성 시작: {}", dto.getTitle());
             LowFloorBus lowFloorBus = new LowFloorBus(dto.getTitle(), dto.getAuthor(), dto.getContent());
+            lowFloorBus.setTopNotice(dto.isTopNotice());
             
             // 먼저 LowFloorBus 엔티티를 저장하여 ID를 생성
             LowFloorBus savedLowFloorBus = lowFloorBusRepository.save(lowFloorBus);
@@ -68,6 +69,7 @@ public class LowFloorBusServiceImpl implements LowFloorBusService {
             
             lowFloorBus.setTitle(dto.getTitle());
             lowFloorBus.setContent(dto.getContent());
+            lowFloorBus.setTopNotice(dto.isTopNotice());
             
             if (files != null && !files.isEmpty()) {
                 log.info("첨부파일 처리 시작: {} 개의 파일", files.size());
@@ -100,9 +102,27 @@ public class LowFloorBusServiceImpl implements LowFloorBusService {
     @Override
     @Transactional(readOnly = true)
     public List<LowFloorBusResponseDTO> getAllLowFloorBuses() {
-        return lowFloorBusRepository.findAllByOrderByCreatedDateDesc().stream()
+        // 탑공지가 먼저 오도록 정렬하여 결과 반환
+        List<LowFloorBus> allLowFloorBuses = lowFloorBusRepository.findAll();
+        
+        // 탑공지 항목과 일반 항목으로 분리 후 각각 날짜순 정렬
+        List<LowFloorBusResponseDTO> topNotices = allLowFloorBuses.stream()
+                .filter(LowFloorBus::isTopNotice)
+                .sorted((a, b) -> b.getCreatedDate().compareTo(a.getCreatedDate()))
                 .map(LowFloorBusResponseDTO::new)
                 .collect(Collectors.toList());
+                
+        List<LowFloorBusResponseDTO> normalNotices = allLowFloorBuses.stream()
+                .filter(lowFloorBus -> !lowFloorBus.isTopNotice())
+                .sorted((a, b) -> b.getCreatedDate().compareTo(a.getCreatedDate()))
+                .map(LowFloorBusResponseDTO::new)
+                .collect(Collectors.toList());
+                
+        // 탑공지를 먼저 두고 일반 공지를 뒤에 추가
+        List<LowFloorBusResponseDTO> result = new ArrayList<>(topNotices);
+        result.addAll(normalNotices);
+        
+        return result;
     }
 
     @Override
@@ -122,6 +142,22 @@ public class LowFloorBusServiceImpl implements LowFloorBusService {
     public LowFloorBus findById(Long id) {
         return lowFloorBusRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("저상버스 대체 안내를 찾을 수 없습니다. ID: " + id));
+    }
+    
+    @Override
+    @Transactional
+    public LowFloorBusResponseDTO toggleTopNotice(Long id, boolean topNotice) {
+        LowFloorBus lowFloorBus = lowFloorBusRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("저상버스 대체 안내를 찾을 수 없습니다. ID: " + id));
+                
+        log.info("저상버스 대체 안내 탑공지 상태 변경: ID={}, 제목={}, 탑공지={} -> {}",
+                id, lowFloorBus.getTitle(), lowFloorBus.isTopNotice(), topNotice);
+                
+        lowFloorBus.setTopNotice(topNotice);
+        LowFloorBus updatedLowFloorBus = lowFloorBusRepository.save(lowFloorBus);
+        
+        log.info("저상버스 대체 안내 탑공지 상태 변경 완료: ID={}", id);
+        return new LowFloorBusResponseDTO(updatedLowFloorBus);
     }
     
     private List<LowFloorBusFile> processFiles(List<MultipartFile> files, LowFloorBus lowFloorBus) {

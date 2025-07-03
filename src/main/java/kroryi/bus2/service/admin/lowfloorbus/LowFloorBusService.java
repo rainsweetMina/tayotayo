@@ -15,4 +15,5 @@ public interface LowFloorBusService {
     List<LowFloorBusResponseDTO> getAllLowFloorBuses();
     LowFloorBusResponseDTO getLowFloorBusById(Long id);
     LowFloorBus findById(Long id);
+    LowFloorBusResponseDTO toggleTopNotice(Long id, boolean topNotice);
 } 
