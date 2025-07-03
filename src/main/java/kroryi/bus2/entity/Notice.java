@@ -30,6 +30,20 @@ public class Notice {
     @Column(name = "view_count", nullable = false)
     private Long viewCount = 0L;
 
+    // 탑공지 필드 추가
+    @Column(name = "is_top_notice", nullable = false)
+    private boolean topNotice = false;
+    
+    // 명시적인 getter 추가
+    public boolean isTopNotice() {
+        return this.topNotice;
+    }
+    
+    // 명시적인 setter 추가
+    public void setTopNotice(boolean topNotice) {
+        this.topNotice = topNotice;
+    }
+
     // 조회수 증가 메서드
     public void increaseViewCount() {
         this.viewCount = this.viewCount + 1;
@@ -41,6 +55,7 @@ public class Notice {
         this.author = author;
         this.content = content;
         this.viewCount = 0L;
+        this.topNotice = false;
     }
 
     // 파일 업로드

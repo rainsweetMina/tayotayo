@@ -22,6 +22,8 @@ public class NoticeResponseDTO {
     private LocalDateTime updatedDate;
     // 조회수 필드 추가
     private Long viewCount;
+    // 탑공지 필드 추가
+    private boolean isTopNotice;
     //팝업관련
     private boolean showPopup;
     private LocalDateTime popupStart;
@@ -65,6 +67,8 @@ public class NoticeResponseDTO {
         this.showPopup = notice.isShowPopup();
         this.popupStart = notice.getPopupStart();
         this.popupEnd = notice.getPopupEnd();
+        // ✅ 탑공지 필드 추가
+        this.isTopNotice = notice.isTopNotice();
     }
 
 

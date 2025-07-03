@@ -35,4 +35,7 @@ public class CreateNoticeRequestDTO {
 
     @Schema(description = "팝업 종료일시", example = "2025-06-06T08:00:00")
     private LocalDateTime popupEnd;
+    
+    @Schema(description = "탑공지 여부", example = "true")
+    private boolean isTopNotice;
 }

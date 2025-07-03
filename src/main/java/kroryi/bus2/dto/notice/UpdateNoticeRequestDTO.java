@@ -21,5 +21,8 @@ public class UpdateNoticeRequestDTO {
     private boolean showPopup;
     private LocalDateTime popupStart;
     private LocalDateTime popupEnd;
+    
+    // 탑공지 관련
+    private boolean isTopNotice;
 
 }

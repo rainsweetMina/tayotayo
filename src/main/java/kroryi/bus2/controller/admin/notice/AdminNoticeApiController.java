@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import kroryi.bus2.dto.notice.CreateNoticeRequestDTO;
 import kroryi.bus2.dto.notice.NoticeResponseDTO;
 import kroryi.bus2.dto.notice.UpdateNoticeRequestDTO;
+import kroryi.bus2.entity.Notice;
 import kroryi.bus2.service.admin.notice.NoticeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -133,6 +134,40 @@ public class AdminNoticeApiController {
         }
 
 
+    }
+
+    @Operation(summary = "탑공지 설정")
+    @PatchMapping(value = "/{id}/top", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<NoticeResponseDTO> setTopNotice(
+            @PathVariable Long id,
+            @RequestParam boolean isTop
+    ) {
+        log.info("🔴 탑공지 설정 API 호출 - ID: {}, isTop: {}", id, isTop);
+        
+        // ID로 공지사항 조회
+        Notice notice = noticeService.findById(id);
+        if (notice == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // 탑공지 여부 설정
+        notice.setTopNotice(isTop);
+        log.info("🔴 탑공지 설정 - ID: {}, 제목: {}, 탑공지 여부: {}", id, notice.getTitle(), notice.isTopNotice());
+        
+        // 저장
+        UpdateNoticeRequestDTO dto = new UpdateNoticeRequestDTO(
+            notice.getTitle(),
+            notice.getContent(),
+            notice.isShowPopup(),
+            notice.getPopupStart(),
+            notice.getPopupEnd(),
+            isTop  // 탑공지 여부
+        );
+        
+        NoticeResponseDTO updated = noticeService.updateNotice(id, dto, null);
+        log.info("🔴 탑공지 설정 완료 - ID: {}, 제목: {}, 탑공지 여부: {}", id, updated.getTitle(), updated.isTopNotice());
+        
+        return ResponseEntity.ok(updated);
     }
 
 }

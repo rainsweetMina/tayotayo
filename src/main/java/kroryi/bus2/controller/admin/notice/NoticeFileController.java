@@ -201,7 +201,8 @@ public class NoticeFileController {
                     notice.getContent(), 
                     notice.isShowPopup(),
                     notice.getPopupStart(),
-                    notice.getPopupEnd()
+                    notice.getPopupEnd(),
+                    notice.isTopNotice()
                 ), null);
 
             return ResponseEntity.ok(savedFiles.get(0));

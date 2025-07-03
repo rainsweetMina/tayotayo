@@ -37,6 +37,7 @@ public class NoticeServiceImpl implements NoticeService {
     public NoticeResponseDTO createNotice(CreateNoticeRequestDTO dto, List<MultipartFile> files) {
         try {
             log.info("공지사항 생성 시작 - 제목: {}", dto.getTitle());
+            log.info("공지사항 탑공지 여부: {}", dto.isTopNotice());
             
             // 1. 기본 정보로 엔티티 생성
             Notice entity = new Notice();
@@ -46,6 +47,9 @@ public class NoticeServiceImpl implements NoticeService {
             entity.setShowPopup(dto.isShowPopup());
             entity.setPopupStart(dto.getPopupStart());
             entity.setPopupEnd(dto.getPopupEnd());
+            entity.setTopNotice(dto.isTopNotice());
+            
+            log.info("엔티티 설정 후 탑공지 여부: {}", entity.isTopNotice());
 
             // 2. 기본 정보 저장
             log.info("공지사항 기본 정보 저장");
@@ -79,6 +83,7 @@ public class NoticeServiceImpl implements NoticeService {
     public NoticeResponseDTO updateNotice(Long id, UpdateNoticeRequestDTO dto, List<MultipartFile> files) {
         try {
             log.info("공지사항 수정 시작 - ID: {}, 제목: {}", id, dto.getTitle());
+            log.info("공지사항 수정 - 탑공지 여부: {}", dto.isTopNotice());
             
             Notice notice = noticeRepository.findByIdWithFiles(id)
                     .orElseThrow(() -> new IllegalArgumentException("해당 공지 없음"));
@@ -88,6 +93,9 @@ public class NoticeServiceImpl implements NoticeService {
             notice.setShowPopup(dto.isShowPopup());
             notice.setPopupStart(dto.getPopupStart());
             notice.setPopupEnd(dto.getPopupEnd());
+            notice.setTopNotice(dto.isTopNotice());
+            
+            log.info("엔티티 수정 후 탑공지 여부: {}", notice.isTopNotice());
 
             // 파일 처리
             if (files != null && !files.isEmpty()) {
@@ -126,9 +134,37 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional(readOnly = true)
     @Override
     public List<NoticeResponseDTO> getAllNotices() {
-        return noticeRepository.findAllByOrderByCreatedDateDesc().stream()
-                .map(NoticeResponseDTO::new)
-                .collect(Collectors.toList());
+        List<Notice> notices = noticeRepository.findAllByOrderByCreatedDateDesc();
+        
+        // 각 공지사항의 탑공지 여부 확인
+        for (Notice notice : notices) {
+            log.info("공지 ID: {}, 제목: {}, 탑공지 여부: {}", notice.getId(), notice.getTitle(), notice.isTopNotice());
+        }
+        
+        // 탑공지를 상단에 정렬
+        notices.sort((a, b) -> {
+            // 1. 둘 다 탑공지면 최신순
+            if (a.isTopNotice() && b.isTopNotice()) {
+                return b.getCreatedDate().compareTo(a.getCreatedDate());
+            }
+            // 2. a만 탑공지면 a가 위로
+            if (a.isTopNotice()) return -1;
+            // 3. b만 탑공지면 b가 위로
+            if (b.isTopNotice()) return 1;
+            // 4. 둘 다 탑공지가 아니면 최신순
+            return b.getCreatedDate().compareTo(a.getCreatedDate());
+        });
+        
+        List<NoticeResponseDTO> result = notices.stream()
+               .map(NoticeResponseDTO::new)
+               .collect(Collectors.toList());
+        
+        // 변환된 DTO의 탑공지 여부 확인
+        for (NoticeResponseDTO dto : result) {
+            log.info("DTO ID: {}, 제목: {}, 탑공지 여부: {}", dto.getId(), dto.getTitle(), dto.isTopNotice());
+        }
+        
+        return result;
     }
 
     // 공지 상세 조회
