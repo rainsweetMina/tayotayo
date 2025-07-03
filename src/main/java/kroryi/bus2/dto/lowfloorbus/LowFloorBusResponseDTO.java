@@ -21,6 +21,7 @@ public class LowFloorBusResponseDTO {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Long viewCount;
+    private boolean topNotice;
     private List<FileDTO> files;
 
     @Data
@@ -51,6 +52,7 @@ public class LowFloorBusResponseDTO {
         this.createdDate = toLocalDateTimeSafe(lowFloorBus.getCreatedDate());
         this.updatedDate = toLocalDateTimeSafe(lowFloorBus.getUpdatedDate());
         this.viewCount = lowFloorBus.getViewCount();
+        this.topNotice = lowFloorBus.isTopNotice();
         this.files = lowFloorBus.getFiles().stream()
                 .map(FileDTO::from)
                 .collect(Collectors.toList());

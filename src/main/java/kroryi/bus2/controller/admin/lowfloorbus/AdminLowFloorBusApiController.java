@@ -95,6 +95,20 @@ public class AdminLowFloorBusApiController {
         return ResponseEntity.ok(lowFloorBusService.updateLowFloorBus(id, dto, files));
     }
 
+    @Operation(summary = "저상버스 대체 안내 탑공지 설정/해제")
+    @PatchMapping(value = "/{id}/top-notice")
+    public ResponseEntity<LowFloorBusResponseDTO> toggleTopNotice(
+            @PathVariable Long id,
+            @RequestParam boolean topNotice
+    ) {
+        log.info("🔴 ADMIN API 호출됨 - 저상버스 대체 안내 탑공지 {} 설정: {}", 
+                topNotice ? "활성화" : "비활성화", id);
+        LowFloorBusResponseDTO updated = lowFloorBusService.toggleTopNotice(id, topNotice);
+        log.info("🔴 저상버스 대체 안내 탑공지 설정 완료 - ID: {}, 제목: {}, 탑공지: {}", 
+                id, updated.getTitle(), updated.isTopNotice());
+        return ResponseEntity.ok(updated);
+    }
+
     @Operation(summary = "저상버스 대체 안내 삭제")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteLowFloorBus(@PathVariable Long id) {
