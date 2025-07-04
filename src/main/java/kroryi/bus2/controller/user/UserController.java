@@ -34,7 +34,7 @@ public class UserController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/admin";
+        return "redirect:/auth/login";
     }
 
 

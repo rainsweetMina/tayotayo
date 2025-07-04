@@ -1,8 +1,13 @@
 # Ubuntu 22.04 기반의 openjdk 이미지 (슬림하지 않음)
 FROM ubuntu:22.04
+# 미러 변경 (선택)
+RUN sed -i 's|http://archive.ubuntu.com|http://mirror.kakao.com|g' /etc/apt/sources.list
+
 
 # 필수 패키지 설치
-RUN apt-get update && \
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get update && \
     apt-get install -y openjdk-17-jdk net-tools iputils-ping vim vim && \
     apt-get clean
 ENV LANG=ko_KR.UTF-8

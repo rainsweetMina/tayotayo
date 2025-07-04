@@ -1,8 +1,8 @@
 package kroryi.bus2.handler;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kroryi.bus2.components.RedirectProperties;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -13,6 +13,11 @@ import java.io.IOException;
 @Log4j2
 @Component
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
+    private final RedirectProperties redirect;
+
+    public CustomLogoutSuccessHandler(RedirectProperties redirect) {
+        this.redirect = redirect;
+    }
 
     @Override
     public void onLogoutSuccess(
@@ -26,7 +31,7 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
         if (referer != null && !referer.contains("/auth/login")) {
             response.sendRedirect(referer);
         } else {
-            response.sendRedirect("https://localhost:5173/main"); // fallback
+            response.sendRedirect(redirect.getBaseUrl()+ "/main"); // fallback
         }
     }
 }

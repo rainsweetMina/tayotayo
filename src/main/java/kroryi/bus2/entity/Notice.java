@@ -21,6 +21,8 @@ public class Notice {
     private Long id;
 
     private String title;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
     private String author;
     private Timestamp createdDate;

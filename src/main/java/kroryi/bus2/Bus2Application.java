@@ -3,6 +3,7 @@ package kroryi.bus2;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -17,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = "kroryi.bus2")
 @EnableScheduling
 @EnableJpaAuditing
+@ConfigurationPropertiesScan(basePackages = "kroryi.bus2.components")
 public class Bus2Application implements CommandLineRunner {
 
     public static void main(String[] args) {

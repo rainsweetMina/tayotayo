@@ -2,9 +2,9 @@ package kroryi.bus2.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kroryi.bus2.components.RedirectProperties;
 import kroryi.bus2.config.security.CustomOAuth2User;
 import kroryi.bus2.config.security.CustomUserDetails;
-import kroryi.bus2.dto.user.JwtTokenDTO;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.user.UserService;
 import kroryi.bus2.utils.JwtTokenUtil;
@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final ApplicationContext context;
+    private final RedirectProperties redirect;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -81,7 +82,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
         String encodedRefreshToken = URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);
         
-        String redirectUrl = String.format("https://localhost:5173%s?accessToken=%s&refreshToken=%s", 
+        String redirectUrl = String.format(redirect.getBaseUrl() + "%s?accessToken=%s&refreshToken=%s",
                 path, encodedAccessToken, encodedRefreshToken);
         
         log.info("✅ 리다이렉트 URL: {}", redirectUrl);
