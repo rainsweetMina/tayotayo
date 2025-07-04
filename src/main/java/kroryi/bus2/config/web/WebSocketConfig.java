@@ -1,5 +1,6 @@
 package kroryi.bus2.config.web;
 
+import kroryi.bus2.components.RedirectProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -10,6 +11,11 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    private final RedirectProperties redirect;
+
+    public WebSocketConfig(RedirectProperties redirect) {
+        this.redirect = redirect;
+    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -21,12 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins(
-                    "https://localhost:5173",
-                    "http://localhost:5173",
-                    "https://localhost:5174",
-                    "http://localhost:5174",
-                    "http://localhost:8081",
-                    "https://localhost:8081"
+                        redirect.getBaseUrl()
                 )
                 .withSockJS();
     }

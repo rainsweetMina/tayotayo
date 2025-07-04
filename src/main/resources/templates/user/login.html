@@ -20,50 +20,78 @@
     <h2 class="text-center mb-4">로그인</h2>
     <h3 class="text-center mb-4">ID: admin<br>PW: !1aaaaaa</h2>
 
-    <!-- 회원가입 성공 메시지 -->
-    <div th:if="${param.registerSuccess}" class="alert alert-success" role="alert">
-        회원가입이 완료되었습니다! 로그인해주세요.
-    </div>
-
-    <!-- 로그인 에러 메시지 -->
-    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-        <p th:text="${errorMessage}"></p>
-    </div>
-
-    <!-- 로그아웃 메시지 -->
-    <div th:if="${logoutMessage}" class="alert alert-success" role="alert">
-        <p th:text="${logoutMessage}"></p>
-    </div>
-
-    <!-- 로그인 폼 -->
-    <form action="/auth/login" method="post">
-        <div class="mb-3">
-            <label for="userid" class="form-label">아이디</label>
-            <input type="text" class="form-control" id="userid" name="username" placeholder="아이디 입력" value="admin">
+        <!-- 회원가입 성공 메시지 -->
+        <div th:if="${param.registerSuccess}" class="alert alert-success" role="alert">
+            회원가입이 완료되었습니다! 로그인해주세요.
         </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">비밀번호</label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="비밀번호 입력" value="!1aaaaaa">
-        </div>
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember-me">
-            <label class="form-check-label" for="rememberMe">자동 로그인</label>
-        </div>
-        <div class="d-grid mb-2">
-            <button type="submit" class="btn btn-primary">로그인</button>
-        </div>
-    </form>
 
-    <div class="d-grid mb-3">
-        <a href="/register" class="btn btn-secondary">회원가입</a>
-    </div>
+        <!-- 로그인 에러 메시지 -->
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <p th:text="${errorMessage}"></p>
+        </div>
 
-    <div class="text-center">
-        <a href="/oauth2/authorization/kakao" class="btn btn-warning w-100 mb-2">카카오 로그인</a>
-        <a href="/oauth2/authorization/google" class="btn btn-outline-dark w-100">구글 로그인</a>
-    </div>
+        <!-- 로그아웃 메시지 -->
+        <div th:if="${logoutMessage}" class="alert alert-success" role="alert">
+            <p th:text="${logoutMessage}"></p>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="userid" class="form-label">아이디</label>
+                <input type="text" class="form-control" id="userid" name="username" placeholder="아이디 입력" value="admin">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">비밀번호</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="비밀번호 입력"
+                       value="!1aaaaaa">
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="rememberMe" name="remember-me">
+                <label class="form-check-label" for="rememberMe">자동 로그인</label>
+            </div>
+            <div class="d-grid mb-2">
+                <button type="submit" class="btn btn-primary">로그인</button>
+            </div>
+        </form>
+
+        <div class="d-grid mb-3">
+            <a href="/register" class="btn btn-secondary">회원가입</a>
+        </div>
+
+        <div class="text-center">
+            <a href="/oauth2/authorization/kakao" class="btn btn-warning w-100 mb-2">카카오 로그인</a>
+            <a href="/oauth2/authorization/google" class="btn btn-outline-dark w-100">구글 로그인</a>
+        </div>
 </div>
+<script>
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
 
+        const formData = new FormData(this);
+
+        fetch("/auth/login", {
+            method: "POST",
+            body: formData,
+            credentials: "include" // JSESSIONID 등을 처리할 경우 필요
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("로그인 실패");
+                return response.json();
+            })
+            .then(data => {
+                // JWT 토큰 저장
+                localStorage.setItem("accessToken", data.accessToken);
+                localStorage.setItem("refreshToken", data.refreshToken);
+
+                // 리다이렉트
+                window.location.href = data.redirect;
+            })
+            .catch(err => {
+                alert("로그인 실패: " + err.message);
+            });
+    });
+</script>
 </body>
 </html>
 

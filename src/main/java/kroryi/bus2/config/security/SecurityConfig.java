@@ -1,8 +1,8 @@
 package kroryi.bus2.config.security;
 
 import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kroryi.bus2.components.RedirectProperties;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.filter.JwtAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
@@ -53,6 +53,7 @@ public class SecurityConfig {
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final RedirectProperties redirect;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenUtil jwtTokenUtil, UserService userService) {
@@ -84,7 +85,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation().changeSessionId())
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)   // 401
+//                        .authenticationEntryPoint(customAuthenticationEntryPoint)   // 401
                         .accessDeniedHandler(customAccessDeniedHandler))            // 403
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(swaggerAuthFilter,  UsernamePasswordAuthenticationFilter.class)
@@ -160,7 +161,7 @@ public class SecurityConfig {
                         .successHandler(customOAuth2SuccessHandler)
                         .failureHandler((req, res, ex) -> {
                             String encoded = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-                            res.sendRedirect("https://localhost:5173/login?error=" + encoded);
+                            res.sendRedirect(redirect.getBaseUrl()+"/login?error=" + encoded);
                         }))
                 .rememberMe(remember -> remember
                         .key("remember-me-key")
@@ -177,11 +178,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        log.info("*********************> {}", redirect.getBaseUrl());
         config.setAllowedOrigins(List.of(
-                "https://localhost:5173",
-                "http://localhost:5173",
-                "https://localhost:5174",
-                "http://localhost:5174"
+                redirect.getBaseUrl()
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));

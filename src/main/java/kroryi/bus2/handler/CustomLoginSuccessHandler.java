@@ -3,6 +3,7 @@ package kroryi.bus2.handler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kroryi.bus2.components.RedirectProperties;
 import kroryi.bus2.config.security.CustomUserDetails;
 import kroryi.bus2.entity.user.User;
 import kroryi.bus2.service.user.UserService;
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final ApplicationContext context;
+    private final RedirectProperties redirect;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -79,18 +81,18 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         /* ------------------------------------------------------------------
          * 5) 리다이렉트 URL 결정
          * ------------------------------------------------------------------ */
-        String redirectUrl = "https://localhost:5173/";   // 기본값(프런트 홈)
+        String redirectUrl = redirect.getBaseUrl();   // 기본값(프런트 홈)
 
         switch (user.getRole().name()) {
             case "ADMIN", "BUS" -> {
-                redirectUrl = "https://localhost:5173/admin/dashboard";
+                redirectUrl = redirect.getAdminUrl();
                 log.info("🔐 {} 권한 → 관리자 대시보드로 이동", user.getRole());
             }
             case "USER" -> {
                 SavedRequest saved = new HttpSessionRequestCache().getRequest(request, response);
                 redirectUrl = (saved != null)
                         ? saved.getRedirectUrl()
-                        : "https://localhost:5173/mypage";
+                        : redirect.getUserUrl();
                 log.info("👤 USER 리다이렉트: {}", redirectUrl);
             }
         }
