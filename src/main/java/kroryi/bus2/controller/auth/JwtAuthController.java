@@ -134,4 +134,36 @@ public class JwtAuthController {
             return ResponseEntity.badRequest().body(Map.of("valid", false, "message", "유효하지 않은 토큰입니다."));
         }
     }
+
+    @GetMapping("/check-role")
+    public ResponseEntity<?> checkRole(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("authenticated", false, "message", "인증 토큰이 필요합니다."));
+            }
+
+            String token = authHeader.substring(7);
+            var claims = jwtTokenUtil.parseToken(token);
+            
+            String role = (String) claims.get("role");
+            String userId = claims.getSubject();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("authenticated", true);
+            response.put("userId", userId);
+            response.put("role", role);
+            response.put("hasRole", role != null);
+            
+            // 특정 권한 체크
+            response.put("isAdmin", "ADMIN".equals(role));
+            response.put("isUser", "USER".equals(role));
+            response.put("isBus", "BUS".equals(role));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("권한 확인 실패: {}", e.getMessage());
+            return ResponseEntity.status(401).body(Map.of("authenticated", false, "message", "유효하지 않은 토큰입니다."));
+        }
+    }
 } 

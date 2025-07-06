@@ -2,12 +2,17 @@
 let stompClient = null;
 
 function connectWebSocket() {
-    const socket = new SockJS('/ws');
+    // 절대 경로로 WebSocket 연결 (프론트엔드와 백엔드가 다른 도메인/포트)
+    const wsUrl = 'https://docs.yi.or.kr:8094/ws';
+    const socket = new SockJS(wsUrl);
     stompClient = Stomp.over(socket);
     
     stompClient.connect({}, 
         function(frame) {  // 연결 성공 시
             console.log('✅ WebSocket 연결 성공:', frame);
+            
+            // 연결 상태 표시
+            updateConnectionStatus('connected');
             
             // Redis 메모리 정보 구독
             stompClient.subscribe('/topic/redis-memory', function(message) {
@@ -27,14 +32,27 @@ function connectWebSocket() {
         },
         function(error) {  // 연결 실패 시
             console.error('❌ WebSocket 연결 실패:', error);
-            // 5초 후 재연결 시도
-            setTimeout(connectWebSocket, 5000);
+            
+            // 연결 상태 표시
+            updateConnectionStatus('disconnected');
+            
+            // 에러 타입에 따른 처리
+            if (error.includes('403') || error.includes('Forbidden')) {
+                console.warn('🔒 권한 없음 - WebSocket 연결이 차단되었습니다.');
+            } else if (error.includes('CORS')) {
+                console.warn('🌐 CORS 정책 위반 - 도메인 간 접근이 차단되었습니다.');
+            } else {
+                console.warn('🔌 연결 실패 - 5초 후 재시도합니다.');
+                // 5초 후 재연결 시도
+                setTimeout(connectWebSocket, 5000);
+            }
         }
     );
 
     // 연결이 끊어졌을 때 재연결 시도
     stompClient.ws.onclose = function() {
         console.log('🔌 WebSocket 연결 종료, 재연결 시도...');
+        updateConnectionStatus('disconnected');
         setTimeout(connectWebSocket, 5000);
     };
 }
@@ -62,6 +80,20 @@ function updateDashboard(data) {
     }
     if (data.connectedClients !== undefined) {
         document.getElementById('connectedClients').innerText = data.connectedClients;
+    }
+}
+
+// WebSocket 연결 상태 표시 함수
+function updateConnectionStatus(status) {
+    const statusElement = document.getElementById('ws-status');
+    if (statusElement) {
+        if (status === 'connected') {
+            statusElement.textContent = '🟢 연결됨';
+            statusElement.className = 'text-success';
+        } else {
+            statusElement.textContent = '🔴 연결 끊김';
+            statusElement.className = 'text-danger';
+        }
     }
 }
 

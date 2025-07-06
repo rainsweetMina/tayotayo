@@ -115,8 +115,11 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout",
                                 "/register", "/oauth2/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/auth/login").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**",
                                 "/webjars/**", "/v3/api-docs/**").permitAll()
+                        /* WebSocket 연결 허용 */
+                        .requestMatchers("/ws/**", "/topic/**", "/app/**", "/ws-test").permitAll()
                         .requestMatchers("/api/user/check-id").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bus/getRouteInfo").permitAll()
                         .requestMatchers("/api/user/info").hasAnyRole("USER", "ADMIN", "BUS")
@@ -143,7 +146,8 @@ public class SecurityConfig {
                         /* JWT 인증 엔드포인트 */
                         .requestMatchers("/api/auth/login",
                                 "/api/auth/refresh",
-                                "/api/auth/validate").permitAll()
+                                "/api/auth/validate",
+                                "/api/auth/check-role").permitAll()
 
                         /* USER·ADMIN 공용(로그인 필요) */
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
@@ -180,10 +184,15 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         log.info("*********************> {}", redirect.getBaseUrl());
         config.setAllowedOrigins(List.of(
-                redirect.getBaseUrl()
+                redirect.getBaseUrl(),
+                "https://docs.yi.or.kr:15173",
+                "https://docs.yi.or.kr:5173",
+                "https://docs.yi.or.kr",
+                "http://localhost:5173"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

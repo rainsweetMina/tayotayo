@@ -27,9 +27,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins(
-                        redirect.getBaseUrl()
+                        redirect.getBaseUrl(),
+                        "https://docs.yi.or.kr:15173",
+                        "https://docs.yi.or.kr:5173",
+                        "https://docs.yi.or.kr",       // 필요시 루트 도메인도 추가
+                        "http://localhost:5173"  
                 )
-                .withSockJS();
+                .setAllowedOriginPatterns("*")  // 추가: 모든 origin 패턴 허용
+                .withSockJS()
+                .setWebSocketEnabled(true)
+                .setHeartbeatTime(25000)
+                .setDisconnectDelay(5000);
     }
 
     @Override
