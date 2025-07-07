@@ -45,8 +45,10 @@ public class FileUploadUtil {
         validateImageFile(file);
         String baseDir = System.getProperty("user.dir"); // 현재 프로젝트 디렉터리
 
+        log.info("saveAdImage----> {}, path, {}", baseDir, basePath);
         // ✅ 디렉토리 생성
-        String uploadDir = baseDir+"/"+ basePath;
+//        String uploadDir = baseDir+"/"+ basePath;
+        String uploadDir = basePath;
         File dir = new File(uploadDir);
         if (!dir.exists()) {
             boolean created = dir.mkdirs();

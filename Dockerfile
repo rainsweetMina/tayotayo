@@ -8,7 +8,7 @@ RUN sed -i 's|http://archive.ubuntu.com|http://mirror.kakao.com|g' /etc/apt/sour
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get update && \
-    apt-get install -y openjdk-17-jdk net-tools iputils-ping vim vim && \
+    apt-get install -y openjdk-17-jdk net-tools maven iputils-ping vim vim && \
     apt-get clean
 ENV LANG=ko_KR.UTF-8
 ENV LC_ALL=ko_KR.UTF-8
@@ -20,6 +20,9 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 # 앱 디렉터리 설정
 ENV APP_HOME=/apps
 WORKDIR $APP_HOME
+
+#RUN mvn clean package -Pprod -DskipTests
+
 
 # 빌드된 JAR 복사
 ARG JAR_FILE_PATH=target/*.jar
