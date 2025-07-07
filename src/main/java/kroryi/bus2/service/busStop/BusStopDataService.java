@@ -49,6 +49,7 @@ public class BusStopDataService {
                 .bsNm(stop.getBsNm())
                 .xPos(stop.getXPos())
                 .yPos(stop.getYPos())
+                .distance(null)
                 .build());
     }
 
@@ -137,20 +138,20 @@ public class BusStopDataService {
         }
         return routeRepository.findRoutesByIds(routeIds);
     }
-    
+
     // 반경 내 정류장 검색 (위도/경도 기준)
     public List<BusStopListDTO> findNearbyBusStops(double lon, double lat, int radius) {
         log.info("반경 {}m 내 정류장 검색: 좌표({}, {})", radius, lon, lat);
-        
+
         // 데이터베이스에서 반경 내 정류장 검색
         List<BusStop> nearbyStops = busStopRepository.findStopsWithinRadius(lon, lat, radius);
-        
+
         // 결과가 없으면 반경을 확장하여 재검색
         if (nearbyStops.isEmpty() && radius < 1000) {
             log.info("반경 {}m 내 정류장이 없어 반경 확장: 1000m", radius);
             nearbyStops = busStopRepository.findStopsWithinRadius(lon, lat, 1000);
         }
-        
+
         // 여전히 결과가 없으면 가장 가까운 정류장 10개 검색
         if (nearbyStops.isEmpty()) {
             log.info("반경 1000m 내에도 정류장이 없어 가장 가까운 정류장 10개 검색");
@@ -158,74 +159,81 @@ public class BusStopDataService {
             // 현재 구현에서는 간단히 모든 정류장을 가져와 거리 계산 후 정렬
             List<BusStop> allStops = busStopRepository.findAll();
             return allStops.stream()
+                    .map(stop -> {
+                        double distance = calculateDistance(lon, lat, stop.getXPos(), stop.getYPos());
+                        return new BusStopListDTO(
+                                stop.getId(),
+                                stop.getBsId(),
+                                stop.getBsNm(),
+                                stop.getXPos(),
+                                stop.getYPos(),
+                                distance
+                        );
+                    })
+                    .sorted((a, b) -> {
+                        Double distanceA = a.getDistance();
+                        Double distanceB = b.getDistance();
+                        if (distanceA == null && distanceB == null) return 0;
+                        if (distanceA == null) return 1;
+                        if (distanceB == null) return -1;
+                        return Double.compare(distanceA, distanceB);
+                    })
+                    .limit(10)
+                    .collect(Collectors.toList());
+        }
+
+        // 검색된 정류장을 DTO로 변환
+        return nearbyStops.stream()
                 .map(stop -> {
                     double distance = calculateDistance(lon, lat, stop.getXPos(), stop.getYPos());
                     return new BusStopListDTO(
+                            stop.getId(),
+                            stop.getBsId(),
+                            stop.getBsNm(),
+                            stop.getXPos(),
+                            stop.getYPos(),
+                            distance
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    // Haversine 공식을 사용한 두 지점 간의 거리 계산 (미터 단위)
+    private double calculateDistance(double lon1, double lat1, double lon2, double lat2) {
+        final int R = 6371; // 지구의 반지름 (km)
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c * 1000; // 미터 단위로 변환
+    }
+
+    // 지도 영역 내 정류장 검색 (좌표 범위 기준)
+    public List<BusStopListDTO> findBusStopsInBounds(double minX, double minY, double maxX, double maxY) {
+        log.info("지도 영역 내 정류장 검색: 좌표 범위 ({}, {}) ~ ({}, {})", minX, minY, maxX, maxY);
+
+        // 데이터베이스에서 좌표 범위 내 정류장 검색
+        List<BusStop> stopsInBounds = busStopRepository.findStopsInBounds(minX, minY, maxX, maxY);
+
+        log.info("지도 영역 내 정류장 검색 결과: {}개", stopsInBounds.size());
+
+        // 검색된 정류장을 DTO로 변환
+        return stopsInBounds.stream()
+                .map(stop -> new BusStopListDTO(
                         stop.getId(),
                         stop.getBsId(),
                         stop.getBsNm(),
                         stop.getXPos(),
                         stop.getYPos(),
-                        distance
-                    );
-                })
-                .sorted((a, b) -> Double.compare(a.getDistance(), b.getDistance()))
-                .limit(10)
+                        0.0 // 거리는 계산하지 않음 (영역 내 검색이므로)
+                ))
                 .collect(Collectors.toList());
-        }
-        
-        // 검색된 정류장을 DTO로 변환
-        return nearbyStops.stream()
-            .map(stop -> {
-                double distance = calculateDistance(lon, lat, stop.getXPos(), stop.getYPos());
-                return new BusStopListDTO(
-                    stop.getId(),
-                    stop.getBsId(),
-                    stop.getBsNm(),
-                    stop.getXPos(),
-                    stop.getYPos(),
-                    distance
-                );
-            })
-            .collect(Collectors.toList());
-    }
-    
-    // Haversine 공식을 사용한 두 지점 간의 거리 계산 (미터 단위)
-    private double calculateDistance(double lon1, double lat1, double lon2, double lat2) {
-        final int R = 6371; // 지구의 반지름 (km)
-        
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        
-        return R * c * 1000; // 미터 단위로 변환
-    }
-    
-    // 지도 영역 내 정류장 검색 (좌표 범위 기준)
-    public List<BusStopListDTO> findBusStopsInBounds(double minX, double minY, double maxX, double maxY) {
-        log.info("지도 영역 내 정류장 검색: 좌표 범위 ({}, {}) ~ ({}, {})", minX, minY, maxX, maxY);
-        
-        // 데이터베이스에서 좌표 범위 내 정류장 검색
-        List<BusStop> stopsInBounds = busStopRepository.findStopsInBounds(minX, minY, maxX, maxY);
-        
-        log.info("지도 영역 내 정류장 검색 결과: {}개", stopsInBounds.size());
-        
-        // 검색된 정류장을 DTO로 변환
-        return stopsInBounds.stream()
-            .map(stop -> new BusStopListDTO(
-                stop.getId(),
-                stop.getBsId(),
-                stop.getBsNm(),
-                stop.getXPos(),
-                stop.getYPos(),
-                0.0 // 거리는 계산하지 않음 (영역 내 검색이므로)
-            ))
-            .collect(Collectors.toList());
     }
 
 }

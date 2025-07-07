@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,16 +37,26 @@ public class BusSettingController {
     private final PathSettingService pathSettingService;
 
     @Operation(summary = "버스 경로 탐색 반경 및 시간 가중치 수정", description = "시작 반경, 도착 반경, 시간 가중치를 수정합니다.")
-    @PostMapping("/path-settings")
+    @PostMapping(value = "/path-settings", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateSettings(@RequestBody PathSettingDTO dto) {
+    public ResponseEntity<?> updateSettings(@RequestBody PathSettingDTO dto,
+                                            @RequestHeader(value = "Content-Type", required = false) String contentType,
+                                            @RequestHeader(value = "Accept", required = false) String accept,
+                                            @RequestHeader(value = "User-Agent", required = false) String userAgent) {
+        System.out.println("=== 요청 정보 ===");
+        System.out.println("Content-Type: " + contentType);
+        System.out.println("Accept: " + accept);
+        System.out.println("User-Agent: " + userAgent);
+        System.out.println("받은 DTO: " + dto);
+        System.out.println("==================");
+
         pathSettingService.updateSearchDistances(dto.getStartDistance(), dto.getEndDistance(), dto.getTimeFactor());
         System.out.println("현재 적용된 탐색반경 : " + dto.getStartDistance() + "," + dto.getEndDistance());
         return ResponseEntity.ok("✅ 거리 설정이 갱신되었습니다");
     }
 
     @Operation(summary = "현재 설정된 탐색 반경 및 시간 가중치 조회", description = "설정된 시작 반경, 도착 반경, 시간 가중치 정보를 조회합니다.")
-    @GetMapping("/path-settings")
+    @GetMapping(value = "/path-settings", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PathSettingDTO> getCurrentSettings() {
         PathSettingDTO dto = new PathSettingDTO();
