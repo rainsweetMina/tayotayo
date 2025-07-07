@@ -132,8 +132,8 @@ public class SecurityConfig {
                         /* BUS & ADMIN 공용 */
                         .requestMatchers("/admin/dashboard").hasAnyRole("ADMIN")
                         .requestMatchers("/admin/found", "/admin/lost").hasAnyRole("ADMIN", "BUS")
-                .requestMatchers("/api/admin/found/match/**").hasRole("BUS") //추가된거
-                .requestMatchers("/api/admin/found/**",
+                        .requestMatchers("/api/admin/found/match/**").hasRole("BUS") //추가된거
+                        .requestMatchers("/api/admin/found/**",
                                 "/api/admin/lost/**").hasAnyRole("ADMIN", "BUS")
 
                         /* ADMIN 전용 */
@@ -180,7 +180,19 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         log.info("*********************> {}", redirect.getBaseUrl());
         config.setAllowedOrigins(List.of(
-                redirect.getBaseUrl()
+                redirect.getBaseUrl(),
+                "https://docs.yi.or.kr:8094",
+                "https://docs.yi.or.kr:15173",
+                "https://docs.yi.or.kr:5173",
+                "https://docs.yi.or.kr:8097",
+                "https://docs.yi.or.kr:8098",
+                "https://docs.yi.or.kr:8099",
+                "https://localhost:8094",
+                "https://localhost:15173",
+                "https://localhost:5173",
+                "https://localhost:8097",
+                "https://localhost:8098",
+                "https://localhost:8099"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));

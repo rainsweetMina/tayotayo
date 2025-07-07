@@ -27,7 +27,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins(
-                        redirect.getBaseUrl()
+                        redirect.getBaseUrl(),
+                        "https://docs.yi.or.kr:8094",
+                        "https://docs.yi.or.kr:15173",
+                        "https://docs.yi.or.kr:5173",
+                        "https://docs.yi.or.kr:8097",
+                        "https://docs.yi.or.kr:8098",
+                        "https://docs.yi.or.kr:8099",
+                        "https://localhost:8094",
+                        "https://localhost:15173",
+                        "https://localhost:5173",
+                        "https://localhost:8097",
+                        "https://localhost:8098",
+                        "https://localhost:8099"
                 )
                 .withSockJS();
     }
@@ -35,7 +47,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.setMessageSizeLimit(8192) // 메시지 크기 제한
-                   .setSendBufferSizeLimit(8192) // 버퍼 크기 제한
-                   .setSendTimeLimit(10000); // 전송 시간 제한 (10초)
+                .setSendBufferSizeLimit(8192) // 버퍼 크기 제한
+                .setSendTimeLimit(10000); // 전송 시간 제한 (10초)
     }
 } 
