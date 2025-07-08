@@ -32,7 +32,7 @@ COPY ${JAR_FILE_PATH} app.jar
 ENV API_SECRET_KEY=place_holder
 
 # 포트 노출
-EXPOSE 8094 16379 
+EXPOSE 8096 16379
 
 # 실행
 ENTRYPOINT ["java", "-jar", "app.jar"]

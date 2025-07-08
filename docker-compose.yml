@@ -9,7 +9,7 @@ services:
       - database
       - redis
     ports:
-      - "8094:8094"
+      - "8096:8096"
     container_name: bus_server
     hostname: bus_app
     volumes:
