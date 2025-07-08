@@ -104,6 +104,14 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType("application/json; charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
 
+        // 토큰을 URL 파라미터로 포함한 리다이렉트 URL 생성
+        String redirectUrlWithTokens = redirectUrl;
+        if (redirectUrl.contains("?")) {
+            redirectUrlWithTokens += "&accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+        } else {
+            redirectUrlWithTokens += "?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+        }
+
         String json = String.format("""
             {
               "accessToken" : "%s",
@@ -111,7 +119,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
               "role"        : "%s",
               "redirect"    : "%s"
             }""",
-                accessToken, refreshToken, user.getRole().name(), redirectUrl);
+                accessToken, refreshToken, user.getRole().name(), redirectUrlWithTokens);
 
         response.getWriter().write(json);
     }
