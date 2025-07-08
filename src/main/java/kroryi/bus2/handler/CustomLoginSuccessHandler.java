@@ -104,12 +104,19 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType("application/json; charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
 
-        // 토큰을 URL 파라미터로 포함한 리다이렉트 URL 생성
-        String redirectUrlWithTokens = redirectUrl;
-        if (redirectUrl.contains("?")) {
-            redirectUrlWithTokens += "&accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+        // 프론트엔드 URL로 이동할 때만 토큰을 파라미터로 추가
+        String finalRedirectUrl = redirectUrl;
+        if (redirectUrl.contains(":8096")) {
+            // 프론트엔드 URL인 경우 토큰 파라미터 추가
+            if (redirectUrl.contains("?")) {
+                finalRedirectUrl += "&accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+            } else {
+                finalRedirectUrl += "?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+            }
+            log.info("🔗 프론트엔드로 리다이렉트 (토큰 포함): {}", finalRedirectUrl);
         } else {
-            redirectUrlWithTokens += "?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+            // 백엔드 URL인 경우 토큰 파라미터 없이
+            log.info("🔗 백엔드로 리다이렉트: {}", finalRedirectUrl);
         }
 
         String json = String.format("""
@@ -119,7 +126,11 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
               "role"        : "%s",
               "redirect"    : "%s"
             }""",
+<<<<<<< Updated upstream
                 accessToken, refreshToken, user.getRole().name(), redirectUrlWithTokens);
+=======
+                accessToken, refreshToken, user.getRole().name(), finalRedirectUrl);
+>>>>>>> Stashed changes
 
         response.getWriter().write(json);
     }
