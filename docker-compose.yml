@@ -36,7 +36,7 @@ services:
       - MYSQL_ROOT_PASSWORD=yi0535551333@
 
     ports:
-      - "23306:3306"
+      - "33306:3306"
     volumes:
       - ./db/data:/var/lib/mysql
     networks:
