@@ -143,7 +143,24 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         /* ------------------------------------------------------------------
-         * 6) 프런트에 JSON 응답
+         * 6) 토큰을 쿠키에 저장 (백엔드 직접 접속용)
+         * ------------------------------------------------------------------ */
+        jakarta.servlet.http.Cookie accessTokenCookie = new jakarta.servlet.http.Cookie("accessToken", accessToken);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setHttpOnly(false); // JavaScript에서 접근 가능하도록
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setMaxAge(3600); // 1시간
+        response.addCookie(accessTokenCookie);
+
+        jakarta.servlet.http.Cookie refreshTokenCookie = new jakarta.servlet.http.Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setHttpOnly(false);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setMaxAge(604800); // 7일
+        response.addCookie(refreshTokenCookie);
+
+        /* ------------------------------------------------------------------
+         * 7) 프런트에 JSON 응답
          *    (토큰 + role + 리다이렉트 url)
          * ------------------------------------------------------------------ */
         response.setContentType("application/json; charset=UTF-8");
