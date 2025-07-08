@@ -122,21 +122,18 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             // 모든 프로파일 확인
             String[] defaultProfiles = environment.getDefaultProfiles();
             log.info("🔧 기본 프로파일: {}", String.join(", ", defaultProfiles));
-//            redirectUrl = redirect.getBaseUrl();   // 기본값(백엔드 홈)
-            redirectUrl = "https://docs.yi.or.kr:8096";   // 기본값(백엔드 홈)
+            redirectUrl = redirect.getBaseUrl();   // 기본값(백엔드 홈)
 
             switch (user.getRole().name()) {
                 case "ADMIN", "BUS" -> {
-//                    redirectUrl = redirect.getAdminUrl();
-                    redirectUrl = "https://docs.yi.or.kr:8096/admin/dashboard";
+                    redirectUrl = redirect.getAdminUrl();
                     log.info("🔐 {} 권한 → 백엔드 관리자 대시보드: {}", user.getRole(), redirectUrl);
                 }
                 case "USER" -> {
                     SavedRequest saved = new HttpSessionRequestCache().getRequest(request, response);
-//                    redirectUrl = (saved != null)
-//                            ? saved.getRedirectUrl()
-//                            : redirect.getUserUrl();
-                    redirectUrl ="https://docs.yi.or.kr:8096/dashboard";
+                    redirectUrl = (saved != null)
+                            ? saved.getRedirectUrl()
+                            : redirect.getUserUrl();
                     log.info("👤 USER → 백엔드 리다이렉트: {}", redirectUrl);
                 }
             }
