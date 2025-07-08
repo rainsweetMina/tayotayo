@@ -148,12 +148,17 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/validate").permitAll()
 
+                        /* 공개 API 엔드포인트 */
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/ad/active", "/api/ad/popup").permitAll()
+                        .requestMatchers("/api/bus/**").permitAll()
+
                         /* USER·ADMIN 공용(로그인 필요) */
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
 
-
-                        .requestMatchers("/api/**").permitAll()
+                        /* 나머지 API는 인증 필요 */
+                        .requestMatchers("/api/**").authenticated()
 
                         /* 나머지는 인증만 필요 */
                         .anyRequest().authenticated()

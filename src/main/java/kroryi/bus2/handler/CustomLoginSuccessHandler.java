@@ -126,11 +126,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
               "role"        : "%s",
               "redirect"    : "%s"
             }""",
-<<<<<<< Updated upstream
-                accessToken, refreshToken, user.getRole().name(), redirectUrlWithTokens);
-=======
                 accessToken, refreshToken, user.getRole().name(), finalRedirectUrl);
->>>>>>> Stashed changes
 
         response.getWriter().write(json);
     }
