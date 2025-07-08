@@ -26,5 +26,7 @@ public class RedirectProperties {
     @PostConstruct
     public void init() {
         System.out.println("--------------------------------------------- baseUrl = " + baseUrl);
+        System.out.println("--------------------------------------------- adminUrl = " + getAdminUrl());
+        System.out.println("--------------------------------------------- userUrl = " + getUserUrl());
     }
 }
