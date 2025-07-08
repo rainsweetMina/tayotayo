@@ -186,7 +186,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        log.info("*********************> {}", redirect.getBaseUrl());
         config.setAllowedOrigins(List.of(
                 redirect.getBaseUrl(),
                 "https://docs.yi.or.kr:8094",
