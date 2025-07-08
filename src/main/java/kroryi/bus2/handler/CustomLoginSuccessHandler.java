@@ -11,6 +11,7 @@ import kroryi.bus2.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -31,6 +32,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final ApplicationContext context;
     private final RedirectProperties redirect;
+    private final Environment environment;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -79,21 +81,61 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         String refreshToken = jwtTokenUtil.generateRefreshToken(user);
 
         /* ------------------------------------------------------------------
-         * 5) 리다이렉트 URL 결정
+         * 5) 리다이렉트 URL 결정 (로그인 방식에 따라 구분)
          * ------------------------------------------------------------------ */
-        String redirectUrl = redirect.getBaseUrl();   // 기본값(프런트 홈)
-
-        switch (user.getRole().name()) {
-            case "ADMIN", "BUS" -> {
-                redirectUrl = redirect.getAdminUrl();
-                log.info("🔐 {} 권한 → 관리자 대시보드로 이동", user.getRole());
+        String requestUri = request.getRequestURI();
+        log.info("🔍 로그인 요청 URI: {}", requestUri);
+        
+        String redirectUrl;
+        
+        // 프론트엔드 API 로그인인지 확인
+        if (requestUri.contains("/api/auth/login")) {
+            // 프론트엔드 API 로그인 → 프론트엔드로 이동
+            log.info("🌐 프론트엔드 API 로그인 감지");
+            redirectUrl = "https://docs.yi.or.kr:15173"; // 프론트엔드 기본 URL
+            
+            switch (user.getRole().name()) {
+                case "ADMIN", "BUS" -> {
+                    redirectUrl += "/admin/dashboard";
+                    log.info("🔐 {} 권한 → 프론트엔드 관리자 대시보드: {}", user.getRole(), redirectUrl);
+                }
+                case "USER" -> {
+                    SavedRequest saved = new HttpSessionRequestCache().getRequest(request, response);
+                    redirectUrl = (saved != null && saved.getRedirectUrl().contains("15173"))
+                            ? saved.getRedirectUrl()
+                            : redirectUrl + "/mypage";
+                    log.info("👤 USER → 프론트엔드 리다이렉트: {}", redirectUrl);
+                }
             }
-            case "USER" -> {
-                SavedRequest saved = new HttpSessionRequestCache().getRequest(request, response);
-                redirectUrl = (saved != null)
-                        ? saved.getRedirectUrl()
-                        : redirect.getUserUrl();
-                log.info("👤 USER 리다이렉트: {}", redirectUrl);
+        } else {
+            // Thymeleaf 로그인 페이지 → 백엔드로 이동
+            log.info("🏠 Thymeleaf 로그인 페이지 감지");
+            log.info("🔧 RedirectProperties 객체: {}", redirect);
+            log.info("🔧 기본 baseUrl: {}", redirect.getBaseUrl());
+            log.info("🔧 adminUrl: {}", redirect.getAdminUrl());
+            log.info("🔧 userUrl: {}", redirect.getUserUrl());
+            
+            // 현재 활성화된 프로파일 확인
+            String[] activeProfiles = environment.getActiveProfiles();
+            log.info("🔧 현재 활성화된 프로파일: {}", String.join(", ", activeProfiles));
+            
+            // 모든 프로파일 확인
+            String[] defaultProfiles = environment.getDefaultProfiles();
+            log.info("🔧 기본 프로파일: {}", String.join(", ", defaultProfiles));
+            redirectUrl = redirect.getBaseUrl();   // 기본값(백엔드 홈)
+
+            switch (user.getRole().name()) {
+                case "ADMIN", "BUS" -> {
+                    redirectUrl = redirect.getAdminUrl();
+                    log.info("🔐 {} 권한 → 백엔드 관리자 대시보드: {}", user.getRole(), redirectUrl);
+                }
+                case "USER" -> {
+                    SavedRequest saved = new HttpSessionRequestCache().getRequest(request, response);
+                    redirectUrl = (saved != null)
+                            ? saved.getRedirectUrl()
+                            : redirect.getUserUrl();
+                    log.info("👤 USER → 백엔드 리다이렉트: {}", redirectUrl);
+                }
             }
         }
 
@@ -106,7 +148,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         // 프론트엔드 URL로 이동할 때만 토큰을 파라미터로 추가
         String finalRedirectUrl = redirectUrl;
-        if (redirectUrl.contains(":8096")) {
+        if (redirectUrl.contains("15173")) {
             // 프론트엔드 URL인 경우 토큰 파라미터 추가
             if (redirectUrl.contains("?")) {
                 finalRedirectUrl += "&accessToken=" + accessToken + "&refreshToken=" + refreshToken;
