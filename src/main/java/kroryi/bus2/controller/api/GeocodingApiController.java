@@ -7,19 +7,16 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,12 +27,11 @@ import java.util.Map;
 @Tag(name = "지오코딩 API", description = "OpenStreetMap Nominatim API 프록시")
 public class GeocodingApiController {
 
-    private final WebClient.Builder webClientBuilder;
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     
     @GetMapping("/reverse-geocode")
     @Operation(summary = "역지오코딩 API", description = "위도/경도 좌표를 주소로 변환합니다 (Nominatim API 프록시)")
-    @Cacheable(value = "reverseGeocodeCache", key = "#lat + '-' + #lon", unless = "#result == null")
     public ResponseEntity<Map<String, Object>> reverseGeocode(
             @Parameter(description = "위도") @RequestParam double lat,
             @Parameter(description = "경도") @RequestParam double lon) {
@@ -54,19 +50,11 @@ public class GeocodingApiController {
         fallbackResponse.put("error", true);
         
         try {
-            String response = webClientBuilder.build()
-                    .get()
-                    .uri("https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&zoom=18&addressdetails=1",
-                            lat, lon)
-                    .header("User-Agent", "TayoTayo/1.0 (contact@tayotayo.com)")
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(3))
-                    .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
-                            .filter(throwable -> !(throwable instanceof ResponseStatusException)))
-                    .doOnError(e -> log.error("역지오코딩 API 호출 실패: {}", e.getMessage()))
-                    .onErrorReturn("{}")
-                    .block(); // Mono를 동기적으로 처리
+            String url = String.format("https://nominatim.openstreetmap.org/reverse?format=json&lat=%.6f&lon=%.6f&zoom=18&addressdetails=1", lat, lon);
+            
+            log.info("Nominatim API 호출 URL: {}", url);
+            
+            String response = restTemplate.getForObject(url, String.class);
             
             log.info("Nominatim API 응답: {}", response);
             
@@ -125,8 +113,7 @@ public class GeocodingApiController {
     
     @GetMapping("/geocode")
     @Operation(summary = "정방향 지오코딩 API", description = "주소를 위도/경도 좌표로 변환합니다 (Nominatim API 프록시)")
-    @Cacheable(value = "geocodeCache", key = "#q != null ? #q : #address", unless = "#result == null")
-    public Mono<String> geocode(
+    public ResponseEntity<String> geocode(
             @Parameter(description = "검색할 주소") @RequestParam(required = false) String q,
             @Parameter(description = "검색할 주소 (q와 동일, 프론트엔드 호환용)") @RequestParam(required = false) String address,
             @Parameter(description = "결과 개수 제한") @RequestParam(required = false, defaultValue = "1") int limit) {
@@ -139,20 +126,18 @@ public class GeocodingApiController {
         
         log.info("정방향 지오코딩 요청: query={}, limit={}", query, limit);
         
-        return webClientBuilder.build()
-                .get()
-                .uri("https://nominatim.openstreetmap.org/search?format=json&q={query}&limit={limit}",
-                        query, limit)
-                .header("User-Agent", "TayoTayo/1.0 (contact@tayotayo.com)")
-                .retrieve()
-                .bodyToMono(String.class)
-                // 타임아웃 설정 (3초)
-                .timeout(Duration.ofSeconds(3))
-                // 최대 1회 재시도
-                .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
-                        .filter(throwable -> !(throwable instanceof ResponseStatusException)))
-                .doOnError(e -> log.error("정방향 지오코딩 API 호출 실패: {}", e.getMessage()))
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
-                        "Failed to fetch coordinates", e)));
+        try {
+            String url = String.format("https://nominatim.openstreetmap.org/search?format=json&q=%s&limit=%d", query, limit);
+            String response = restTemplate.getForObject(url, String.class);
+            
+            if (response != null) {
+                return ResponseEntity.ok(response);
+            } else {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch coordinates");
+            }
+        } catch (Exception e) {
+            log.error("정방향 지오코딩 API 호출 실패: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch coordinates", e);
+        }
     }
 } 
