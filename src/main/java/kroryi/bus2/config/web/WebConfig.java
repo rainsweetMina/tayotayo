@@ -32,6 +32,18 @@ public class WebConfig implements WebMvcConfigurer {
         // ✅ 광고 이미지 접근 경로 추가됨
         registry.addResourceHandler("/uploads/ad/**")
                 .addResourceLocations("file:" + uploadPath + "ad/");
+
+        // 프론트엔드 정적 파일 서빙
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/", "classpath:/public/", "file:/apps/frontend/dist/")
+                .resourceChain(true)
+                .addResolver(new org.springframework.web.servlet.resource.PathResourceResolver() {
+                    @Override
+                    protected org.springframework.core.io.Resource getResource(String resourcePath, org.springframework.core.io.Resource location) throws java.io.IOException {
+                        org.springframework.core.io.Resource requestedResource = location.createRelative(resourcePath);
+                        return requestedResource.exists() && requestedResource.isReadable() ? requestedResource : location.createRelative("index.html");
+                    }
+                });
     }
 
 
