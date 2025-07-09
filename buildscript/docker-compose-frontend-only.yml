@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  # 프론트엔드 서비스 (빌드된 정적 파일 서빙)
+  frontend:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "15173:80"
+    volumes:
+      - ./frontendtayotayo/dist:/usr/share/nginx/html
+      - ./nginx-frontend.conf:/etc/nginx/nginx.conf
+    container_name: tayotayo_frontend_only
+    hostname: tayotayo_frontend_only
+    networks:
+      - tayotayo_network
+
+networks:
+  tayotayo_network:
+    driver: bridge 
