@@ -104,7 +104,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessHandler(customLogoutSuccessHandler)
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "accessToken", "refreshToken", "vue_accessToken", "vue_refreshToken")
                         .invalidateHttpSession(true))
 
                 /* ────────────────────────────────
@@ -186,22 +186,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                redirect.getBaseUrl(),
-                "https://docs.yi.or.kr:8094",
-                "https://docs.yi.or.kr:8096",
-                "https://docs.yi.or.kr:15173",
-                "https://docs.yi.or.kr:5173",
-                "https://docs.yi.or.kr:8097",
-                "https://docs.yi.or.kr:8098",
-                "https://docs.yi.or.kr:8099",
-                "https://localhost:8094",
-                "https://localhost:8096",
-                "https://localhost:15173",
-                "https://localhost:5173",
-                "https://localhost:8097",
-                "https://localhost:8098",
-                "https://localhost:8099"
+        config.setAllowedOriginPatterns(List.of(
+                "https://*.yi.or.kr:*",
+                "http://*.yi.or.kr:*",
+                "https://localhost:*",
+                "http://localhost:*"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));

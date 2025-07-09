@@ -95,6 +95,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return cookieToken;
         }
 
+        // 3. Vue 쿠키에서 토큰 확인
+        String vueCookieToken = getTokenFromCookie(request, "vue_accessToken");
+        if (StringUtils.hasText(vueCookieToken)) {
+            return vueCookieToken;
+        }
+
+        // 토큰이 없을 때는 debug 레벨로만 로그 출력
+        log.debug("No valid token found for request: {}", request.getRequestURI());
         return null;
     }
 

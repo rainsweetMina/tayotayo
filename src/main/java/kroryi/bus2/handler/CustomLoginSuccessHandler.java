@@ -159,6 +159,21 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         refreshTokenCookie.setMaxAge(604800); // 7일
         response.addCookie(refreshTokenCookie);
 
+        // Vue 프론트엔드용 쿠키도 설정
+        jakarta.servlet.http.Cookie vueAccessTokenCookie = new jakarta.servlet.http.Cookie("vue_accessToken", accessToken);
+        vueAccessTokenCookie.setPath("/");
+        vueAccessTokenCookie.setHttpOnly(false);
+        vueAccessTokenCookie.setSecure(true);
+        vueAccessTokenCookie.setMaxAge(3600); // 1시간
+        response.addCookie(vueAccessTokenCookie);
+
+        jakarta.servlet.http.Cookie vueRefreshTokenCookie = new jakarta.servlet.http.Cookie("vue_refreshToken", refreshToken);
+        vueRefreshTokenCookie.setPath("/");
+        vueRefreshTokenCookie.setHttpOnly(false);
+        vueRefreshTokenCookie.setSecure(true);
+        vueRefreshTokenCookie.setMaxAge(604800); // 7일
+        response.addCookie(vueRefreshTokenCookie);
+
         /* ------------------------------------------------------------------
          * 7) 프런트에 JSON 응답
          *    (토큰 + role + 리다이렉트 url)
