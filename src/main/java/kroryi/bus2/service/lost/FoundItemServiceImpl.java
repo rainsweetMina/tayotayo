@@ -62,6 +62,8 @@ public class FoundItemServiceImpl implements FoundItemService {
 
         User handler = optionalUser.get(); // → 존재할 때만 get()
 
+        // status가 null인 경우 기본값 설정
+        FoundStatus status = dto.getStatus() != null ? dto.getStatus() : FoundStatus.IN_STORAGE;
 
         FoundItem foundItem = FoundItem.builder()
                 .itemName(dto.getItemName())
@@ -72,7 +74,7 @@ public class FoundItemServiceImpl implements FoundItemService {
                 .handler(handler)
                 .handlerContact(dto.getHandlerContact())
                 .handlerEmail(dto.getHandlerEmail())
-                .status(dto.getStatus())
+                .status(status)
                 .storageLocation(dto.getStorageLocation())
                 .foundTime(dto.getFoundTime().atStartOfDay())
                 .isDeleted(false)
@@ -81,7 +83,6 @@ public class FoundItemServiceImpl implements FoundItemService {
                 .matched(false)
                 .build();
 
-        foundItem.setStatus(FoundStatus.IN_STORAGE);
         foundItemRepository.save(foundItem); // 1차 저장
 
         if (image.isEmpty()) {

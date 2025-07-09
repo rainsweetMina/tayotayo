@@ -30,7 +30,8 @@ public class FoundItem extends BaseTimeEntity {
     private String handlerEmail;
 
     @Enumerated(EnumType.STRING)
-    private FoundStatus status;
+    @Builder.Default
+    private FoundStatus status = FoundStatus.IN_STORAGE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "handler_id")
