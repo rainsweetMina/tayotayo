@@ -154,6 +154,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/bus/**").permitAll()
                         .requestMatchers("/api/qna/page", "/api/qna/{id}").permitAll()
                         .requestMatchers("/api/found/**").permitAll()  // 습득물 관련 API 공개 접근 허용
+                        .requestMatchers("/api/companies", "/api/route-nos-low", "/api/route-notes", "/api/route-id/**", "/api/schedule-header", "/api/route-map", "/api/lowbus-scheduls").permitAll()  // 버스 관련 API 공개 접근 허용
 
                         /* USER·ADMIN 공용(로그인 필요) */
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
