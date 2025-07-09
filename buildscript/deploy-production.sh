@@ -13,22 +13,22 @@ fi
 
 # 2. 기존 컨테이너 중지 및 삭제
 echo "🛑 2단계: 기존 컨테이너 정리"
-docker-compose down
+sudo docker-compose down
 
-# 3. 백엔드 빌드
-echo "🔨 3단계: 백엔드 빌드"
+# 3. 백엔드 빌드 (Maven 사용)
+echo "🔨 3단계: 백엔드 빌드 (Maven)"
 cd tayotayo
-./gradlew clean build -x test
+./mvnw clean package -DskipTests
 cd ..
 
 # 4. 컨테이너 시작
 echo "🚀 4단계: 컨테이너 시작"
-docker-compose up -d
+sudo docker-compose up -d
 
 # 5. 상태 확인
 echo "✅ 5단계: 서비스 상태 확인"
 sleep 10
-docker-compose ps
+sudo docker-compose ps
 
 echo "🎉 Production 배포 완료!"
 echo "🌐 접속 URL: https://docs.yi.or.kr:8096"
