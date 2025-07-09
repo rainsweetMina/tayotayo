@@ -101,15 +101,15 @@ public class BusStopDataController {
         System.out.println("routes: " + routes);
         return ResponseEntity.ok(routes);
     }
-    
+
     @Operation(summary = "반경 내 정류장 검색", description = "위도/경도 좌표 기준으로 지정된 반경(미터) 내의 정류장을 검색합니다.")
     @GetMapping("/nearbyBusStops")
     public ResponseEntity<List<BusStopListDTO>> getNearbyBusStops(
             @RequestParam double lat,
             @RequestParam double lon,
-            @RequestParam(defaultValue = "500") int radius) {
-        
-        List<BusStopListDTO> nearbyStops = busStopDataService.findNearbyBusStops(lon, lat, radius);
+            @RequestParam(defaultValue = "500") double radius) {
+
+        List<BusStopListDTO> nearbyStops = busStopDataService.findNearbyBusStops(lon, lat, (int) radius);
         return ResponseEntity.ok(nearbyStops);
     }
 

@@ -28,25 +28,25 @@ import java.util.Map;
 public class GeocodingApiController {
 
     private final WebClient.Builder webClientBuilder;
-    
+
     @GetMapping("/reverse-geocode")
     @Operation(summary = "역지오코딩 API", description = "위도/경도 좌표를 주소로 변환합니다 (Nominatim API 프록시)")
     @Cacheable(value = "reverseGeocodeCache", key = "#lat + '-' + #lon", unless = "#result == null")
     public Mono<String> reverseGeocode(
             @Parameter(description = "위도") @RequestParam double lat,
             @Parameter(description = "경도") @RequestParam double lon) {
-        
+
         log.info("역지오코딩 요청: lat={}, lon={}", lat, lon);
-        
+
         // 기본 응답 생성 (API 호출 실패 시 사용)
         Map<String, Object> fallbackResponse = new HashMap<>();
         fallbackResponse.put("display_name", "주소 정보 없음");
         fallbackResponse.put("lat", String.valueOf(lat));
         fallbackResponse.put("lon", String.valueOf(lon));
         fallbackResponse.put("error", true);
-        
+
         String fallbackJson = "{\"display_name\":\"주소 정보 없음\",\"lat\":\"" + lat + "\",\"lon\":\"" + lon + "\",\"error\":true}";
-        
+
         return webClientBuilder.build()
                 .get()
                 .uri("https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&zoom=18&addressdetails=1",
@@ -59,11 +59,26 @@ public class GeocodingApiController {
                 // 최대 1회 재시도
                 .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
                         .filter(throwable -> !(throwable instanceof ResponseStatusException)))
+                .doOnNext(response -> {
+                    log.info("Nominatim API 응답: {}", response);
+                    // 빈 응답 체크
+                    if (response == null || response.trim().isEmpty()) {
+                        log.warn("빈 응답 감지, fallback 응답 사용");
+                    }
+                })
                 .doOnError(e -> log.error("역지오코딩 API 호출 실패: {}", e.getMessage()))
                 // 오류 발생 시 대체 응답 반환
-                .onErrorReturn(fallbackJson);
+                .onErrorReturn(fallbackJson)
+                // 빈 응답 처리
+                .map(response -> {
+                    if (response == null || response.trim().isEmpty()) {
+                        log.warn("빈 응답을 fallback으로 대체");
+                        return fallbackJson;
+                    }
+                    return response;
+                });
     }
-    
+
     @GetMapping("/geocode")
     @Operation(summary = "정방향 지오코딩 API", description = "주소를 위도/경도 좌표로 변환합니다 (Nominatim API 프록시)")
     @Cacheable(value = "geocodeCache", key = "#q != null ? #q : #address", unless = "#result == null")
@@ -71,15 +86,15 @@ public class GeocodingApiController {
             @Parameter(description = "검색할 주소") @RequestParam(required = false) String q,
             @Parameter(description = "검색할 주소 (q와 동일, 프론트엔드 호환용)") @RequestParam(required = false) String address,
             @Parameter(description = "결과 개수 제한") @RequestParam(required = false, defaultValue = "1") int limit) {
-        
+
         // address 파라미터를 q로 대체 (둘 다 제공되면 q 우선)
         String query = q != null ? q : address;
         if (query == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "주소 파라미터(q 또는 address)가 필요합니다");
         }
-        
+
         log.info("정방향 지오코딩 요청: query={}, limit={}", query, limit);
-        
+
         return webClientBuilder.build()
                 .get()
                 .uri("https://nominatim.openstreetmap.org/search?format=json&q={query}&limit={limit}",
@@ -93,7 +108,7 @@ public class GeocodingApiController {
                 .retryWhen(Retry.backoff(1, Duration.ofSeconds(1))
                         .filter(throwable -> !(throwable instanceof ResponseStatusException)))
                 .doOnError(e -> log.error("정방향 지오코딩 API 호출 실패: {}", e.getMessage()))
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "Failed to fetch coordinates", e)));
     }
-} 
+}

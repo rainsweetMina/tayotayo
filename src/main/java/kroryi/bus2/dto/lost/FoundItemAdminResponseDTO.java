@@ -50,7 +50,7 @@ public class FoundItemAdminResponseDTO {
                 .handlerContact(entity.getHandlerContact())
                 .handlerEmail(entity.getHandlerEmail())
                 .status(entity.getStatus())
-                .statusName(entity.getStatus().getDisplayName()) // 추가!
+                .statusName(entity.getStatus() != null ? entity.getStatus().getDisplayName() : null) // null 체크 추가!
                 .photoUrl(entity.getPhoto() != null ? entity.getPhoto().getUrl() : null)
 //                .isHidden(entity.isHidden())
                 .visible(entity.isVisible())      // ← 여기도 추가!
