@@ -152,6 +152,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/ad/active", "/api/ad/popup").permitAll()
                         .requestMatchers("/api/bus/**").permitAll()
+                        .requestMatchers("/api/qna/page", "/api/qna/{id}").permitAll()
 
                         /* USER·ADMIN 공용(로그인 필요) */
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
