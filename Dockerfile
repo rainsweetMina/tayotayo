@@ -6,7 +6,7 @@ RUN sed -i 's|http://archive.ubuntu.com|http://mirror.kakao.com|g' /etc/apt/sour
 
 # 필수 패키지 설치
 RUN apt-get update && \
-    apt-get install -y openjdk-17-jdk net-tools maven iputils-ping vim && \
+    apt-get install -y openjdk-17-jdk maven vim && \
     apt-get clean
 ENV LANG=ko_KR.UTF-8
 ENV LC_ALL=ko_KR.UTF-8
