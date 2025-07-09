@@ -90,7 +90,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 2. 쿠키에서 토큰 확인 (브라우저 직접 접속 시)
-        String cookieToken = getTokenFromCookie(request, "accessToken");
+        String cookieToken = getTokenFromCookie(request, "vue_accessToken");
         if (StringUtils.hasText(cookieToken)) {
             return cookieToken;
         }

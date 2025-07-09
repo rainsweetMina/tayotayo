@@ -104,7 +104,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessHandler(customLogoutSuccessHandler)
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "vue_accessToken", "vue_refreshToken")
                         .invalidateHttpSession(true))
 
                 /* ────────────────────────────────

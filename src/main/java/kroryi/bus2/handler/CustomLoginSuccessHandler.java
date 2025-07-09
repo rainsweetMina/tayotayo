@@ -145,14 +145,14 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         /* ------------------------------------------------------------------
          * 6) 토큰을 쿠키에 저장 (백엔드 직접 접속용)
          * ------------------------------------------------------------------ */
-        jakarta.servlet.http.Cookie accessTokenCookie = new jakarta.servlet.http.Cookie("accessToken", accessToken);
+        jakarta.servlet.http.Cookie accessTokenCookie = new jakarta.servlet.http.Cookie("vue_accessToken", accessToken);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setHttpOnly(false); // JavaScript에서 접근 가능하도록
         accessTokenCookie.setSecure(true);
         accessTokenCookie.setMaxAge(3600); // 1시간
         response.addCookie(accessTokenCookie);
 
-        jakarta.servlet.http.Cookie refreshTokenCookie = new jakarta.servlet.http.Cookie("refreshToken", refreshToken);
+        jakarta.servlet.http.Cookie refreshTokenCookie = new jakarta.servlet.http.Cookie("vue_refreshToken", refreshToken);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setHttpOnly(false);
         refreshTokenCookie.setSecure(true);
