@@ -231,8 +231,8 @@ public class SecurityConfig {
                 "X-Refresh-Token"
         ));
         
-        // 쿠키 허용 (현재 false로 설정)
-        config.setAllowCredentials(false);
+        // 쿠키 허용 (withCredentials: true와 일치시키기 위해 true로 변경)
+        config.setAllowCredentials(true);
         
         // 프리플라이트 요청 캐시 시간
         config.setMaxAge(3600L); // 1시간
