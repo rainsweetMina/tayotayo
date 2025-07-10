@@ -120,7 +120,7 @@ public class SecurityConfig {
                                 "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**",
                                 "/webjars/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/health").permitAll()  // 헬스체크 엔드포인트 추가
+                        .requestMatchers("/api/health", "/api/cors-test").permitAll()  // 헬스체크 및 CORS 테스트 엔드포인트 추가
                         .requestMatchers("/api/user/check-id").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bus/getRouteInfo").permitAll()
                         .requestMatchers("/api/user/info").hasAnyRole("USER", "ADMIN", "BUS")
@@ -196,6 +196,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        
+        // 허용할 오리진 패턴 설정
         config.setAllowedOriginPatterns(List.of(
                 "https://*.yi.or.kr:*",
                 "http://*.yi.or.kr:*",
@@ -206,10 +208,37 @@ public class SecurityConfig {
                 "https://10.*:*",
                 "http://10.*:*"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
-        config.setAllowedHeaders(List.of("*"));
+        
+        // 허용할 HTTP 메서드
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // 허용할 헤더
+        config.setAllowedHeaders(List.of(
+                "Origin",
+                "Content-Type",
+                "Accept",
+                "Authorization",
+                "X-Requested-With",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"
+        ));
+        
+        // 노출할 헤더
+        config.setExposedHeaders(List.of(
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials",
+                "X-Access-Token",
+                "X-Refresh-Token"
+        ));
+        
+        // 쿠키 허용 (현재 false로 설정)
         config.setAllowCredentials(false);
-        config.setMaxAge(3600L); // 1시간 캐시
+        
+        // 프리플라이트 요청 캐시 시간
+        config.setMaxAge(3600L); // 1시간
+        
+        log.info("🔧 CORS 설정 완료: allowCredentials={}, allowedOrigins={}", 
+                config.getAllowCredentials(), config.getAllowedOriginPatterns());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

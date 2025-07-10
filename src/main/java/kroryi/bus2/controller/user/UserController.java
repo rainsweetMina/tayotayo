@@ -51,6 +51,17 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/api/cors-test")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> corsTest() {
+        log.info("🔧 CORS 테스트 API 호출됨");
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "CORS 테스트 성공");
+        response.put("timestamp", System.currentTimeMillis());
+        response.put("origin", "backend");
+        return ResponseEntity.ok(response);
+    }
+
 
     // 로그인 페이지
     @GetMapping("/auth/login")
