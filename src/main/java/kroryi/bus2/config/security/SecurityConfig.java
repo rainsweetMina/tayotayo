@@ -92,14 +92,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(swaggerAuthFilter,  UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .formLogin(form -> form
-                        .loginPage("/auth/login")
-                        .loginProcessingUrl("/auth/login")
-                        .usernameParameter("username")
-                        .passwordParameter("password")
-                        .successHandler(customLoginSuccessHandler)
-                        .failureHandler((request, response, ex) -> { /* 생략 */ })
-                        .permitAll())
+                .formLogin(form -> form.disable()) // 폼 로그인 완전 비활성화
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessHandler(customLogoutSuccessHandler)
