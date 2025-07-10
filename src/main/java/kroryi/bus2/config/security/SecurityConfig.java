@@ -191,6 +191,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "https://docs.yi.or.kr:15173",
                 "http://docs.yi.or.kr:15173",
+                "https://112.222.207.210:15173",
+                "https://112.222.207.*:15173",
                 "https://localhost:5173",
                 "https://localhost:5173",
                 "http://localhost:5173",
