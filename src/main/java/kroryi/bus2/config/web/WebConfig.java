@@ -45,11 +45,11 @@ public class WebConfig implements WebMvcConfigurer {
 //                .addResourceLocations("file:"+ filePath);
 //    }
 
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        registry.addInterceptor(interceptor)
-//                .addPathPatterns("/api/**"); // 감시할 경로 지정
-//    }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(interceptor)
+                .addPathPatterns("/api/**"); // 감시할 경로 지정
+    }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {

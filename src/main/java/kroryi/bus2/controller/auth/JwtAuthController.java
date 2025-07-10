@@ -56,6 +56,7 @@ public class JwtAuthController {
                     .refreshToken(refreshToken)
                     .build();
 
+            log.info("jwtAuth------------> {}", user);
             return ResponseEntity.ok(tokenResponse);
 
         } catch (Exception e) {

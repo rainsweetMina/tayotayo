@@ -1,8 +1,8 @@
 package kroryi.bus2.config.security;
 
 import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import kroryi.bus2.components.RedirectProperties;
 import kroryi.bus2.filter.ApiKeyAuthenticationFilter;
 import kroryi.bus2.filter.JwtAuthenticationFilter;
 import kroryi.bus2.filter.SwaggerAuthFilter;
@@ -53,7 +53,6 @@ public class SecurityConfig {
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final RedirectProperties redirect;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenUtil jwtTokenUtil, UserService userService) {
@@ -93,7 +92,14 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(swaggerAuthFilter,  UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .formLogin(form -> form.disable()) // 폼 로그인 비활성화 (REST API만 사용)
+                .formLogin(form -> form
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .successHandler(customLoginSuccessHandler)
+                        .failureHandler((request, response, ex) -> { /* 생략 */ })
+                        .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessHandler(customLogoutSuccessHandler)
@@ -172,7 +178,7 @@ public class SecurityConfig {
                         .successHandler(customOAuth2SuccessHandler)
                         .failureHandler((req, res, ex) -> {
                             String encoded = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-                            res.sendRedirect(redirect.getBaseUrl()+"/login?error=" + encoded);
+                            res.sendRedirect("https://docs.yi.or.kr:15173/login?error=" + encoded);
                         }))
                 .rememberMe(remember -> remember
                         .key("remember-me-key")
@@ -189,48 +195,23 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        
-        // 허용할 오리진 패턴 설정
-        config.setAllowedOriginPatterns(List.of(
-                "https://*.yi.or.kr:*",
-                "http://*.yi.or.kr:*",
-                "https://localhost:*",
-                "http://localhost:*",
-                "https://192.168.*:*",
-                "http://192.168.*:*",
-                "https://10.*:*",
-                "http://10.*:*"
+        config.setAllowedOrigins(List.of(
+                "https://docs.yi.or.kr:15173",
+                "http://docs.yi.or.kr:15173",
+                "https://localhost:5173",
+                "https://localhost:5173",
+                "http://localhost:5173",
+                "https://localhost:5174",
+                "http://localhost:5174"
         ));
-        
-        // 허용할 HTTP 메서드
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        
-        // 허용할 헤더
-        config.setAllowedHeaders(List.of(
-                "Origin",
-                "Content-Type",
-                "Accept",
-                "Authorization",
-                "X-Requested-With",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"
-        ));
-        
-        // 노출할 헤더
-        config.setExposedHeaders(List.of(
-                "Access-Control-Allow-Origin",
-                "Access-Control-Allow-Credentials",
-                "X-Access-Token",
-                "X-Refresh-Token"
-        ));
-        
-        // 쿠키 허용 (withCredentials: true와 일치시키기 위해 true로 변경)
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
+        config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
-        
+
         // 프리플라이트 요청 캐시 시간
         config.setMaxAge(3600L); // 1시간
-        
-        log.info("🔧 CORS 설정 완료: allowCredentials={}, allowedOrigins={}", 
+
+        log.info("🔧 CORS 설정 완료: allowCredentials={}, allowedOrigins={}",
                 config.getAllowCredentials(), config.getAllowedOriginPatterns());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -239,5 +220,4 @@ public class SecurityConfig {
     }
 
 
-    // 세션 기반 인증을 사용하지 않으므로 SameSite 쿠키 필터 제거
 }
