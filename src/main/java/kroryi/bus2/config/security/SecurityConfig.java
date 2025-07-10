@@ -188,26 +188,23 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "https://docs.yi.or.kr:15173",
-                "http://docs.yi.or.kr:15173",
-                "https://112.222.207.210:15173",
-                "https://112.222.207.*:15173",
-                "https://localhost:5173",
-                "https://localhost:5173",
-                "http://localhost:5173",
-                "https://localhost:5174",
-                "http://localhost:5174"
+        config.setAllowedOriginPatterns(List.of(
+            "https://*.yi.or.kr:*",
+            "http://*.yi.or.kr:*",
+            "https://docs.yi.or.kr:15173",
+            "http://docs.yi.or.kr:15173"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(List.of(
+            "Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With",
+            "Access-Control-Request-Method", "Access-Control-Request-Headers"
+        ));
+        config.setExposedHeaders(List.of(
+            "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials",
+            "X-Access-Token", "X-Refresh-Token"
+        ));
         config.setAllowCredentials(true);
-
-        // 프리플라이트 요청 캐시 시간
-        config.setMaxAge(3600L); // 1시간
-
-        log.info("🔧 CORS 설정 완료: allowCredentials={}, allowedOrigins={}",
-                config.getAllowCredentials(), config.getAllowedOriginPatterns());
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
