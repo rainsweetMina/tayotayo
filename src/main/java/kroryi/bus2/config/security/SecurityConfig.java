@@ -85,7 +85,7 @@ public class SecurityConfig {
                         .frameOptions(frame -> frame.sameOrigin())
                         .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'self' https://docs.yi.or.kr:15173")))
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         .sessionFixation().changeSessionId())
                 .exceptionHandling(ex -> ex
 //                        .authenticationEntryPoint(customAuthenticationEntryPoint)   // 401
@@ -114,15 +114,19 @@ public class SecurityConfig {
 
                         /* 정적 리소스·공용 엔드포인트 */
                         .requestMatchers("/", "/index.html", "/favicon.ico",
-                                "/css/**", "/js/**", "/images/**").permitAll()
+                                "/css/**", "/js/**", "/images/**", "/img/**", "/static/**", "/public/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout",
                                 "/register", "/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**",
                                 "/webjars/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/health").permitAll()  // 헬스체크 엔드포인트 추가
                         .requestMatchers("/api/user/check-id").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bus/getRouteInfo").permitAll()
                         .requestMatchers("/api/user/info").hasAnyRole("USER", "ADMIN", "BUS")
+
+                        /* 공개 페이지 */
+                        .requestMatchers("/api/schedule", "/schedule", "/low-schedule", "/fare", "/bus-company", "/bus-info").permitAll()
 
                         /* 회원가입·이메일 인증 */
                         .requestMatchers(HttpMethod.POST, "/api/user/join").permitAll()
@@ -152,11 +156,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/ad/active", "/api/ad/popup").permitAll()
                         .requestMatchers("/api/bus/**").permitAll()
+                        .requestMatchers("/api/fares/**").permitAll()  // 버스 요금 API 공개 접근 허용
                         .requestMatchers("/api/qna/page", "/api/qna/{id}").permitAll()
                         .requestMatchers("/api/found/**").permitAll()  // 습득물 관련 API 공개 접근 허용
                         .requestMatchers("/api/lost/**").permitAll()  // 분실물 관련 API 공개 접근 허용
                         .requestMatchers("/api/schedule/**").permitAll()  // 버스 시간표 API 공개 접근 허용
-                        .requestMatchers("/api/companies", "/api/route-nos-low", "/api/route-notes", "/api/route-id/**", "/api/schedule-header", "/api/route-map", "/api/lowbus-scheduls").permitAll()  // 버스 관련 API 공개 접근 허용
+                        .requestMatchers("/api/companies", "/api/route-nos", "/api/route-nos-low", "/api/route-notes", "/api/route-id/**", "/api/schedule-header", "/api/route-map", "/api/lowbus-scheduls").permitAll()  // 버스 관련 API 공개 접근 허용
 
                         /* USER·ADMIN 공용(로그인 필요) */
                         .requestMatchers("/api/user/apikey/summary").hasAnyRole("USER", "ADMIN")
@@ -195,11 +200,16 @@ public class SecurityConfig {
                 "https://*.yi.or.kr:*",
                 "http://*.yi.or.kr:*",
                 "https://localhost:*",
-                "http://localhost:*"
+                "http://localhost:*",
+                "https://192.168.*:*",
+                "http://192.168.*:*",
+                "https://10.*:*",
+                "http://10.*:*"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false);
+        config.setMaxAge(3600L); // 1시간 캐시
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -207,37 +217,5 @@ public class SecurityConfig {
     }
 
 
-    // ✅ SameSite=None; Secure 쿠키 속성 설정 필터
-    @Bean
-    public FilterRegistrationBean<Filter> sameSiteCookieFilter() {
-        FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>();
-
-        registrationBean.setFilter(new Filter() {
-            @Override
-            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-                    throws IOException, ServletException {
-
-                chain.  doFilter(request, response);
-
-                if (response instanceof HttpServletResponse httpServletResponse) {
-                    Collection<String> headers = httpServletResponse.getHeaders(HttpHeaders.SET_COOKIE);
-                    boolean firstHeader = true;
-                    for (String header : headers) {
-                        if (header.contains("JSESSIONID")) {
-                            String newHeader = header + "; SameSite=None; Secure";
-                            if (firstHeader) {
-                                httpServletResponse.setHeader(HttpHeaders.SET_COOKIE, newHeader);
-                                firstHeader = false;
-                            } else {
-                                httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, newHeader);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        registrationBean.addUrlPatterns("/*");
-        return registrationBean;
-    }
+    // 세션 기반 인증을 사용하지 않으므로 SameSite 쿠키 필터 제거
 }

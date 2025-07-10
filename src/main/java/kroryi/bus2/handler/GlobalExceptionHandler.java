@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @Log4j2
 @ControllerAdvice
@@ -56,6 +57,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
         log.error("AccessDeniedException: {}", e.getMessage(), e);
         return buildErrorResponse(HttpStatus.FORBIDDEN, "파일 접근 권한이 없습니다.", "AccessDeniedException");
+    }
+
+    // 404 - 리소스를 찾을 수 없음
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException e) {
+        log.error("NoHandlerFoundException: {} {}", e.getHttpMethod(), e.getRequestURL());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다.", "NoResourceFoundException");
     }
 
     // 500 - 서버 오류

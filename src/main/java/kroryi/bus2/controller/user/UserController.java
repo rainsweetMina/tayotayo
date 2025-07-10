@@ -34,7 +34,21 @@ public class UserController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/auth/login";
+        return "redirect:/api/health";
+    }
+
+    @GetMapping("/api/health")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> health() {
+        log.info("🔍 헬스체크 API 호출됨");
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("message", "TayoTayo Backend API is running");
+        response.put("timestamp", System.currentTimeMillis());
+        response.put("cors", "enabled");
+        response.put("session", "enabled");
+        log.info("🔍 헬스체크 응답: {}", response);
+        return ResponseEntity.ok(response);
     }
 
 
