@@ -17,9 +17,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.collect;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdService {
 
     private final AdRepository adRepository;
@@ -29,12 +31,19 @@ public class AdService {
     // ✅ FormData 기반 광고 등록 메서드 추가됨
     @AdminAudit(action = "광고 등록", target = "Ad")
     public Ad saveAdWithImage(AdRequestDTO dto, MultipartFile imageFile) {
+        log.info("saveAdWithImage 시작: companyId={}", dto.getCompanyId());
+        
         AdCompany company = adCompanyRepository.findById(dto.getCompanyId())
-                .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("광고회사 정보를 찾을 수 없습니다. ID: " + dto.getCompanyId()));
+        
+        log.info("광고회사 조회 성공: {}", company.getName());
 
+        log.info("이미지 파일 저장 시작");
         String fullPath = fileUploadUtil.saveAdImage(imageFile);
         String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1); // ✅ 파일명만 저장
+        log.info("이미지 파일 저장 완료: {}", fileName);
 
+        log.info("광고 엔티티 생성 시작");
         Ad ad = Ad.builder()
                 .title(dto.getTitle())
                 .imageUrl(fileName)
@@ -46,7 +55,11 @@ public class AdService {
                 .company(company)
                 .build();
 
-        return adRepository.save(ad);
+        log.info("광고 엔티티 저장 시작");
+        Ad savedAd = adRepository.save(ad);
+        log.info("광고 엔티티 저장 완료: ID={}", savedAd.getId());
+        
+        return savedAd;
     }
 
     public List<AdResponseDTO> getAllAds() {

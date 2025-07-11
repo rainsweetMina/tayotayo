@@ -53,6 +53,12 @@ public class AdController {
             @RequestPart("image") MultipartFile imageFile
     ) {
         try {
+            log.info("광고 등록 요청 시작");
+            log.info("DTO 정보: title={}, linkUrl={}, startDateTime={}, endDateTime={}, companyId={}, showPopup={}", 
+                dto.getTitle(), dto.getLinkUrl(), dto.getStartDateTime(), dto.getEndDateTime(), dto.getCompanyId(), dto.isShowPopup());
+            log.info("이미지 파일 정보: filename={}, size={}, contentType={}", 
+                imageFile.getOriginalFilename(), imageFile.getSize(), imageFile.getContentType());
+            
             // 파일 유효성 검사
             if (imageFile.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "이미지 파일이 필요합니다."));
@@ -69,6 +75,7 @@ public class AdController {
                 return ResponseEntity.badRequest().body(Map.of("error", "이미지 파일만 업로드 가능합니다."));
             }
 
+            log.info("파일 유효성 검사 통과, 서비스 호출 시작");
             Ad savedAd = adService.saveAdWithImage(dto, imageFile);
             log.info("광고 등록 성공: ID={}, 제목={}", savedAd.getId(), savedAd.getTitle());
             
