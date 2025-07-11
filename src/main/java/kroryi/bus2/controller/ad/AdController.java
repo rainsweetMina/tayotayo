@@ -46,7 +46,7 @@ public class AdController {
             @ApiResponse(responseCode = "401", description = "인증 실패"),
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, "application/octet-stream"})
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createAd(
             @RequestPart("dto") AdRequestDTO dto,

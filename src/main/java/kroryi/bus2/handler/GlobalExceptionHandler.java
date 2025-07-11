@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -25,6 +26,18 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", message);
         errorResponse.put("error", errorType);
         return ResponseEntity.status(status).body(errorResponse);
+    }
+
+    // HttpMediaTypeNotSupportedException 처리 추가
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Object> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
+        log.error("HttpMediaTypeNotSupportedException: {}", e.getMessage(), e);
+        log.error("요청된 Content-Type: {}", e.getContentType());
+        log.error("지원되는 Content-Type: {}", e.getSupportedMediaTypes());
+        return buildErrorResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE, 
+            "지원하지 않는 Content-Type입니다. 요청된 타입: " + e.getContentType() + 
+            ", 지원되는 타입: " + e.getSupportedMediaTypes(), 
+            "HttpMediaTypeNotSupportedException");
     }
 
     // 400 - 잘못된 요청
