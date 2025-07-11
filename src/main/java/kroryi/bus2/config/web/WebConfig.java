@@ -68,5 +68,14 @@ public class WebConfig implements WebMvcConfigurer {
         // 기본 홈 경로도 index.html로
         registry.addViewController("/").setViewName("forward:/index.html");
     }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("https://docs.yi.or.kr:15173")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
 }
 
