@@ -38,7 +38,7 @@ public class ApiKeyService {
         List<ApiKey> existingKeys = apiKeyRepository.findAllByUser(user);
         for (ApiKey oldKey : existingKeys) {
             oldKey.setActive(false);
-            oldKey.setStatus(ApiKeyStatus.EXPIRED);
+            oldKey.setStatus(ApiKeyStatus.PENDING); // EXPIRED 대신 PENDING 사용
         }
         apiKeyRepository.flush();
 
@@ -85,7 +85,7 @@ public class ApiKeyService {
         List<ApiKey> activeKeys = apiKeyRepository.findAllByUserAndActiveTrue(user);
         activeKeys.forEach(key -> {
             key.setActive(false);
-            key.setStatus(ApiKeyStatus.EXPIRED);
+            key.setStatus(ApiKeyStatus.PENDING); // EXPIRED 대신 PENDING 사용
         });
         apiKeyRepository.flush();
 
@@ -146,7 +146,7 @@ public class ApiKeyService {
         
         activeKeys.forEach(key -> {
             key.setActive(false);
-            key.setStatus(ApiKeyStatus.EXPIRED);
+            key.setStatus(ApiKeyStatus.PENDING); // EXPIRED 대신 PENDING 사용
             log.info("🔁 [ApiKeyService] 기존 API 키 비활성화 - apiKeyId: {}", key.getId());
         });
         apiKeyRepository.flush();

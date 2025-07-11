@@ -53,6 +53,7 @@ public class ApiKey {
     private String userIdString;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     @Builder.Default
     private ApiKeyStatus status = ApiKeyStatus.PENDING;
 
