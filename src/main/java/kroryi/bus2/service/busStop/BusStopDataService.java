@@ -139,47 +139,19 @@ public class BusStopDataService {
         return routeRepository.findRoutesByIds(routeIds);
     }
 
-    // 반경 내 정류장 검색 (위도/경도 기준)
+    // 반경 내 정류장 검색 (위도/경도 기준) - 최대 500m로 제한
     public List<BusStopListDTO> findNearbyBusStops(double lon, double lat, int radius) {
-        log.info("반경 {}m 내 정류장 검색: 좌표({}, {})", radius, lon, lat);
+        // 반경을 최대 500m로 제한
+        int limitedRadius = Math.min(radius, 500);
+        log.info("반경 {}m 내 정류장 검색: 좌표({}, {}) (요청: {}m, 제한: {}m)", limitedRadius, lon, lat, radius, limitedRadius);
 
         // 데이터베이스에서 반경 내 정류장 검색
-        List<BusStop> nearbyStops = busStopRepository.findStopsWithinRadius(lon, lat, radius);
+        List<BusStop> nearbyStops = busStopRepository.findStopsWithinRadius(lon, lat, limitedRadius);
 
-        // 결과가 없으면 반경을 확장하여 재검색
-        if (nearbyStops.isEmpty() && radius < 1000) {
-            log.info("반경 {}m 내 정류장이 없어 반경 확장: 1000m", radius);
-            nearbyStops = busStopRepository.findStopsWithinRadius(lon, lat, 1000);
-        }
-
-        // 여전히 결과가 없으면 가장 가까운 정류장 10개 검색
+        // 결과가 없으면 빈 리스트 반환 (반경 확장하지 않음)
         if (nearbyStops.isEmpty()) {
-            log.info("반경 1000m 내에도 정류장이 없어 가장 가까운 정류장 10개 검색");
-            // 이 부분은 MySQL 공간 함수를 사용하여 구현 필요
-            // 현재 구현에서는 간단히 모든 정류장을 가져와 거리 계산 후 정렬
-            List<BusStop> allStops = busStopRepository.findAll();
-            return allStops.stream()
-                    .map(stop -> {
-                        double distance = calculateDistance(lon, lat, stop.getXPos(), stop.getYPos());
-                        return new BusStopListDTO(
-                                stop.getId(),
-                                stop.getBsId(),
-                                stop.getBsNm(),
-                                stop.getXPos(),
-                                stop.getYPos(),
-                                distance
-                        );
-                    })
-                    .sorted((a, b) -> {
-                        Double distanceA = a.getDistance();
-                        Double distanceB = b.getDistance();
-                        if (distanceA == null && distanceB == null) return 0;
-                        if (distanceA == null) return 1;
-                        if (distanceB == null) return -1;
-                        return Double.compare(distanceA, distanceB);
-                    })
-                    .limit(10)
-                    .collect(Collectors.toList());
+            log.info("반경 {}m 내 정류장이 없습니다.", limitedRadius);
+            return Collections.emptyList();
         }
 
         // 검색된 정류장을 DTO로 변환
