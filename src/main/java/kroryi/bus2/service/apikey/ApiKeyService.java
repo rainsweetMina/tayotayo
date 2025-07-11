@@ -135,13 +135,19 @@ public class ApiKeyService {
 
     @Transactional
     public ApiKey reissueApiKey(String userId) {
+        log.info("🔁 [ApiKeyService] reissueApiKey 시작 - userId: {}", userId);
+        
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        log.info("🔁 [ApiKeyService] 사용자 조회 성공 - userId: {}", userId);
 
         List<ApiKey> activeKeys = apiKeyRepository.findAllByUserAndActiveTrue(user);
+        log.info("🔁 [ApiKeyService] 기존 활성 API 키 개수: {}", activeKeys.size());
+        
         activeKeys.forEach(key -> {
             key.setActive(false);
             key.setStatus(ApiKeyStatus.EXPIRED);
+            log.info("🔁 [ApiKeyService] 기존 API 키 비활성화 - apiKeyId: {}", key.getId());
         });
         apiKeyRepository.flush();
 
@@ -156,7 +162,10 @@ public class ApiKeyService {
                 .user_name(user.getUsername())
                 .build();
 
-        return apiKeyRepository.save(newApiKey);
+        ApiKey savedApiKey = apiKeyRepository.save(newApiKey);
+        log.info("🔁 [ApiKeyService] 새 API 키 생성 완료 - apiKeyId: {}", savedApiKey.getId());
+        
+        return savedApiKey;
     }
 
     public ApiKey getApiKeyRequestForUser(User user) {

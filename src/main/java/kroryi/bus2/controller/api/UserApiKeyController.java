@@ -85,7 +85,10 @@ public class UserApiKeyController {
 
     @PostMapping("/reissue")
     public ResponseEntity<?> reissueApiKey(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("🔁 [reissueApiKey] API 키 재발급 요청 시작");
+        
         if (userDetails == null) {
+            log.warn("❌ [reissueApiKey] 인증 정보가 없음");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "인증 정보가 없습니다."));
         }
 
@@ -93,13 +96,15 @@ public class UserApiKeyController {
         log.info("🔁 [reissueApiKey] API 키 재발급 요청 - userId: {}", userId);
 
         try {
+            log.info("🔁 [reissueApiKey] ApiKeyService.reissueApiKey 호출 시작");
             ApiKey apiKey = apiKeyService.reissueApiKey(userId);
+            log.info("🔁 [reissueApiKey] API 키 재발급 성공 - apiKeyId: {}", apiKey.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(toDto(apiKey));
         } catch (IllegalStateException | IllegalArgumentException e) {
-            log.warn("❌ 재발급 실패: {}", e.getMessage());
+            log.warn("❌ [reissueApiKey] 재발급 실패: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            log.error("❌ 예상치 못한 오류 발생", e);
+            log.error("❌ [reissueApiKey] 예상치 못한 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "서버 내부 오류가 발생했습니다."));
         }
     }
