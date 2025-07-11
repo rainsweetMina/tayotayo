@@ -158,7 +158,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/fares/**").permitAll()  // 버스 요금 API 공개 접근 허용
                         .requestMatchers("/api/qna/page", "/api/qna/{id}").permitAll()
                         .requestMatchers("/api/found/**").permitAll()  // 습득물 관련 API 공개 접근 허용
-                        .requestMatchers("/api/lost/**").permitAll()  // 분실물 관련 API 공개 접근 허용
+                        .requestMatchers("/api/lost/visible", "/api/lost/search", "/api/lost/{id}").permitAll()  // 분실물 공개 조회만 허용
+                        .requestMatchers("/api/lost").hasAnyRole("USER", "ADMIN")  // 내 분실물 조회는 인증 필요
                         .requestMatchers("/api/schedule/**").permitAll()  // 버스 시간표 API 공개 접근 허용
                         .requestMatchers("/api/companies", "/api/route-nos", "/api/route-nos-low", "/api/route-notes", "/api/route-id/**", "/api/schedule-header", "/api/route-map", "/api/lowbus-scheduls").permitAll()  // 버스 관련 API 공개 접근 허용
 

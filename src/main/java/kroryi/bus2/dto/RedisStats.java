@@ -1,10 +1,14 @@
 package kroryi.bus2.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RedisStats {
     private long usedMemory;
     private long maxMemory;
