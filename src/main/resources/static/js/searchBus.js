@@ -586,7 +586,15 @@ function searchBus() {
 
 
         })
-        .catch(error => console.error('오류 발생:', error));
+        .catch(error => {
+            console.error('오류 발생:', error);
+        })
+        .finally(() => {
+            // 검색 완료 시 로딩 숨기기
+            if (window.hideGlobalLoading) {
+                window.hideGlobalLoading();
+            }
+        });
 }
 
 
