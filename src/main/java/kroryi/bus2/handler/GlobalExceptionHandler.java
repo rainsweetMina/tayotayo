@@ -1,6 +1,7 @@
 package kroryi.bus2.handler;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @Log4j2
 @ControllerAdvice
+@Order(1) // Spring Boot의 기본 예외 처리보다 먼저 실행
 public class GlobalExceptionHandler {
 
     private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message, String errorType) {
