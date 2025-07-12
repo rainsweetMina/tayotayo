@@ -117,6 +117,7 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/logout",
                                 "/register", "/oauth2/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()  // WebSocket 엔드포인트 허용
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/**",
                                 "/webjars/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/health", "/api/cors-test").permitAll()  // 헬스체크 및 CORS 테스트 엔드포인트 추가
