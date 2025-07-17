@@ -158,12 +158,21 @@ public class BusUserDataController {
 
     @Operation(summary = "버스 실시간 위치", description = "노선Id로 해당하는 노선에 다니고 있는 버스의 실시간 위치를 뿌려줌")
     @GetMapping("/bus-route-Bus")
-    public ResponseEntity<List<BusRealtimeDTO>> getBusRouteRealTimeBus(@RequestParam String routeId) throws Exception {
-
-        List<BusRealtimeDTO> list = busRouteRealTimeDataService.getRealTimeBusList(routeId);
-        System.out.println("버스 실시간 위치 결과 : " + list);
-
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<BusRealtimeDTO>> getBusRouteRealTimeBus(@RequestParam String routeId) {
+        try {
+            log.info("🚌 실시간 버스 위치 API 호출 - routeId: {}", routeId);
+            
+            List<BusRealtimeDTO> list = busRouteRealTimeDataService.getRealTimeBusList(routeId);
+            log.info("✅ 실시간 버스 위치 조회 성공 - routeId: {}, 버스 수: {}", routeId, list.size());
+            
+            return ResponseEntity.ok(list);
+        } catch (Exception e) {
+            log.error("❌ 실시간 버스 위치 조회 실패 - routeId: {}, 오류: {}", routeId, e.getMessage(), e);
+            
+            // 클라이언트에게 더 명확한 오류 메시지 제공
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ArrayList<>()); // 빈 리스트 반환으로 프론트엔드 오류 방지
+        }
     }
 
     @Operation(summary = "정류소이름 찾기", description = "정류소ID로 정류소 이름 찾아줌")
