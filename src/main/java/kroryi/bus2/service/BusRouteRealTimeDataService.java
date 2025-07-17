@@ -2,7 +2,6 @@ package kroryi.bus2.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import kroryi.bus2.dto.BusRealtimeDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,6 +23,8 @@ import java.util.List;
 public class BusRouteRealTimeDataService {
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+    
     @Value("${api.bus.base-url}")
     private String baseUrl;
 
@@ -59,13 +60,32 @@ public class BusRouteRealTimeDataService {
             log.info("📄 API 응답 본문 길이: {} 문자", responseBody.length());
             log.debug("📄 API 응답 본문: {}", responseBody);
 
-            ObjectMapper xmlMapper = new XmlMapper();
-            JsonNode root = xmlMapper.readTree(responseBody);
-            log.info("✅ XML 파싱 성공");
+            // JSON 파싱 (XML이 아닌 JSON 형식으로 응답)
+            JsonNode root = objectMapper.readTree(responseBody);
+            log.info("✅ JSON 파싱 성공");
+
+            // 응답 구조 확인
+            JsonNode header = root.path("header");
+            JsonNode body = root.path("body");
+            
+            // 성공 여부 확인
+            boolean success = header.path("success").asBoolean();
+            String resultCode = header.path("resultCode").asText();
+            String resultMsg = header.path("resultMsg").asText();
+            
+            log.info("📊 API 응답 헤더 - success: {}, resultCode: {}, resultMsg: {}", 
+                    success, resultCode, resultMsg);
+
+            if (!success) {
+                log.warn("⚠️ API 호출 실패 - resultCode: {}, resultMsg: {}", resultCode, resultMsg);
+                return new ArrayList<>();
+            }
 
             // items는 여러 개 있을 수 있으니 배열로 처리
-            JsonNode items = root.path("body").path("items");
-            log.info("📊 items 노드 타입: {}, 크기: {}", items.getNodeType(), items.size());
+            JsonNode items = body.path("items");
+            int totalCount = body.path("totalCount").asInt();
+            log.info("📊 items 노드 타입: {}, 크기: {}, totalCount: {}", 
+                    items.getNodeType(), items.size(), totalCount);
 
             List<BusRealtimeDTO> result = new ArrayList<>();
 
