@@ -90,7 +90,6 @@ public class SecurityConfig {
 //                        .authenticationEntryPoint(customAuthenticationEntryPoint)   // 401
                         .accessDeniedHandler(customAccessDeniedHandler))            // 403
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(swaggerAuthFilter,  UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/auth/login")

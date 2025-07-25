@@ -34,7 +34,7 @@ public class UserController {
 
     @GetMapping("/")
     public String home() {
-        return "home";
+        return "redirect:/auth/login";
     }
 
     @GetMapping("/api/health")
