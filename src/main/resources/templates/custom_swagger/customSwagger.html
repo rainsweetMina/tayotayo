@@ -10,6 +10,26 @@
 <body>
 <div layout:fragment="content">
     <div class="swagger-container">
+        <!-- JWT 토큰 입력 필드 추가 -->
+        <div style="background: #f8f9fa; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #dee2e6;">
+            <h4 style="margin-bottom: 10px;">🔐 JWT 토큰 설정</h4>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="jwtToken" placeholder="JWT 토큰을 입력하세요" 
+                       style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;"
+                       value="">
+                <button onclick="setJwtToken()" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    토큰 설정
+                </button>
+                <button onclick="clearJwtToken()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    토큰 삭제
+                </button>
+            </div>
+            <small style="color: #6c757d; margin-top: 5px; display: block;">
+                💡 관리자 계정으로 로그인한 후 JWT 토큰을 입력하면 API를 테스트할 수 있습니다.<br>
+                🔍 JWT 토큰 찾는 방법: 브라우저 개발자 도구 → Application → Local Storage → accessToken
+            </small>
+        </div>
+
         <!-- Swagger UI 들어가는 영역 -->
         <div id="swagger-ui"></div>
     </div>
@@ -19,6 +39,24 @@
     <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
     <script>
         console.log("🔥 Swagger 시작");
+
+        // JWT 토큰 설정 함수
+        function setJwtToken() {
+            const token = document.getElementById('jwtToken').value;
+            if (token) {
+                ui.preauthorizeApiKey("Bearer", token);
+                alert('JWT 토큰이 설정되었습니다!');
+            } else {
+                alert('토큰을 입력해주세요.');
+            }
+        }
+
+        // JWT 토큰 삭제 함수
+        function clearJwtToken() {
+            document.getElementById('jwtToken').value = '';
+            ui.preauthorizeApiKey("Bearer", "");
+            alert('JWT 토큰이 삭제되었습니다.');
+        }
 
         const ui = SwaggerUIBundle({
             urls: [
@@ -42,9 +80,21 @@
                 SwaggerUIBundle.presets.apis,
                 SwaggerUIStandalonePreset
             ],
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
             deepLinking: true,
             docExpansion: "none",
-            validatorUrl: null
+            validatorUrl: null,
+            // JWT 인증 설정 추가
+            onComplete: function() {
+                // JWT 토큰이 있으면 자동으로 설정
+                const token = localStorage.getItem('accessToken');
+                if (token) {
+                    document.getElementById('jwtToken').value = token;
+                    ui.preauthorizeApiKey("Bearer", token);
+                }
+            }
         });
 
         console.log("✅ Swagger 호출됨");
