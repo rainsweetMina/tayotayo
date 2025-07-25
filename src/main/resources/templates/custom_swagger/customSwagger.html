@@ -23,6 +23,7 @@
         const ui = SwaggerUIBundle({
             urls: [
                 { url: "/v3/api-docs/All", name: "All" },
+                { url: "/v3/api-docs/Admin", name: "Admin" },
                 { url: "/v3/api-docs/Bus", name: "Bus" },
                 { url: "/v3/api-docs/Ad", name: "Ad" },
                 { url: "/v3/api-docs/Board", name: "Board" },
@@ -34,7 +35,7 @@
                 { url: "/v3/api-docs/MyPage", name: "MyPage" },
                 { url: "/v3/api-docs/Management", name: "Management" }
             ],
-            urlsPrimaryName: "Bus", // ✅ 반드시 Bus로 맞춰야 함 (name 값과 동일)
+            urlsPrimaryName: "Admin", // ✅ Admin으로 변경
             dom_id: '#swagger-ui',
             layout: "StandaloneLayout",
             presets: [
