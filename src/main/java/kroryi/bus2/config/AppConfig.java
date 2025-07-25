@@ -40,8 +40,8 @@ public class AppConfig {
     @Bean
     public GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
-                .group("Admin")
-                .pathsToMatch("/api/admin/**")
+                .group("Bus")
+                .pathsToMatch("/api/bus/**")
                 .build();
     }
 

@@ -49,6 +49,7 @@ public class SecurityConfig {
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
+    private final SwaggerAuthFilter swaggerAuthFilter;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
@@ -89,6 +90,7 @@ public class SecurityConfig {
 //                        .authenticationEntryPoint(customAuthenticationEntryPoint)   // 401
                         .accessDeniedHandler(customAccessDeniedHandler))            // 403
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(swaggerAuthFilter,  UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/auth/login")

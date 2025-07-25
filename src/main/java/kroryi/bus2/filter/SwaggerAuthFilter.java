@@ -27,10 +27,10 @@ public class SwaggerAuthFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         for (String swaggerPath : SWAGGER_PATHS) {
             if (path.startsWith(swaggerPath)) {
-                return true; // Swagger 경로는 필터 제외
+                return false; // Swagger 경로는 필터 적용
             }
         }
-        return false; // 그 외는 필터 적용
+        return true; // 그 외는 필터 제외
     }
 
     @Override
@@ -40,9 +40,8 @@ public class SwaggerAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        
-        // 🔓 Swagger 관련 URI는 인증 없이 통과
-        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-resources") || path.startsWith("/webjars")) {
+        // 🔓 Swagger 관련 URI는 필터 건너뜀
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-resources")) {
             filterChain.doFilter(request, response);
             return;
         }
