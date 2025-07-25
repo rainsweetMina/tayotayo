@@ -144,7 +144,6 @@ public class SecurityConfig {
                                 "/api/admin/lost/**").hasAnyRole("ADMIN", "BUS")
 
                         /* ADMIN 전용 */
-                        .requestMatchers("/admin/swagger_page").permitAll()  // Swagger UI 페이지는 공개 접근 허용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 

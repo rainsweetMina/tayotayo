@@ -19,7 +19,7 @@ import java.io.IOException;
 public class SwaggerAuthFilter extends OncePerRequestFilter {
 
     private static final String[] SWAGGER_PATHS = {
-            "/swagger-ui", "/v3/api-docs", "/swagger-resources", "/webjars", "/admin/swagger_page"
+            "/swagger-ui", "/v3/api-docs", "/swagger-resources", "/webjars"
     };
 
     @Override
@@ -41,7 +41,7 @@ public class SwaggerAuthFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         // 🔓 Swagger 관련 URI는 필터 건너뜀
-        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-resources") || path.startsWith("/admin/swagger_page")) {
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-resources")) {
             filterChain.doFilter(request, response);
             return;
         }
