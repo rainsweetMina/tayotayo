@@ -49,7 +49,6 @@ public class SecurityConfig {
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
-    private final SwaggerAuthFilter swaggerAuthFilter;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
