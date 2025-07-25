@@ -5,24 +5,18 @@
 <head>
     <meta charset="UTF-8">
     <title>커스텀 스웨거</title>
-<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />-->
-    <link rel="stylesheet" href="/webjars/swagger-ui/swagger-ui.css" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui.css" />
 </head>
 <body>
 <div layout:fragment="content">
     <div class="swagger-container">
-<!--        <h1 style="text-align: center; margin: 10px">🧭 API 문서 - Swagger UI</h1>-->
-
         <!-- Swagger UI 들어가는 영역 -->
         <div id="swagger-ui"></div>
     </div>
 
     <!-- Swagger UI 스크립트 -->
-<!--    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>-->
-<!--    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>-->
-    <script src="/webjars/swagger-ui/swagger-ui-bundle.js"></script>
-    <script src="/webjars/swagger-ui/swagger-ui-standalone-preset.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
     <script>
         console.log("🔥 Swagger 시작");
 
@@ -51,21 +45,6 @@
             docExpansion: "none",
             validatorUrl: null
         });
-
-        // const ui = SwaggerUIBundle({
-        //
-        //     url: "/v3/api-docs/Bus",
-        //     dom_id: '#swagger-ui',
-        //     layout: "BaseLayout",
-        //     presets: [
-        //         SwaggerUIBundle.presets.apis,
-        //         SwaggerUIStandalonePreset
-        //     ],
-        //     deepLinking: true,
-        //     docExpansion: "none",
-        //     validatorUrl: null // 🔥 이거 추가!
-        //
-        // });
 
         console.log("✅ Swagger 호출됨");
     </script>
