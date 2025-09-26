@@ -215,7 +215,7 @@ https://github.com/user-attachments/assets/bfd7b41e-0176-4bf0-8880-b410ec108914
 
 
 
-> Swagger UI: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+> Swagger UI: [https://docs.yi.or.kr:8096/swagger-ui.html](https://docs.yi.or.kr:8096/swagger-ui.html)
 
 ---
 
